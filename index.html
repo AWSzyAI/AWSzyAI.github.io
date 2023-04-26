@@ -1,298 +1,848 @@
-<!doctype html><!--告知浏览器该文档类型，必须位于第一行-->
-<html lang="zh-cn">
-<head>
-    <title>时子延</title>
-    <link rel="shortcut icon" href="images/szy.ico">
-    <link href="style.css" rel="stylesheet" type="text/css"/>
-    
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta name="keywords" content="时子延,认知,意识,智能,学习,研究中心">
-    <meta name="description" content="认知与意识智能学习研究中心">
-    <meta name="author" content="时子延">
-    <!--<meta http-equiv="refresh" content="30;http://www.aiszy.life">-->
-    
-    <!--<link href="https://fonts.font.im/css?family=Open+Sana" rel="stylesheet" type="text/css"> 添加后页面白屏，不知道为什么-->
-    <!-- 引用倒计时js功能 -->
-		<script src="js/daojishi.js" type="text/javascript" charset="utf-8"></script>
 
+        <html>
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                <title>flomo · 浮墨笔记</title>
+                <style type="text/css">
+                  * {
+                    margin: 0;
+                    padding: 0;
+                  }
+                  body {
+                    background: #fafafa;
+                  }
 
-</head>
+                  header .logo {
+                    text-align: center;
+                    border-bottom: 1px solid #efefef;
+                  }
 
-<body>
-    <div id="toolbar">
-        <header class="header-global">
-            <nav class="navbar-main"></nav>
-            <div class="container">
-                <button id="open_sidebar" class="navbar-toggler"type="button" aria-expanded="false" aria-label="Toggle sidebar">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
-        </header>
-        
-    </div>
-    <div class="head">
-        
-        <p style="vertical-align:middle;font-family:cursive;"><a href="http://www.aiszy.life"><img src="images/szy.bmp" alt="头像" height="20px"><span style="font-size:22px;color:#FFFFFF;">时子延「认知与意识智能学习研究中心」<abbr title="Cognitive and Conscious Intelligence Learning Research Center ">CCILRC</abbr></span></a></p>
-    </div>
-    
-    <div class="left">
-        <h3 style="color:#000000">目录</h3>
-        <P style="line-height:1.2;color:#FFFFFF;font-family:cursive;">
-            <a href="./blog/szyCV.html">时子延的简历</a><br>
-            <progress id="blog" max="100" value="5">5%</progress><br>
-            <a href="./blog/szyblog.html">时子延的博客</a><br>
-            <progress id="blog" max="100" value="30">30%</progress><br>
-            <a href="./lib/szylib.html">时子延图书馆</a><br>
-            <progress id="blog" max="100" value="10">30%</progress><br>
-            <a href="./B/index.html"target="_blank">软件资源</a><br>
-            <progress id="blog" max="100" value="5">30%</progress><br>
-            <a href="./sample/A/index.html"target="_blank">子网页A</a><br>
-            <progress id="blog" max="100" value="30">70%</progress><br>
-            <a href="./sample/B/index.html"target="_blank">子网页B</a><br>
-            <progress id="blog" max="100" value="25">30%</progress><br>
-        </P>
-        <form action="">
-            <input type="text"placeholder="昵称"name="nick"value="默认昵称"/>
-            <input type="text"placeholder="昵称"name="nick"value="只读"readonly/>
-            <input type="password" placeholder="密码">
-        </form>
-        <textarea 
-            name="inputtest"
-            rows="5"
-            cols="30"
-            placeholder="请输入">
-        </textarea><br>
-        代办：三件最重要的事<br>
-        <input type="checkbox"><input type="text"><br>
-        <input type="checkbox"><input type="text"><br>
-        <input type="checkbox"><input type="text"><br>
-        
-        <p>
-            ======================<br>
-            <a href="http://mail.njnu.edu.cn/"><img height="22px" src="http://mail.njnu.edu.cn/logo.png"></a><br>
-            PDF编辑：<a href="https://www.cleverpdf.com/cn" target="_blank"><img src="https://www.cleverpdf.com/statics/images/index_logo.svg" height="17px"></a><br>
-            资源：<a href="https://u.gitcafe.net/" target="_blank"><img height="18px"src="./images/小狐狸.png"></a><br>
-            在线编译器：<a href="https://lightly.teamcode.com/" target="_blank"><img height="18px" src="https://lightly.teamcode.com/assets/logo.3daf54a7.svg"></a><br>
-            <a href="https://www.zhihu.com/" target="_blank"><img height="18px"src="https://pic2.zhimg.com/80/v2-f6b1f64a098b891b4ea1e3104b5b71f6_720w.png"></a><button><a href="https://www.bilibili.com/">bilibili </a></button><br>
-        </p>
-        <ul>
-            <li>文章查重？</li>
-            <li>图片修复/画质放大</li>
-        </ul>
-        <address>联系时子延<br>
-          <a href="mailto:szy@nnu.edu.cn">szy@nnu.edu.cn</a><br>
-          <a href="mailto:aiszylife@gmail.com">aiszylife@gmail.com</a><br>
-        </address>
-    </div>
-  
-    <div class="main">
-        <div>
-        <datails>
-            <summary>Click here to get details</summary>
-            网站
-            前端
-            化学备课
-            高等数学
-        </datails>
+                  header .top {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  }
+                  header .logo,
+                  header .top .user {
+                    padding: 40px 0;
+                  }
+                  header .top .user .name {
+                    color: #454545;
+                    font-size: 16px;
+                  }
+                  header .top .user .date {
+                    font-size: 12px;
+                    color: #9d9d9d;
+                  }
+
+                  header .top .filter {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  }
+                  header .top .filter button {
+                    padding: 9px 10px;
+                    background: #30cf79;
+                    border-radius: 3px;
+                    color: #fff;
+                    font-size: 14px;
+                    border: none;
+                    cursor: pointer;
+                  }
+                  header,
+                  .memos {
+                    width: 600px;
+                    margin: 0 auto;
+                  }
+                  .memos h1 {
+                    margin-top: 30px;
+                  }
+                  .memo {
+                    margin: 20px 0;
+                    background: #fff;
+                    padding: 20px;
+                    border-radius: 6px;
+                    word-wrap: break-word;
+                  }
+                  .memo:hover {
+                    box-shadow: 0px 2px 16px #dddddd;
+                  }
+                  .memo .time {
+                    color: #8d8d8d;
+                    font-size: 12px;
+                  }
+                  .memo .content {
+                    color: #323232;
+                    font-size: 14px;
+                  }
+                  .memo .content p {
+                    line-height: 1.8;
+                    min-height: 20px;
+                    margin: 0;
+                  }
+                  .memo .content ul,
+                  .memo .content ol {
+                    padding-inline-start: 20px;
+                    margin: 0;
+                  }
+                  .memo .content li {
+                    line-height: 1.8;
+                  }
+                  .memo .files img {
+                    width: 100%;
+                    border: 1px solid #e6e6e6;
+                    border-radius: 4px;
+                    margin: 6px 0;
+                  }
+                </style>
+                <style>
+                .custom-select {
+                  position: relative;
+                  font-size: 14px;
+                  color: #9d9d9d;
+                  background: #efefef;
+                  border-radius: 3px;
+                  border: none;
+                  margin-right: 10px;
+                }
+
+                .custom-select select {
+                  display: none;
+                }
+
+                .select-selected {
+                  /* background-color: DodgerBlue; */
+                  background: #efefef;
+                  color: #9d9d9d;
+                }
+
+                .select-selected:after {
+                  position: absolute;
+                  content: "";
+                  top: 14px;
+                  right: 10px;
+                  width: 0;
+                  height: 0;
+                  border: 6px solid transparent;
+                  border-color: #7d7d7d transparent transparent transparent;
+                }
+
+                .select-selected.select-arrow-active:after {
+                  border-color: transparent transparent #7d7d7d transparent;
+                  top: 7px;
+                }
+
+                .select-items div,
+                .select-selected {
+                  color: rgba(157, 157, 157, 1);
+                  padding: 9px 12px;
+                  font-size: 14px;
+                  color: #9d9d9d;
+                  border: none;
+                  cursor: pointer;
+                  border-radius: 3px;
+                  border: none;
+                  width: 120px;
+                  user-select: none;
+                }
+
+                .select-items {
+                  position: absolute;
+                  background-color: white;
+                  top: 100%;
+                  left: 0;
+                  right: 0;
+                  z-index: 99;
+                  max-height: 200px;
+                  overflow-y: auto;
+                  overflow-x: hidden;
+                  box-shadow: 0px 4px 2px #dddddd;
+                }
+
+                .select-items::-webkit-scrollbar {
+                  width: 5px;
+                }
+
+                .select-items::-webkit-scrollbar-track {
+                  background: #f1f1f1;
+                }
+
+                .select-items::-webkit-scrollbar-thumb {
+                  background: #888;
+                }
+
+                .select-hide {
+                  display: none;
+                }
+
+                .select-items div:hover,
+                .same-as-selected {
+                  background-color: rgba(0, 0, 0, 0.1);
+                }
+              </style>
+            </head>
+            <body>
+              <header>
+                <div class="logo">
+                  <svg width="96" height="31" viewBox="0 0 96 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.87056 9.11086C4.87056 6.25522 5.89594 4.89539 7.81854 4.89539H12.5609V0H7.81854C2.69163 0 0 3.39957 0 9.11086V10.8786V14.9581V30.3242H4.87056V15.3661H12.5609V10.8786H4.87056V9.11086ZM79.5937 27.8765C81.3881 29.7803 83.6952 30.7321 86.3868 30.7321C89.0785 30.7321 91.2574 29.7803 93.18 27.8765C95.1026 25.9727 95.9998 23.525 95.9998 20.5334C95.9998 17.5418 94.9744 15.0941 93.18 13.1903C91.2574 11.2866 89.0785 10.3347 86.3868 10.3347C83.6952 10.3347 81.5163 11.2866 79.5937 13.1903C77.6711 15.0941 76.7739 17.5418 76.7739 20.5334C76.7739 23.525 77.7993 25.9727 79.5937 27.8765ZM81.6444 20.5334C81.6444 17.5418 83.6952 15.502 86.3868 15.502C89.0785 15.502 91.2574 17.5418 91.1292 20.5334C91.1292 23.661 89.0785 25.7008 86.3868 25.7008C83.6952 25.7008 81.6444 23.661 81.6444 20.5334ZM32.8147 30.7321C30.1231 30.7321 27.816 29.7802 26.0215 27.8765C24.2271 25.9727 23.2017 23.661 23.2017 20.6694C23.2017 17.6777 24.0989 15.23 26.0215 13.3263C27.9441 11.4225 30.1231 10.4706 32.8147 10.4706C35.5063 10.4706 37.6853 11.4225 39.6079 13.3263C41.5305 15.23 42.4277 17.6777 42.4277 20.6694C42.4277 23.661 41.5305 26.1087 39.6079 28.0124C37.6853 29.9162 35.5063 30.7321 32.8147 30.7321ZM32.8147 15.502C30.1231 15.502 28.0723 17.5418 28.0723 20.5334C28.0723 23.661 30.1231 25.7007 32.8147 25.7007C35.5063 25.7007 37.5571 23.661 37.5571 20.5334C37.5571 17.5418 35.5063 15.502 32.8147 15.502ZM62.0358 19.9894V30.4601H57.2934V19.7175C57.2934 17.1338 55.8835 15.502 53.9609 15.502C51.7819 15.502 50.1157 16.8618 50.1157 19.9894V30.4601H45.3733V10.8786H50.1157V13.7342C51.0129 11.5585 53.32 10.4706 55.3708 10.4706C58.3187 10.6066 60.2413 11.8305 61.2667 14.1422C62.5484 11.6945 64.471 10.4706 67.0345 10.4706C71.5205 10.4706 74.084 13.5982 74.084 19.3095V30.4601H69.3416V19.8535C69.3416 17.1338 67.9317 15.502 65.8809 15.502C63.5738 15.502 62.0358 17.1338 62.0358 19.9894ZM15.6366 4.89539V0H20.379V30.4602H15.6366V7.2071V4.89539Z" fill="#292929"/>
+                  </svg>
+                </div>
+                <div class="top">
+                  <div class="user">
+                    <div class="name">@AWSzyAI</div>
+                    <div class="date">于 2023-1-17 导出 101 条 MEMO</div>
+                  </div>
+                  <div class="filter">
+                    <div class='custom-select'>
+                        <select name="date" id="date">
+                          <option value="">选择年月</option>
+                          <option value="2022-12">2022-12</option><option value="2022-11">2022-11</option><option value="2022-10">2022-10</option><option value="2022-09">2022-09</option><option value="2022-08">2022-08</option>
+                        </select>
+                    </div>
+                    <div class='custom-select'>
+                      <select name="tag" id="tag">
+                        <option value="">选择标签</option>
+                        <option value="生活">生活</option><option value="生活/吴巧缘">生活/吴巧缘</option><option value="思考">思考</option><option value="素材">素材</option><option value="素材/电影">素材/电影</option><option value="素材/电影/星际穿越">素材/电影/星际穿越</option><option value="疑惑">疑惑</option><option value="E">E</option>
+                      </select>
+                    </div>
+                    <button>筛选</button>
+                  </div>
+                </div>
+              </header>
+              <div class="memos">
+                  
+        <div class="memo">
+            <div class="time">2022-12-17 20:30:31</div>
+            <div class="content"><p>地铁 等 wqy 目睹 错过 时间 机遇 等</p></div>
+            <div class="files"></div>
         </div>
-        
-        <ul class="content-editable" contenteditable="true">
-            <il>高数作业</il>
-        </ul>
-        <h3>奋斗目标：</h3>
-        <p class="plan0" style="color:#FF0000;font-size: 17px;font-family: cursive;">
-            在脑科学领域有所建树，服务人类；<br>
-            在心理与教育层面服务大众和儿童;<br>
-            在饮食、睡眠、健康层面照顾家人;<br>
-            在终生学习与对美的体验中认识自己;<br>
-            和爱的人在一起.<br>
-            2020.8.20 时子延<br>
-        </p>
-        <h3>学习路线：</h3>
-        <p style="font-family:cursive;">
-            <span>前端</span>：HTML CSS JavaScript Vue <button><a href="http://www.aiszy.life/sample/lib.html">实验室</a></button><br>
-            <button><a href="https://www.bilibili.com/video/BV1QW411N762/?p=3&spm_id_from=pageDriver&vd_source=50d5a2f0b6e96dc78adab1c38e17adf9" target="_blank">Bilibli：小甲鱼</a></button><button><a href="https://www.runoob.com/" target="_blank">网页：菜鸟教程</a></button>
-            <button><a href="https://developer.mozilla.org/zh-CN/" target="_blank">文档：MDN</a></button>
-            <button><a href="https://man.ilovefishc.com/html5/" target="_blank"> 文档：小甲鱼HTML5</a></button><br>
-        
-            <span>算法</span>：C++ 数据结构  <br>
-            <button><a href="https://www.acwing.com/"target="_blank">AcWing</a></button>
-            <button><a href="https://www.programmercarl.com/" target="_blank"> 代码随想录</a></button>
-            <button><a href="https://labuladong.gitee.io/algo/"target="_blank">算法小抄</a></button><br>
-        
-            <span>人工智能</span>：<button><a href="https://aistudio.baidu.com/aistudio/index?ad-from=2138"target="_blank">AI-Studio</a></button> <button><a href="https://zh-v2.d2l.ai/"target="_blank">动手学深度学习</a></button><br>
-            <span>Python</span>:
-            <button><a href="https://www.sklearncn.cn/" target="_blank">sklearn</a></button>
-            <button><a href="https://numpy.org.cn/" target="_blank">numpy</a></button>
-            <button><a href="https://www.w3cschool.cn/pytorch/"target="_blank">pytorch</a></button>
-            <button><a href="https://www.matplotlib.org.cn/"target="_blank">matplotlib</a></button>
-            <button><a href="https://www.pypandas.cn/"target="_blank">pandas</a></button>
-            <button><a href="https://www.paddlepaddle.org.cn/documentation/docs/zh/api/index_cn.html"target="_blank">paddle</a></button>
-              
-            <button><a href="https://tensorflow.google.cn/">TensorFlow</a></button><br>
-            <span>数学建模</span>：<button><a href="https://www.mathworks.com/help/releases/R2021b/matlab/getting-started-with-matlab.html" style="color:#000000；" target="_blank">MATLAB帮助文档</a></button><br>
-            <span>生命科学</span>：<button><a href=""target="_blank"></a></button><br>
-            <p><time>2022-22-26</time> <br> 对于大学生活来说，学习是重要的，但在学习的过程中搞明白自己想要的是什么，才是更为关键的。对我来说，大学的主要任务是打基础。鉴于我的目标在于生命科学，而由于高考成绩的缘故无缘优质本科，所以通过考研或者保研重回生命科学的道路是我唯一的选择。</p>
-            <aside><p>和自己对话环节</p></aside>
-            <p>通过仔细剖析自己的兴趣，我认为，我想要的，是去了解人脑的工作原理，最主要的是学习和记忆的底层原理与结构。考虑到睡眠的神秘与重要性，其被纳为我的研究范畴。而“了解”这一行为本质只是信息的获取，并不涉及任何科研性的......</p>
-            <article>
-                <header>
-                    
-                </header>
-                <p style="font-family:cursive;">
-                    如果尖锐的批评消失,温和的批评会变得刺耳;如果温和的批评不被允许,沉默将被认为是居心叵测;如果沉默也不再被允许,赞扬得不够卖力将是一种罪行;如果只允许一种声音存在,那么唯一存在的那个声音就是: 
-                    <strong><span style="color:#FF0000">谎言</span></strong>.
-                </p>
-                
-            </article>
-            <figure>
-                <blockquote cite="http://www.aiszy.life/lib/szylib.html">
-                    <p>
-                        To be or not to be, that's a question.<br>
-                    </p>
-                </blockquote>
-                <figcaption>——William Shakespeare</figcaption>
-                <cite>Hamlet</cite>
-            </figure>
-            <figure>
-                <blockquote>
-                    <p>
-                        你要记得那些黑暗中默默抱紧你的人，逗你笑的人，陪你彻夜聊天的人，坐车来看你的人，陪你哭过的人，在医院陪你的人，总是以你为重的人，带着你四处游荡的人，说想念你的人。是这些人组成你生命中一点一滴的温暖，是这些温暖是你远离阴霾，是这些温暖使你成为善良的人。
-                    </p>
-                    <figcaption>——村上春树</figcaption>
-                </blockquote>
-            </figure>
-        <img src="images/盗火.jpg" alt="群头像" width="100px" vertical-align:right; />
-        <figure height:20px>
-            <figcaption>Taylor Swift,Bon Iver-exile:</figcaption>
-            <audio controls src="./media/Taylor Swift,Bon Iver-exile.mp3" loop=true>
-                <p>Your brower doesn't support HTML5 audio. Here is a<a href="media/Taylor Swift,Bon Iver-exile.mp3" >link to the audio</a> instead.</p>
-            </audio>
-        </figure>
-        <article>
-            <header>
-                <h1>Page first</h1>
-                <time>2022.11.25</time>
-            </header>
-            <p>疫情何时休？</p>
-            
-        </article>
-        <h3>任务</h3>
-        <p>1.复刻<button><a href="https://developer.mozilla.org/zh-CN/" target="_blank">MDN</a></button>
-            网站本身<br>
-            代码
-        <code>
-            #include<iostream>
-            using namespace std;
-            int main(){
-                
-                return 0;
-            }
-        </code>
-        模版
-        </p>
-        <table>
-            <caption>一个小表格</caption>
-            <colgroup>
-                <col>
-                <col span="2" class="BT">
-                <col span="2" class="IT">
-            </colgroup>
-            <tr>
-                <td> </td>
-                <th scope="col">英语</th>
-                <th scope="col">数学</th>
-                <th scope="col">编程</th>
-                <th scope="col"></th>
-            </tr>
-            <tr>
-                <th scope="row">1</th>
-                <td>?</td>
-                <td>ohjoih</td>
-                <td>我是乱码</td>
-            </tr>
-        </table>
-        <ol>
-            <li>四级备考</li>
-            <li>学习算法</li>
-            <li>学习深度学习</li>
-        </ol>
-
-    </div>
-    <div class="right">
-        <h3>时间</h3>
-        <p style="font-family:cursive;color:#FFFF00;">
-            谁校对时间，谁就突然老去<br>
-            不要问丧钟为谁而鸣,它就为你而鸣<br>
-        </p>
-        <span style="font-family:cursive;color:#FFFF00;">2304xx 蓝桥杯</span>：2023.04<div id="timer2" class="time-box" style="display: inline-block; font-family:cursive;color:#00FFFF"></div><br>
-        <p>如果你很看好这个网站，不妨请我喝杯奶茶：）</p>
-        <div class="tab-list-nav" role="tablist">
-            <button class="tab-list-nav-item active" role="tab" aria-controls="tab-23-0"aria-selected="true">
-                "支付宝"
-                ::after
-            </button>
-            <button class="tab-list-nav-item" role="tab" aria-controls="tab-23-1"aria-selected="true">
-                "微信"
-                ::after
-            </button>
-        </div>
-        <div class="tab-item active" id="tab-23-0" role="tabpanel" aria-expanded="true">
-            <img width="200"src="./images/alipay.jpg" style="cursor:zoom-in">
-        </div>
-        <div class="tab-item" id="tab-23-1" role="tabpanel" aria-expanded="false">
-            <img width="200"src="./images/wechatpay.jpg" style="cursor:zoom-in">
-        </div>
-        
-        
-    </div>
     
+        <div class="memo">
+            <div class="time">2022-12-14 17:13:44</div>
+            <div class="content"><p>没有就不行，那你原来说怎么活的？</p></div>
+            <div class="files"></div>
+        </div>
     
-        <script>                        /* 倒计时 */
-            var time_now_server, time_now_client, time_end, time_server_client;
-            time_end = new Date("2022/12/10 00:08:30");
-            time_end = time_end.getTime()
-            time_now_server = new Date();
-            time_now_server = time_now_server.getTime();
-            setTimeout(`show_antitime()`, 1000);
-            function show_antitime() {
-            	var timer = document.getElementById("timer1");
-            	var hourid = document.getElementById("hour");
-            	if (!timer) {
-            		return;
-            	}
-            	timer.innerHTML = time_now_server;
-            	var time_now, time_distance, str_time;
-            	var int_day, int_hour, int_minute, int_second;
-            	var time_now = new Date();
-            	time_now = time_now.getTime();
-            	time_distance = time_end - time_now;
-            	if (time_distance > 0) {
-            		int_day = Math.floor(time_distance / 86400000)
-            		time_distance -= int_day * 86400000;
-            		int_hour = Math.floor(time_distance / 3600000)
-            		time_distance -= int_hour * 3600000;
-            		int_minute = Math.floor(time_distance / 60000)
-            		time_distance -= int_minute * 60000;
-            		int_second = Math.floor(time_distance / 1000)
-            		if (int_hour < 10)
-            			int_hour = "0" + int_hour;
-            		if (int_minute < 10)
-            			int_minute = "0" + int_minute;
-            		if (int_second < 10)
-            			int_second = "0" + int_second;
-            		str_time = int_day + "天" + int_hour + "小时" + int_minute + "分钟" + int_second + "秒";
-            		timer.innerHTML = str_time;
-            		setTimeout("show_antitime()", 1000);
-            	} else {
-            		timer.innerHTML = 0;
-            	}
-            }
-        </script>
-        
-  
-        
-</body>
+        <div class="memo">
+            <div class="time">2022-12-12 12:00:59</div>
+            <div class="content"><p>思考行为检测记录生成日志。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-12-09 11:23:59</div>
+            <div class="content"><p>#疑惑 </p><p>如何注册使用CHatGPT</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-12-09 11:22:17</div>
+            <div class="content"><p>#思考</p><p>我所欠缺的能力：</p><ol><li><p>科学上网、注册国外账号：例如Openai</p></li><li><p>使用Latex撰写带公式的论文</p></li><li><p>使用Vim编程</p></li></ol></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-12-09 07:05:38</div>
+            <div class="content"><p>#生活 "复读意味着我和你永运岔开了一年"</p><p>不是的，人生并不总是在奔袭赶路的，总有一天我们会并肩漫步，无谓他人规定的节奏。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-12-08 21:53:12</div>
+            <div class="content"><p>#思考</p><p>我与其他竞争者之间的核心竞争力在哪？</p><ol><li><p>我拥有专业的生命科学知识背景，并且会在接下来的时间里不断学习，巩固。</p></li><li><p>我的专业是人工智能，我将通过自学掌握专业的人工智能理论。</p></li><li><p>我将尝试练习各种项目，具备应用能力。</p></li><li><p>我将学习大量数学与人工智能理论方面的知识，便于在日后快速学习与研究实践</p></li><li><p>我正在不断锻炼自己coding的能力，当我有一个想法或者任务时，我将能够将其付诸代码实现</p></li><li><p>我对脑科学的兴趣与跟进关注将是我具备相关的行业信息与前景概念。</p></li><li><p>生命科学，计算机科学方面的常识</p></li></ol></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-12-08 19:20:45</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-12-08/747299/6b5ea404348fa46db1873c68e6830342f3fa933f.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-11-03 11:00:42</div>
+            <div class="content"><p>能否不被20万年前的自己绑架，取决于你是否认识到关于大脑的进化历史，和能否正确使用你的理性大脑。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-27 13:41:06</div>
+            <div class="content"><p>这个红叉的效果是如何实现的？</p></div>
+            <div class="files"><img src="file/2022-10-27/747299/1943c86a4f8365a2afb2b4393080912522a4cc0f.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-25 23:34:34</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-10-25/747299/ee1d77deee4bed710f81b684ec0c616b17f3190e.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-15 13:51:10</div>
+            <div class="content"><p>凡对于以真话为笑话的，以笑话为真话的，以笑话为笑话的，只有一个方法：就是不说话。</p><p>于是我从此不说话。</p><p>鲁迅《坟》</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-11 11:14:32</div>
+            <div class="content"><p>一个屏放不下的电子笔记毫无意义</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-10 19:43:47</div>
+            <div class="content"><p>最近在/想研究的内容归纳</p><p>	1. 对丑陋设计的不满——对美的追求</p><p>	2. 对不方便的不满——对舒适，节省时间提高效率的追求</p><p>	3. 对有趣事物/知识/现象的好奇</p><p>对自己想法的试图实现</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-10 19:34:25</div>
+            <div class="content"><p>对钱的认识归根结底是对需求的认识——对自己需求的认识，真正需要，想要，必要的，没钱也会想办法获得，前提是你真的清楚。你永远无法回答一个自己不知道的问题，倘若你对你真正需要，想要，必要什么一无所知，哪怕你买下了地球，你也仍然需要去挑拣。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-09 21:08:43</div>
+            <div class="content"><p>数据结构决定最优算法</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-09 15:45:36</div>
+            <div class="content"><p>上课之前，你知不知道你要学什么？如果知道，那你上课干什么？如果不知道，那你上课干什么？</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-10-05 07:36:34</div>
+            <div class="content"><p>村上春树说过：</p><p></p><p>“不要太乖，不想做的事可以拒绝，做不到的事不用勉强，不喜欢的话假装没听见，你的人生不是用来讨好所有人，而是善待自己。”</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-11 06:39:38</div>
+            <div class="content"><p>1.检查xml文件所在package名称是否和Mapper interface所在的包名 或者 mapper的namespace写的不对！！！注意修改。</p><p>2.UserDao的方法在UserDao.xml中没有，然后执行UserDao的方法会报此</p><p>3.UserDao的方法返回值是List,而select元素没有正确配置ResultMap,或者只配置ResultType!</p><p>4.如果你确认没有以上问题,请任意修改下对应的xml文件,比如删除一个空行,保存.问题解决</p><p>5.看下mapper的XML配置路径是否正确</p><p>6.如果检查上面都没问题，那么清理target目录就好了！！</p><p>7.如果上面的都做了还是解决不了，也就是最坑的，因为Intellij Idea 的包名和目录名生成机制，新建一个包a.b.c.d，目录结构不是a-&gt;b-&gt;c-&gt;d，而是生成&quot;a.b.c.d&quot;的目录，也就是配置文件mybatis.mapper-locations=classpath:a/b/c/d/*.xml是找不到的，要是mybatis.mapper-locations=classpath:a.b.c.d/*.xml才行</p><p></p><p>所有建立的模型、DO都要序列化，否则无法用MySQL、Redis、MongoDB操作</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-08 07:54:37</div>
+            <div class="content"><p>defend all they can be.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-08 07:51:41</div>
+            <div class="content"><p>Honor to the end.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-07 20:09:34</div>
+            <div class="content"><p>It definitely is.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-04 06:22:40</div>
+            <div class="content"><p>真实，不可遏制的兴趣是天赋的可靠标志。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-04 06:22:29</div>
+            <div class="content"><p>“我给你们提一条宝贵的建议：别在你们已经知道答案的问题上浪费太多时间。你们的时间不多了。” </p><p> ——《倒悬的地平线》</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-04 06:22:17</div>
+            <div class="content"><p>医生的伟大之处不在于治疗——你们学医多年，这只是最起码的事情。医生的伟大之处，在于他能让病人相信自己有一天会痊愈。</p><p>——《倒悬的地平线》</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-04 06:22:00</div>
+            <div class="content"><p>不要在该变革的时候期待复苏。</p><p>历史是不断向前的。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-04 06:21:51</div>
+            <div class="content"><p>只要有可能就一定会实现</p><p>你不做的别人一定会做</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-03 15:14:57</div>
+            <div class="content"><p>如果你不知道自己要做什么，那么打基础就是个无底洞。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-03 15:13:25</div>
+            <div class="content"><p>时子延，姓时，名子延，字知命，又曰钷。</p><p>子者，衍衍不息，生命之第一特征，不断创造自己之最新版本，繁衍是也。</p><p>延者，发展无尽，演化迭代进阶是也。尼采曰:“自己必须不断超越自己者，就是我。”</p><p>生命之进阶发展者，子延也。</p><p>此乃生命之要义也。以子延二字存在于世，无愧吾名，可谓知命也。子曰五十而知天命，子延不敢妄知天，惟愿知己，苏格拉底“人，认识你自己”是也。</p><p>既加冠，知命，时子延，时知命是也。此后以知命为字称，不以悟幼甚，反以为迟是也，时不我待，必竭力洞悉生命，己命，文明命，宇宙之命。</p><p>特以此字致敬普罗米修斯，以其乃盗火先知，造人者使人类子子孙孙无穷匮之始也。</p><p>因此，时子延异于常人，不特字知命，亦字钷，元素周期表第61号元素，意即普罗米修斯是也。</p><p>时子延，时知命，时钷。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-03 15:13:04</div>
+            <div class="content"><p>一定要记住一件事：</p><p>全称命题的否命题是存在性命题，而不是另一个全称命题。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-03 15:12:08</div>
+            <div class="content"><p>自我控制最常见的一个现象是，一个人会有意无意地设定一些程序，自己按照这个程序按部就班地生活。若程序被打破，他就会很难受。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-03 15:11:58</div>
+            <div class="content"><p>当生存问题完全解决，当爱情因为个体的异化和融合而完全消失，当艺术因过分地精致和晦涩而最终死亡，对宇宙的终极美的追求将成为文明唯一的寄托。</p><p>《朝闻道》</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-09-02 22:32:43</div>
+            <div class="content"><p>Do not tempt my addiction.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 21:56:56</div>
+            <div class="content"><p>We are in your debt.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 21:52:45</div>
+            <div class="content"><p>At the end of this day, one shall stand, one shall fall.狭路相逢勇者胜。《变形金刚》</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 19:40:25</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-08-31/747299/17b009eaeebe2a7d22dba8baff3d23d5c4b083bd.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 17:34:40</div>
+            <div class="content"><p>批评自己的民族总比批评其他民族显得礼貌，因此下面我将以犹太教为例说明</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 16:22:20</div>
+            <div class="content"><p>Were we so different?</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 16:08:47</div>
+            <div class="content"><p>When have you had to sacrifice anything in your perfect little life?</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 15:39:29</div>
+            <div class="content"><p>Fifty years from now when you're looking back at your life.Don't you want to be able to say you had the guts to get in the car？</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 15:10:23</div>
+            <div class="content"><p>Are you on drugs?</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 14:58:18</div>
+            <div class="content"><p>I think there is a lot more than meets the eye with you.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 14:44:02</div>
+            <div class="content"><p>I'm a lot of things, but a liar is not one of them.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 14:43:24</div>
+            <div class="content"><p>Let me tell you something son. A driver don't pick the car.The car will pick the driver.It's a mystical bond between man and machine.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 14:13:00</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-08-31/747299/1c255ac486ad9c80d9ced573e39da3267ad2aa66.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 14:12:52</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-08-31/747299/3107ffdc2597acb28fe5720803e80df2bf56e00f.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 14:12:45</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-08-31/747299/404f893cd6b404ad624cf64f4e2fbeef17ef5a1a.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 08:06:13</div>
+            <div class="content"><p>我的大部分成果源自我的懒惰。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-31 07:44:43</div>
+            <div class="content"><p>我们知道，但我们清楚地知道我们不该知道的事。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-30 20:55:15</div>
+            <div class="content"><p>要想___就必须先认清这样一个事实:___</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-30 17:02:21</div>
+            <div class="content"><p>如果__确实都__,那么即使目前__迟早也会__.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-30 15:52:19</div>
+            <div class="content"><p>只要这项讨论没有定论，___问题的所有后续工作都很难继续。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-30 15:49:20</div>
+            <div class="content"><p>关于____问题的讨论，最后常常演变成双方无谓的叫嚣，而非真正听取对方的意见。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-27 23:13:13</div>
+            <div class="content"><p>The man who passes the sentence, should swing the sword.判决死刑的人，必须亲自动手。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-27 23:11:08</div>
+            <div class="content"><p>sentence you to die</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-27 23:08:11</div>
+            <div class="content"><p>You won't be a boy forever.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-26 17:00:20</div>
+            <div class="content"><p>真正重要的是你现在做出的选择。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-26 16:59:22</div>
+            <div class="content"><p>要做出特别的东西，你必须相信他很特别。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-26 16:58:54</div>
+            <div class="content"><p>如果你永远只做能力范围之内的事情,你就永远没法进步。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-26 16:57:58</div>
+            <div class="content"><p>从来就不存在什么意外。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-26 16:47:41</div>
+            <div class="content"><p>Now All faults have been eliminated.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-24 11:19:07</div>
+            <div class="content"><p>我认为买相机最重要的一个因素是：你能不能忍受这款相机的缺点？</p><p>其次，才是你买这款相机看中的是哪些优点？</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-24 09:03:01</div>
+            <div class="content"><p>你值得最好的</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-23 21:27:19</div>
+            <div class="content"><p>越是微不足道的偏见，就越加阴险凶猛。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-23 21:24:17</div>
+            <div class="content"><p>我不是不快乐的孩子，但我知道，我对别人渴望的东西没兴趣。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-23 21:22:09</div>
+            <div class="content"><p>当你承认自己的脆弱时，你反而可以变得更强大。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-22 16:12:55</div>
+            <div class="content"><p>我知道过多的溢美之词反而会使大家反感，所以我必须就此打住，剩下的就留给大家自己体验吧。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-21 23:38:33</div>
+            <div class="content"><p>《多看绿色对眼睛有好处》</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-21 16:43:14</div>
+            <div class="content"><p>不懂Unix的人注定还要重新发明一个蹩脚的Unix.——Henry Spencer</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 17:29:21</div>
+            <div class="content"><p>不要让商品成为自己的主人。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 13:45:52</div>
+            <div class="content"><p>矛盾心理 疏离感 愤世嫉俗</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 13:23:32</div>
+            <div class="content"><p>教育的核心目的是改变，而不是迎合</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 10:14:38</div>
+            <div class="content"><p>因此，我们不争论什么必然是正确的或什么不可能是正确的，而是搞清楚什么是真实的。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 09:34:38</div>
+            <div class="content"><p>感到慌张的原因是自我的被剥夺，我们都觉得自己不受控制，而且沉溺在对对方的爱中。事实上，正是这种自我的失控或者说前额叶的停摆，使我们专注于心流，感受幸福。当一个人过于理性，即前额叶过于活跃时，是很难体验到幸福的。相反，由于前额叶的理性常常做出反人性反常识的决策，我们的神经环路更有可能发生冲突，进而造成其他模块的停摆与痛苦的产生，严重的还会影响到五羟色胺的分泌进而导致炎症反应与免疫系统应激。众所周知，抑郁症与神经官能症等精神疾病的生理学基础就是神经递质水平与免疫系统活动。综上，时子延认为，只要在宏观上，客观上不犯错，为了体验爱情与幸福而在理性上做出非原则性的让步，比两个人理性地痛苦要好。在感情中的时子延对爱的体验是真切的，相反，所谓对分离后对彼此伤害的恐惧到更像是一种臆想。2022.8.19</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 09:14:21</div>
+            <div class="content"><p>藏好自己，做好清理。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-19 07:11:58</div>
+            <div class="content"><p>他从未长大，但从未停止成长。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-18 20:42:29</div>
+            <div class="content"><p>凡是值得去做的事情，都值得慢慢做，做很久很久。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-17 19:44:43</div>
+            <div class="content"><p>没有需求就不要创造需求</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-17 17:34:25</div>
+            <div class="content"><p>不要让你的梦想，只剩下梦和想。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-17 15:57:21</div>
+            <div class="content"></div>
+            <div class="files"><img src="file/2022-08-17/747299/fe67e2fdd4b1fc1324276185345738409d0c8204.jpg" /></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 23:11:55</div>
+            <div class="content"><p>以后买东西只点一份，两个人分。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 16:42:45</div>
+            <div class="content"><p>不要重新发明轮子。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 13:19:55</div>
+            <div class="content"><p>I was your ghost.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 12:50:51</div>
+            <div class="content"><p>That's why I am here for.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 12:50:16</div>
+            <div class="content"><p>Give it to me straight.直说吧。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 12:48:50</div>
+            <div class="content"><p>#素材/电影/星际穿越 It's impossibly. No, It's necessary.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 09:24:05</div>
+            <div class="content"><p>#素材/电影/星际穿越</p><p>I am not afraid of death.</p><p>I am an old physics.</p><p>I am afraid of time.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 09:17:48</div>
+            <div class="content"><p>如此，如何？</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:27:35</div>
+            <div class="content"><p>现在你想找出秘密，但是你无法找到，因为你没有真正在看。你并不是真的想知道，你希望被愚弄。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:26:25</div>
+            <div class="content"><p>People tell the world you're crazy.</p><p>And all your protests to the contrary.</p><p>Just confirm what they're saying.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:23:36</div>
+            <div class="content"><p>你爱的是自己编造的神话。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:19:25</div>
+            <div class="content"><p>Sometimes you have to reach into someone else's world to find out what's missing in your own.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:17:13</div>
+            <div class="content"><p>天主教的七宗罪：傲慢、妒忌、暴怒、懒惰、贪婪、贪食和色欲。也即，人性。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:14:33</div>
+            <div class="content"><p>#E We're meant to lose the people we love. How else would we know how important they are to us? </p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:13:41</div>
+            <div class="content"><p>#E No time at all because you‘re not doing anything.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:13:01</div>
+            <div class="content"><p>#E Every man dies,not every man really lives.</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:09:01</div>
+            <div class="content"><p>善作者不必善成，善始者不必善终。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-16 07:08:07</div>
+            <div class="content"><p>有时候所谓的一生的奋武，只不过为了曾在年幼时看见的那个凝固在思想深处的侧影。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-15 07:21:45</div>
+            <div class="content"><p>#生活/吴巧缘  “我太差劲了”</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-14 19:48:21</div>
+            <div class="content"><p>学高为师，身正为范。学为人师，行为世范。</p></div>
+            <div class="files"></div>
+        </div>
+    
+        <div class="memo">
+            <div class="time">2022-08-14 19:45:39</div>
+            <div class="content"><p>教育应当为孩子培养正当的兴趣。</p></div>
+            <div class="files"></div>
+        </div>
+    
+              </div>
+              <script>
+                const memos = document.querySelectorAll(".memo");
+                const dateSelect = document.querySelector("#date");
+                const tagSelect = document.querySelector("#tag");
+                const filterBtn = document.querySelector("button");
+                filterBtn.addEventListener("click", () => {
+                  const date = dateSelect.value;
+                  const tag = tagSelect.value;
 
-</html>
+                  memos.forEach((memo) => {
+                    const time = memo.querySelector(".time").innerText;
+                    const content = memo.querySelector(".content").innerText;
+                    const isDateMatch = time.includes(date);
+                    const isTagMatch = content.includes(tag);
+                    if (isDateMatch && isTagMatch) {
+                      memo.style.display = "block";
+                    } else {
+                      memo.style.display = "none";
+                    }
+                  });
+                });
+              </script>
+              <script src='select.js'></script>
+
+            </body>
+        </html>
+    
