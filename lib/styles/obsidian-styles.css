@@ -1394,7 +1394,7 @@ kbd { color: var(--code-normal); font-family: var(--font-monospace); background-
 .xfaContentarea { position: absolute; }
 .xfaPrintOnly { display: none; }
 .xfaLayer { position: absolute; text-align: initial; top: 0px; left: 0px; transform-origin: 0px 0px; line-height: 1.2; }
-.xfaLayer * { color: inherit; font: inherit; font-kerning: inherit; letter-spacing: -0.01px; text-align: inherit; text-decoration: inherit; box-sizing: border-box; background-color: transparent; padding: 0px; margin: 0px; pointer-events: auto; }
+.xfaLayer * { color: inherit; font: inherit; letter-spacing: -0.01px; text-align: inherit; text-decoration: inherit; box-sizing: border-box; background-color: transparent; padding: 0px; margin: 0px; pointer-events: auto; }
 .xfaLayer :required { outline: red solid 1.5px; }
 .xfaLayer div { pointer-events: none; }
 .xfaLayer svg { pointer-events: none; }
