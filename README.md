@@ -14,3 +14,4 @@
 - [note.aiszy.life](https://note.aiszy.life/)
 - [bio.aiszy.life](http://bio.aiszy.life/)
 - [Obsidian：时子延的第二大脑](https://awszyai.github.io/obsidian)
+- [AWSzyAI.Github.io](https://awszyai.github.io/index.html)
