@@ -10,4 +10,11 @@
 相关网站：
 
 - [www.aiszy.life](http://www.aiszy.life/)
+  - [ ] 主页
+  - [ ] 登陆
+  - [ ] 博客
+  - [ ] 摄影作品集
+- [bio.aiszy..life](http://bio.aiszy.life/)
+  - [ ]
+- [ ] [note.aiszy.life](https://note.aiszy.life/)
 - [Obsidian：时子延的第二大脑](https://awszyai.github.io/obsidian)
