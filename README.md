@@ -15,6 +15,6 @@
   - [ ] 博客
   - [ ] 摄影作品集
 - [bio.aiszy..life](http://bio.aiszy.life/)
-  - [ ]
+  - [ ] 生命科学相关
 - [ ] [note.aiszy.life](https://note.aiszy.life/)
 - [Obsidian：时子延的第二大脑](https://awszyai.github.io/obsidian)
