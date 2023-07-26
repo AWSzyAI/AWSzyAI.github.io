@@ -4,7 +4,7 @@
 - [时子延的博客](./articles)
 - [时子延的个人简历](./szy/SzyCV.md)
 - [Principle：他说 - 时子延手稿 (aiszy.life)](https://note.aiszy.life/)
-- [时子延的信息源](./tool/README.md)
+- [时子延的信息源](./tool/)
 
 
 相关网站：
