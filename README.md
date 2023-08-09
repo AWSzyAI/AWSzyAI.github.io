@@ -10,7 +10,7 @@
 
 # Projects
 
-- [Demo: C++课程设计](./projects/C++课程设计/c++课程设计：.html)
+- [Demo: C++课程设计](./projects/C++课程设计/c++课程设计.html)
 
 
 # 相关网站
