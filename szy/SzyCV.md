@@ -50,6 +50,8 @@
 
 # 时子延个人简介
 
+[En Version](#Ziyan Shi's Resume)
+
 ## 时子延
 
 - 男 19岁 江苏南京人
