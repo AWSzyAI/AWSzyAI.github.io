@@ -50,7 +50,7 @@
 
 # 时子延个人简介
 
-[En Version](#Ziyan Shi's Resume)
+[En Version](#Ziyan)
 
 ## 时子延
 
