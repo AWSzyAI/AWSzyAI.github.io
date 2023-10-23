@@ -2,7 +2,7 @@
 
 [中文版](#时子延个人简介)
 
-## Ziyan Shi
+## Ziyan_Shi
 - Male 19 Nanjing,Jiangsu.
 - Email: szy@nnu.edu.cn
 - Nanjing Normal University, School of Computer and Electronic Information/School of Artificial Intelligence
@@ -50,7 +50,7 @@
 
 # 时子延个人简介
 
-[En Version](#Ziyan)
+[En Version](#Ziyan_Shi)
 
 ## 时子延
 
