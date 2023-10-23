@@ -196,6 +196,7 @@ Nanjing Normal University, School of Computer and Electronic Information/School 
 |2023.03.28|Nanjing Normal University Outstanding Student Scholarship (2022-2023 academic year)|
 |2022.10.31|National College Student Algorithm Design and Programming Challenge (Fall), honorable mention|
 |2021.7|National Biology Competition for Middle school students, National First prize, Jiangsu Province First prize, Jiangsu Province 13th|
+
 ## Project 
 
 - 2023.10.18——                      #Host WWDC Student Challenge
