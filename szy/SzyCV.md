@@ -29,22 +29,22 @@
 
 ## Project 
 
-- 2023.10.18——                      #Host WWDC Student Challenge
-- 2023.10.16——                     #Participated Teacher Zhou Junsheng education big model project
-- 2023.09.09——                     #Participated 2023 "Yuanjing Cup" YuanUniverse "Creative +" digital content creation competition
-- 2023.09.09——                     #Joined Liu Richen teacher DtXR research group
-- 2023.08.01——2023.09.10   #Host China Undergraduate Mathematical Contest in Modelling
-- 2023.08.15——                     #Participated  2023 "Win in Nanjing · Entrepreneurship Jinling" Science and Technology Innovation and Entrepreneurship Competition and the 11th "Entrepreneurship Jiangsu" Science and Technology Entrepreneurship Competition (Nanjing Competition Area)
-- 2023.05——                          #Joined  As a core member of the Challenge Cup research group with the theme of algae, I was responsible for paper analysis and data analysis, direction establishment, and co-authored two patents and one paper with other members.
-- 2022         ——                      #Host Began to be independently responsible for the full-stack development and operation and maintenance of `www.aiszy.life`and `awszyai.github.io`
-- 2022         ——                      #Joined Yanhui Gu KOMABA research group, together with graduate students to explore the application of AI4Science.
-- 2022         ——                      #Joined GPU Cluster Artificial Intelligence Laboratory, Computing Center, Nanjing Normal University, with experience in GPU cluster use.
+- 2023.10.18——            #Host WWDC Student Challenge
+- 2023.10.16——            #Participated Teacher Zhou Junsheng education big model project
+- 2023.09.09——            #Participated 2023 "Yuanjing Cup" YuanUniverse "Creative +" digital content creation competition
+- 2023.09.09——            #Joined Liu Richen teacher DtXR research group
+- 2023.08.01——2023.09.10  #Host China Undergraduate Mathematical Contest in Modelling
+- 2023.08.15——            #Participated  2023 "Win in Nanjing · Entrepreneurship Jinling" Science and Technology Innovation and Entrepreneurship Competition and the 11th "Entrepreneurship Jiangsu" Science and Technology Entrepreneurship Competition (Nanjing Competition Area)
+- 2023.05——               #Joined  As a core member of the Challenge Cup research group with the theme of algae, I was responsible for paper analysis and data analysis, direction establishment, and co-authored two patents and one paper with other members.
+- 2022      ——            #Host Began to be independently responsible for the full-stack development and operation and maintenance of `www.aiszy.life`and `awszyai.github.io`
+- 2022      ——            #Joined Yanhui Gu KOMABA research group, together with graduate students to explore the application of AI4Science.
+- 2022      ——            #Joined GPU Cluster Artificial Intelligence Laboratory, Computing Center, Nanjing Normal University, with experience in GPU cluster use.
 - 2022.09.03——2023.07.03   #Joined Nannormal University Algorithm Competition experimental class (Teacher Wang Qiong class) participated in Codeforce, Blue Bridge Cup algorithm training and algorithm competition
 
 ## Academy
 
-- 2023.10.30 -- 2023.11.02     Attended The 10th International Conference on Behavioural in Golden Bay Beach,Larnaca,Crypus  and Social Computing(BESC 2023)
-- 2023.9                                  Published paper *MAgic: A Morphable Attention Based Algal Tiny Object Detection Mode* by The 10th International Conference on Behavioural and behavioural issues Social Computing(BESC 2023)
+- 2023.10.30 -- 2023.11.02  Attended The 10th International Conference on Behavioural and Social Computing(BESC 2023) in Golden Bay Beach,Larnaca,Crypus
+- 2023.9                    Published paper *MAgic: A Morphable Attention Based Algal Tiny Object Detection Mode* by The 10th International Conference on Behavioural and behavioural issues Social Computing(BESC 2023)
 
 ---
 
