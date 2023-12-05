@@ -6,6 +6,6 @@
 4. [提出高质量的问题](https://github.com/AWSzyAI/AWSzyAI.github.io/tree/main/articles/How_to_ask_questions.md)。
 5. 有自己的原则。
 6. 有记录的习惯。[Obsidian]()
-7. 有底气[时子延的底气](./底气.md)
+7. [有底气。](./时子延的底气.html)
 
 [时子延的个人简历](SzyCV.md)
