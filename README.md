@@ -1,3 +1,5 @@
 # [时子延.io](https://github.com/AWSzyAI/AWSzyAI.github.io)
 
-## [AWSzyAI.Github.io](https://awszyai.github.io/index.html)
+- [Obsidian](https://awszyai.github.io/obsidian)
+
+- [MkDocs](https://awszyai.github.io/MkDocs) 
