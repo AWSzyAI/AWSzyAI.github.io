@@ -92,11 +92,11 @@ nav:
     - MATLAB: "skills/not-your-skill/matlab.md"
     - R: "skills/not-your-skill/R.md"
   - 回本:
-    - iPhone 15 Pro Max: "skills/return/iphone-15-pro-max.md"
-    - iPad Pro 2024: "skills/return/ipad-pro-2024.md"
-    - MacBook Air M2: "skills/return/macbook-air-m2.md"
-    - Legion R9000P2022: "skills/return/legion-r9000p2022.md"
-    - Flipper-zero: "skills/return/flipper-zero.md"
+    - iPhone 15 Pro Max: "gears/iphone-15-pro-max.md"
+    - iPad Pro 2024: "gears/ipad-pro-2024.md"
+    - MacBook Air M2: "gears/macbook-air-m2.md"
+    - Legion R9000P2022: "gears/legion-r9000p2022.md"
+    - Flipper-zero: "gears/flipper-zero.md"
   - 课程:
     - 大二下:
       - 概率论: "courses/概率论与数理统计/概率论.md"
