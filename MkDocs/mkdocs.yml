@@ -12,13 +12,13 @@ theme:
   palette:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: light blue
+      primary: blue
       toggle:
         icon: material/brightness-4
         name: dark mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: light blue
+      primary: light green
       toggle:
         icon: material/brightness-7
         name: light mode
