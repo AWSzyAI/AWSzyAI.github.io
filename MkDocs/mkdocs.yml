@@ -1,0 +1,102 @@
+site_name: 时子延的笔记
+
+repo_url: https://github.com/AWSzyAI/AWSzyAI.github.io/
+repo_name: AWSzyAI
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: zh
+  icon:
+    logo: material/file-document
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: light blue
+      toggle:
+        icon: material/brightness-4
+        name: dark mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: light blue
+      toggle:
+        icon: material/brightness-7
+        name: light mode
+
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation
+    - navigation.top
+
+markdown_extensions:
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+
+plugins:
+  - glightbox
+  - search
+
+extra:
+  analytics:
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - 首页:
+      - 欢迎来到时子延的笔记: "index.md"
+      - 关于我: "about.md"
+  - 我的技术栈:
+    - MkDocs: "skills/my-skills/mkdocs.md"
+    - Markdown: "skills/my-skills/markdown.md"
+    - Obsidian: "skills/my-skills/obsidian.md"
+    - LaTeX: "skills/my-skills/latex.md"
+    - Figma: "skills/my-skills/figma.md"
+    - C: "skills/my-skills/C.md"
+    - Python: "skills/my-skills/python.md"
+    - Git: "skills/my-skills/git.md"
+    - GitHub: "skills/my-skills/github.md"
+    - VSCode: "skills/my-skills/vscode.md"
+    - Linux: "skills/my-skills/linux.md"
+    - Vim: "skills/my-skills/vim.md"
+  - 这不是你的技术栈:
+    - MATLAB: "skills/not-your-skill/matlab.md"
+    - R: "skills/not-your-skill/R.md"
+  - 回本:
+    - iPhone 15 Pro Max: "skills/return/iphone-15-pro-max.md"
+    - iPad Pro 2024: "skills/return/ipad-pro-2024.md"
+    - MacBook Air M2: "skills/return/macbook-air-m2.md"
+    - Legion R9000P2022: "skills/return/legion-r9000p2022.md"
+    - Flipper-zero: "skills/return/flipper-zero.md"
+  - 课程:
+    - 大二下:
+      - 概率论: "courses/概率论与数理统计/概率论.md"
