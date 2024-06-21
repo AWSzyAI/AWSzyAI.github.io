@@ -101,3 +101,8 @@ nav:
     - 大二下:
       - 概率论: "courses/概率论与数理统计/概率论.md"
       - 机器学习: "courses/ML.md"
+  - 描述:
+    - 生活:
+      - 如何搭配着装: "describe/life/clothes.md"
+
+
