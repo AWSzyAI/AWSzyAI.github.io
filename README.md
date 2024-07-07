@@ -7,5 +7,5 @@
 - [Archive](https://awszyai.github.io/Archive) 
 
 ## 在做的项目
-- [大创](./大创-LLM&KG/llm-meet-kg.html)
-- [2024暑假](./2024Summer/index.html)
+- [大创](https://awszyai.github.io/大创-LLM&KG/llm-meet-kg.html)
+- [2024暑假](https://awszyai.github.io/2024Summer/index.html)
