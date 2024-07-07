@@ -1,6 +1,6 @@
 {
   "vaultName": "2024暑假",
-  "lastExport": 1720322839312,
+  "lastExport": 1720323252132,
   "pluginVersion": "1.8.01",
   "validBodyClasses": "publish css-settings-manager theme-dark show-inline-title show-ribbon",
   "useCustomHeadContent": false,
@@ -93,9 +93,9 @@
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084900_620.png",
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084930_636.png",
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704085003_648.png",
-    "课程/机器学习/机器学习期末复习.md",
-    "课程/机器学习/机器学习期末复习.dark.png",
-    "课程/机器学习/机器学习期末复习.light.png",
+    "课程/机器学习/机器学习.md",
+    "课程/机器学习/机器学习.dark.png",
+    "课程/机器学习/机器学习.light.png",
     "课程/计算机系统基础/images/Pasted Image 20240624100655_027.jpg",
     "课程/计算机系统基础/images/Pasted Image 20240624101231_718.png",
     "课程/计算机系统基础/images/Pasted Image 20240624104352_136.jpg",
@@ -230,1005 +230,1005 @@
   ],
   "fileInfo": {
     "读书/《几何世界的邀请》/小平邦彦：《几何世界的邀请》.md": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 1208,
       "exportedPath": "读书/《几何世界的邀请》/小平邦彦：《几何世界的邀请》.html",
       "dependencies": []
     },
     "读书/《微积分入门》/《微积分入门》.md": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 4271,
       "exportedPath": "读书/《微积分入门》/《微积分入门》.html",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701143840_701.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 62966,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701143840_701.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701144427_778.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 60544,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701144427_778.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165020_412.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 12571,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165020_412.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165035_414.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 7559,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165035_414.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165035_429.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 7539,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165035_429.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165050_418.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 124306,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165050_418.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165105_421.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 11749,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165105_421.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165120_423.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 105587,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165120_423.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701165120_437.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 107093,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701165120_437.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240701201906_755.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 37610,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240701201906_755.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702151339_029.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 967356,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702151339_029.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702161102_706.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 74659,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702161102_706.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702170953_450.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 17097,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702170953_450.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702172959_463.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 492046,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702172959_463.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702173149_500.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 22577,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702173149_500.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702173603_597.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 26424,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702173603_597.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702173633_600.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 35635,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702173633_600.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702173649_610.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 28657,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702173649_610.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702174042_662.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 32491,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702174042_662.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702181227_039.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 202546,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702181227_039.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702181520_078.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 92213,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702181520_078.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702181620_103.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 231706,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702181620_103.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702182304_811.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 32511,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702182304_811.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702182319_831.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 32134,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702182319_831.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702182451_854.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 90947,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702182451_854.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702182709_883.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 60514,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702182709_883.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702182740_892.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 22037,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702182740_892.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702193951_985.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 455933,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702193951_985.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702194924_218.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 234878,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702194924_218.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702221223_562.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 94470,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702221223_562.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702222323_713.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 467542,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702222323_713.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240702223308_813.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 151510,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240702223308_813.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703101234_223.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 21967,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703101234_223.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703101649_282.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 26723,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703101649_282.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703105928_225.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 34966,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703105928_225.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703110755_380.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 25622,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703110755_380.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703111017_415.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 20449,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703111017_415.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703111318_459.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 422054,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703111318_459.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703114434_761.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 153708,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703114434_761.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703114621_794.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 57573,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703114621_794.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703152517_733.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 351916,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703152517_733.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703152717_768.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 118059,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703152717_768.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703152733_791.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 445521,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703152733_791.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703153426_819.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 645723,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703153426_819.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703153658_894.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 373736,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703153658_894.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703161112_613.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 61979,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703161112_613.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703161128_634.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 76657,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703161128_634.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703161348_242.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 242122,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703161348_242.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703161750_357.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 21697,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703161750_357.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703163325_708.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 528594,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703163325_708.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703171345_185.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 266870,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703171345_185.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703172631_293.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 161465,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703172631_293.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703172822_334.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 223669,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703172822_334.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703173054_388.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 306111,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703173054_388.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703173854_462.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 535992,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703173854_462.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703174024_486.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 545796,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703174024_486.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703174709_651.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 44158,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703174709_651.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703174854_694.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 305697,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703174854_694.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703195406_673.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 121279,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703195406_673.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703200433_874.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 20168,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703200433_874.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703215752_544.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 977244,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703215752_544.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703234545_080.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 223247,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703234545_080.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703235515_255.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 14834,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703235515_255.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703235635_316.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 9824,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703235635_316.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703235650_333.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 11724,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703235650_333.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703235739_370.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 32951,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703235739_370.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240703235754_391.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 28867,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240703235754_391.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704000343_480.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 27781,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704000343_480.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704001911_293.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 156475,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704001911_293.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704001926_312.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 46779,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704001926_312.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704001956_320.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 11014,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704001956_320.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704002211_343.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 426594,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704002211_343.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704002441_403.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 319235,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704002441_403.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704002644_463.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 390193,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704002644_463.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704083521_491.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 49856,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704083521_491.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704083551_499.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 57737,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704083551_499.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704083820_745.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 26519,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704083820_745.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084307_569.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 13601,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084307_569.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084307_587.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 16927,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084307_587.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084322_572.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 4671,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084322_572.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084338_576.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 14437,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084338_576.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084741_586.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 210231,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084741_586.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084900_620.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 22138,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084900_620.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704084930_636.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 12878,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704084930_636.png",
       "dependencies": []
     },
     "课程/机器学习/images-机器学习期末复习/Pasted Image 20240704085003_648.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 94806,
       "exportedPath": "课程/机器学习/images-机器学习期末复习/pasted-image-20240704085003_648.png",
       "dependencies": []
     },
-    "课程/机器学习/机器学习期末复习.md": {
-      "modifiedTime": 1720322839312,
-      "sourceSize": 283445,
-      "exportedPath": "课程/机器学习/机器学习期末复习.html",
-      "dependencies": []
-    },
-    "课程/机器学习/机器学习期末复习.dark.png": {
-      "modifiedTime": 1720322839312,
-      "sourceSize": 5999716,
-      "exportedPath": "课程/机器学习/机器学习期末复习.dark.png",
-      "dependencies": []
-    },
-    "课程/机器学习/机器学习期末复习.light.png": {
-      "modifiedTime": 1720322839312,
-      "sourceSize": 5945860,
-      "exportedPath": "课程/机器学习/机器学习期末复习.light.png",
-      "dependencies": []
-    },
     "课程/计算机系统基础/images/Pasted Image 20240624100655_027.jpg": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 197515,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240624100655_027.jpg",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240624101231_718.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 766824,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240624101231_718.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240624104352_136.jpg": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 235862,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240624104352_136.jpg",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240705103233_502.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 351080,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240705103233_502.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240705103434_525.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 199437,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240705103434_525.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240705103519_530.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 176285,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240705103519_530.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240705103908_575.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 193389,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240705103908_575.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240705104715_640.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 25426,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240705104715_640.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240705150626_939.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 10848,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240705150626_939.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706122933_672.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 269481,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706122933_672.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706163906_767.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 259022,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706163906_767.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706172744_442.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 22532,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706172744_442.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706173202_510.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 136082,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706173202_510.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706183733_512.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 73095,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706183733_512.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706202422_481.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 282768,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706202422_481.png",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706232902_578.jpg": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 117321,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706232902_578.jpg",
       "dependencies": []
     },
     "课程/计算机系统基础/images/Pasted Image 20240706232952_119.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 203563,
       "exportedPath": "课程/计算机系统基础/images/pasted-image-20240706232952_119.png",
       "dependencies": []
     },
     "课程/计算机系统基础/计算机系统基础.md": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 70718,
       "exportedPath": "课程/计算机系统基础/计算机系统基础.html",
       "dependencies": []
     },
     "课程/计算机系统基础/计算机系统基础.dark.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 2463034,
       "exportedPath": "课程/计算机系统基础/计算机系统基础.dark.png",
       "dependencies": []
     },
     "课程/计算机系统基础/计算机系统基础.light.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 2449540,
       "exportedPath": "课程/计算机系统基础/计算机系统基础.light.png",
       "dependencies": []
     },
     "Tools/Excalidraw.md": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 41,
       "exportedPath": "tools/excalidraw.html",
       "dependencies": []
     },
     "Tools/iPad Pro 2024.md": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 41,
       "exportedPath": "tools/ipad-pro-2024.html",
       "dependencies": []
     },
     "Tools/obsidian.md": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 170,
       "exportedPath": "tools/obsidian.html",
       "dependencies": []
     },
     "index.canvas": {
-      "modifiedTime": 1720322839312,
-      "sourceSize": 976,
+      "modifiedTime": 1720323252132,
+      "sourceSize": 2823,
       "exportedPath": "index.html",
       "dependencies": []
     },
     "moveAttachiments.py": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 1215,
       "exportedPath": "moveattachiments.py",
       "dependencies": []
     },
     "lib/scripts/graph-wasm.wasm": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 23377,
       "exportedPath": "lib/scripts/graph-wasm.wasm",
       "dependencies": []
     },
     "lib/fonts/94f2f163d4b698242fef.otf": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 66800,
       "exportedPath": "lib/fonts/94f2f163d4b698242fef.otf",
       "dependencies": []
     },
     "lib/fonts/72505e6a122c6acd5471.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 104232,
       "exportedPath": "lib/fonts/72505e6a122c6acd5471.woff2",
       "dependencies": []
     },
     "lib/fonts/2d5198822ab091ce4305.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 104332,
       "exportedPath": "lib/fonts/2d5198822ab091ce4305.woff2",
       "dependencies": []
     },
     "lib/fonts/c8ba52b05a9ef10f4758.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 98868,
       "exportedPath": "lib/fonts/c8ba52b05a9ef10f4758.woff2",
       "dependencies": []
     },
     "lib/fonts/cb10ffd7684cd9836a05.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 106876,
       "exportedPath": "lib/fonts/cb10ffd7684cd9836a05.woff2",
       "dependencies": []
     },
     "lib/fonts/b5f0f109bc88052d4000.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 105804,
       "exportedPath": "lib/fonts/b5f0f109bc88052d4000.woff2",
       "dependencies": []
     },
     "lib/fonts/cbe0ae49c52c920fd563.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 106108,
       "exportedPath": "lib/fonts/cbe0ae49c52c920fd563.woff2",
       "dependencies": []
     },
     "lib/fonts/535a6cf662596b3bd6a6.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 111708,
       "exportedPath": "lib/fonts/535a6cf662596b3bd6a6.woff2",
       "dependencies": []
     },
     "lib/fonts/70cc7ff27245e82ad414.ttf": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 192740,
       "exportedPath": "lib/fonts/70cc7ff27245e82ad414.ttf",
       "dependencies": []
     },
     "lib/fonts/454577c22304619db035.ttf": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 161376,
       "exportedPath": "lib/fonts/454577c22304619db035.ttf",
       "dependencies": []
     },
     "lib/fonts/52ac8f3034507f1d9e53.ttf": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 191568,
       "exportedPath": "lib/fonts/52ac8f3034507f1d9e53.ttf",
       "dependencies": []
     },
     "lib/fonts/05b618077343fbbd92b7.ttf": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 155288,
       "exportedPath": "lib/fonts/05b618077343fbbd92b7.ttf",
       "dependencies": []
     },
     "lib/fonts/4bb6ac751d1c5478ff3a.woff2": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 7876,
       "exportedPath": "lib/fonts/4bb6ac751d1c5478ff3a.woff2",
       "dependencies": []
     },
     "lib/media/874d8b8e340f75575caa.svg": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 317,
       "exportedPath": "lib/media/874d8b8e340f75575caa.svg",
       "dependencies": []
     },
     "lib/media/3d6c1bdc4d87cde4de67.svg": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 279,
       "exportedPath": "lib/media/3d6c1bdc4d87cde4de67.svg",
       "dependencies": []
     },
     "lib/fonts/mathjax_zero.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 1368,
       "exportedPath": "lib/fonts/mathjax_zero.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_main-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 34160,
       "exportedPath": "lib/fonts/mathjax_main-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_main-bold.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 34464,
       "exportedPath": "lib/fonts/mathjax_main-bold.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_math-italic.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 19360,
       "exportedPath": "lib/fonts/mathjax_math-italic.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_main-italic.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 20832,
       "exportedPath": "lib/fonts/mathjax_main-italic.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_math-bolditalic.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 19776,
       "exportedPath": "lib/fonts/mathjax_math-bolditalic.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_size1-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 5792,
       "exportedPath": "lib/fonts/mathjax_size1-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_size2-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 5464,
       "exportedPath": "lib/fonts/mathjax_size2-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_size3-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 3244,
       "exportedPath": "lib/fonts/mathjax_size3-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_size4-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 5148,
       "exportedPath": "lib/fonts/mathjax_size4-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_ams-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 40808,
       "exportedPath": "lib/fonts/mathjax_ams-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_calligraphic-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 9600,
       "exportedPath": "lib/fonts/mathjax_calligraphic-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_calligraphic-bold.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 9908,
       "exportedPath": "lib/fonts/mathjax_calligraphic-bold.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_fraktur-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 21480,
       "exportedPath": "lib/fonts/mathjax_fraktur-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_fraktur-bold.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 22340,
       "exportedPath": "lib/fonts/mathjax_fraktur-bold.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_sansserif-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 12660,
       "exportedPath": "lib/fonts/mathjax_sansserif-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_sansserif-bold.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 15944,
       "exportedPath": "lib/fonts/mathjax_sansserif-bold.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_sansserif-italic.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 14628,
       "exportedPath": "lib/fonts/mathjax_sansserif-italic.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_script-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 11852,
       "exportedPath": "lib/fonts/mathjax_script-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_typewriter-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 17604,
       "exportedPath": "lib/fonts/mathjax_typewriter-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_vector-regular.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 1136,
       "exportedPath": "lib/fonts/mathjax_vector-regular.woff",
       "dependencies": []
     },
     "lib/fonts/mathjax_vector-bold.woff": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 1116,
       "exportedPath": "lib/fonts/mathjax_vector-bold.woff",
       "dependencies": []
     },
     "lib/html/file-tree.html": {
-      "modifiedTime": 1720322839312,
-      "sourceSize": 52670,
+      "modifiedTime": 1720323252132,
+      "sourceSize": 52646,
       "exportedPath": "lib/html/file-tree.html",
       "dependencies": []
     },
     "lib/scripts/webpage.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 47290,
       "exportedPath": "lib/scripts/webpage.js",
       "dependencies": []
     },
     "lib/scripts/graph-view.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 15519,
       "exportedPath": "lib/scripts/graph-view.js",
       "dependencies": []
     },
     "lib/scripts/graph-wasm.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 14021,
       "exportedPath": "lib/scripts/graph-wasm.js",
       "dependencies": []
     },
     "lib/scripts/graph-render-worker.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 5179,
       "exportedPath": "lib/scripts/graph-render-worker.js",
       "dependencies": []
     },
     "lib/scripts/tinycolor.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 29832,
       "exportedPath": "lib/scripts/tinycolor.js",
       "dependencies": []
     },
     "lib/scripts/pixi.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 449509,
       "exportedPath": "lib/scripts/pixi.js",
       "dependencies": []
     },
     "lib/scripts/minisearch.js": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 29422,
       "exportedPath": "lib/scripts/minisearch.js",
       "dependencies": []
     },
     "lib/media/favicon.png": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 1105,
       "exportedPath": "lib/media/favicon.png",
       "dependencies": []
     },
     "lib/scripts/graph-data.js": {
-      "modifiedTime": 1720322839312,
-      "sourceSize": 565,
+      "modifiedTime": 1720323252132,
+      "sourceSize": 557,
       "exportedPath": "lib/scripts/graph-data.js",
       "dependencies": []
     },
     "lib/styles/obsidian.css": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 130471,
       "exportedPath": "lib/styles/obsidian.css",
       "dependencies": []
     },
     "lib/styles/other-plugins.css": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 6376,
       "exportedPath": "lib/styles/other-plugins.css",
       "dependencies": []
     },
     "lib/styles/global-variable-styles.css": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 236,
       "exportedPath": "lib/styles/global-variable-styles.css",
       "dependencies": []
     },
     "lib/styles/main-styles.css": {
-      "modifiedTime": 1720322839312,
+      "modifiedTime": 1720323252132,
       "sourceSize": 23130,
       "exportedPath": "lib/styles/main-styles.css",
+      "dependencies": []
+    },
+    "课程/机器学习/机器学习.md": {
+      "modifiedTime": 1720323252132,
+      "sourceSize": 283445,
+      "exportedPath": "课程/机器学习/机器学习.html",
+      "dependencies": []
+    },
+    "课程/机器学习/机器学习.dark.png": {
+      "modifiedTime": 1720323252132,
+      "sourceSize": 5999716,
+      "exportedPath": "课程/机器学习/机器学习.dark.png",
+      "dependencies": []
+    },
+    "课程/机器学习/机器学习.light.png": {
+      "modifiedTime": 1720323252132,
+      "sourceSize": 5945860,
+      "exportedPath": "课程/机器学习/机器学习.light.png",
       "dependencies": []
     }
   }
