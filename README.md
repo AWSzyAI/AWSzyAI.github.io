@@ -8,4 +8,4 @@
 
 ## 在做的项目
 - [大创](./大创-LLM&KG/llm-meet-kg.html)
-- [2024暑假](./2024Summer/index.canvas)
+- [2024暑假](./2024Summer/index.html)
