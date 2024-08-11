@@ -75,6 +75,7 @@ nav:
   - 首页:
       - 欢迎来到时子延的笔记: "index.md"
       - 关于我: "about.md"
+      - 实习：中国科学院深圳先进技术研究院: "SIAT.md"
   - 我的技术栈:
     - MkDocs: "skills/my-skills/mkdocs.md"
     - Markdown: "skills/my-skills/markdown.md"
@@ -104,5 +105,9 @@ nav:
   - 描述:
     - 生活:
       - 如何搭配着装: "describe/life/clothes.md"
+  - 大学:
+    - 序:
+      - 序: "university/test/test.md"
+
 
 
