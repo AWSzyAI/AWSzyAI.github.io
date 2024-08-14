@@ -1,0 +1,5 @@
+- SIAT 实习：酶的预测
+- 数学建模暑期集训（作业）
+- AC
+- 2024 iGEM China-HUBU-WUHAN
+- 2025 iGEM NNU-Software（筹）

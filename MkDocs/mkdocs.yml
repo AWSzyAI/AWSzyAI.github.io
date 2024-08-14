@@ -76,6 +76,7 @@ nav:
       - 欢迎来到时子延的笔记: "index.md"
       - 关于我: "about.md"
       - 实习：中国科学院深圳先进技术研究院: "SIAT.md"
+      - 我在做什么: "doing.md"
   - 我的技术栈:
     - MkDocs: "skills/my-skills/mkdocs.md"
     - Markdown: "skills/my-skills/markdown.md"
