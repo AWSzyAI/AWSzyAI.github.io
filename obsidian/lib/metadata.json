@@ -1,87 +1,143 @@
 {
   "vaultName": "Szy.io",
-  "lastExport": 1717565719453,
+  "lastExport": 1723771220671,
   "pluginVersion": "1.8.01",
-  "validBodyClasses": "publish css-settings-manager show-inline-title theme-light",
+  "validBodyClasses": "publish css-settings-manager theme-light show-inline-title",
   "useCustomHeadContent": false,
   "useCustomFavicon": false,
   "files": [
-    "Blog/荒野求生.md",
+    "Blog/《如何做出伟大的工作》.md",
     "Blog/如何摘隐形眼镜？.md",
-    "Blog/Blog：打造极简丝滑工作流.md",
+    "Blog/在Macbook上使用Ubuntu22.04x86.md",
     "Blog/Linux.md",
-    "Blog/MyRIL.md",
-    "Blog/Pasted image 20240428091809.jpg",
-    "Blog/szy-roadmap-Log.md",
+    "Blog/nps.md",
     "Blog/University.md",
-    "Blogers/刘未鹏 - Mind Hacks.md",
-    "Blogers/idealclover.md",
-    "Notes/概率论与数理统计/概率论.md",
-    "Notes/概率论与数理统计/Pasted image 20240528202511.png",
-    "Notes/概率论与数理统计/Pasted image 20240529194814.png",
-    "Notes/Probability.excalidraw.md",
-    "projects/C++课程设计/代码/`.env`.md",
-    "projects/C++课程设计/代码/`.gitignore`.md",
-    "projects/C++课程设计/代码/`MINIFEST.in`.md",
-    "projects/C++课程设计/代码/app.py.md",
-    "projects/C++课程设计/代码/base.html.md",
-    "projects/C++课程设计/技术栈/《Python入门经典：以解决计算问题为导向的Python编程实践》.md",
-    "projects/C++课程设计/技术栈/编码.md",
-    "projects/C++课程设计/技术栈/博客.md",
-    "projects/C++课程设计/技术栈/产品文档.md",
-    "projects/C++课程设计/技术栈/命令行程序设计.md",
-    "projects/C++课程设计/技术栈/软件开发日志怎么写？.md",
-    "projects/C++课程设计/技术栈/知识产权.md",
-    "projects/C++课程设计/技术栈/CSS.md",
-    "projects/C++课程设计/技术栈/DOM.md",
-    "projects/C++课程设计/技术栈/HTML.md",
-    "projects/C++课程设计/技术栈/JavaScript.md",
-    "projects/C++课程设计/技术栈/jsonify.md",
-    "projects/C++课程设计/技术栈/MarkDown.md",
-    "projects/C++课程设计/技术栈/MVC.md",
-    "projects/C++课程设计/技术栈/request.md",
-    "projects/C++课程设计/技术栈/SQL.md",
-    "projects/C++课程设计/技术栈/SQLite.md",
-    "projects/C++课程设计/技术栈/sqlite3.md",
-    "projects/C++课程设计/技术栈/typescript.md",
-    "projects/C++课程设计/技术栈/yaml.md",
-    "projects/C++课程设计/C++课程设计：产品文档/其他材料/更新日志.md",
-    "projects/C++课程设计/C++课程设计：产品文档/用户指南/快速上手.md",
-    "projects/C++课程设计/C++课程设计：产品文档/用户指南/前言.md",
-    "projects/C++课程设计/C++课程设计：产品文档/C++课程设计：产品文档.md",
-    "projects/C++课程设计/C++课程设计.md",
-    "projects/C++课程设计/C++课程设计：1-选题_ATimer.md",
-    "projects/C++课程设计/C++课程设计：2-设计程序.md",
-    "projects/C++课程设计/C++课程设计：3-最小可用产品.md",
-    "projects/C++课程设计/C++课程设计：3.1-注册登录.md",
-    "projects/C++课程设计/C++课程设计：3.2-所有项目.md",
-    "projects/C++课程设计/C++课程设计：4.项目可安装化.md",
-    "projects/C++课程设计/C++课程设计：测试.md",
-    "projects/C++课程设计/C++课程设计：代码.md",
-    "projects/C++课程设计/C++课程设计：进阶.md",
-    "projects/C++课程设计/C++课程设计：课设要求.md",
-    "projects/C++课程设计/C++课程设计：目录结构.md",
-    "projects/C++课程设计/C++课程设计：前端设计.md",
-    "projects/C++课程设计/C++课程设计：时子延.md",
-    "projects/C++课程设计/C++课程设计：数据库设计.md",
-    "projects/C++课程设计/C++课程设计：与王琼老师沟通交流.md",
-    "projects/C++课程设计/C++课程设计：MarkDown-yaml设计.md",
+    "courses/概率论与数理统计/images/概率论期末复习.dark.png",
+    "courses/概率论与数理统计/images/概率论期末复习.light.png",
+    "courses/概率论与数理统计/images/概率论期末题型.md",
+    "courses/概率论与数理统计/images/卡西欧在概率论中的应用.md",
+    "courses/概率论与数理统计/images/切比雪夫不等式.md",
+    "courses/概率论与数理统计/images/Pasted image 20240327110423.png",
+    "courses/概率论与数理统计/images/Pasted image 20240407084702.png",
+    "courses/概率论与数理统计/images/Pasted image 20240411202847.png",
+    "courses/概率论与数理统计/images/Pasted image 20240508171642.png",
+    "courses/概率论与数理统计/images/Pasted image 20240528213516.png",
+    "courses/概率论与数理统计/images/Pasted image 20240529113358.png",
+    "courses/概率论与数理统计/images/Pasted image 20240529113417.png",
+    "courses/概率论与数理统计/images/Pasted image 20240529160259.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222658_270.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222713_281.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222713_305.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222728_290.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222743_298.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222813_306.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222828_307.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222844_318.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222859_319.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222959_338.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240626223014_348.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240627154104_533.jpg",
+    "courses/概率论与数理统计/images/Pasted Image 20240629102004_711.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629102022_711.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629102208_730.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629102253_733.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629102419_763.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629103235_755.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629103250_758.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629103305_759.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629165223_110.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629170323_224.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629170923_299.png",
+    "courses/概率论与数理统计/images/Pasted image 20240629191859.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629192405_911.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629192452_921.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629192537_930.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240629192552_936.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240630080023_091.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240630085458_434.png",
+    "courses/概率论与数理统计/images/Pasted Image 20240630085544_450.png",
+    "courses/概率论与数理统计/images/Poisson Distribution.md",
+    "courses/概率论与数理统计/images/Probability.md",
+    "courses/概率论与数理统计/images/Uniform Distribution.md",
+    "courses/概率论与数理统计/Wiki/伽马函数.md",
+    "courses/概率论与数理统计/Wiki/卡方分布.md",
+    "courses/概率论与数理统计/Wiki/拉格朗日插值公式.md",
+    "courses/概率论与数理统计/Wiki/线性.md",
+    "courses/概率论与数理统计/Wiki/辛钦大数定律.md",
+    "courses/概率论与数理统计/Wiki/Exponential distribution.md",
+    "courses/概率论与数理统计/Wiki/Normal distribution.md",
+    "courses/概率论与数理统计/第5章 大数定律与中心极限定理.md",
+    "courses/概率论与数理统计/第7章.md",
+    "courses/概率论与数理统计/概率论.md",
+    "courses/概率论与数理统计/概率论与数理统计笔记.md",
+    "courses/概率论与数理统计/数理统计.md",
+    "courses/概率论与数理统计/Pasted image 20240528202511.png",
+    "courses/概率论与数理统计/Pasted image 20240529194814.png",
+    "courses/概率论与数理统计/Probability.excalidraw.md",
+    "courses/机器学习/机器学习.md",
+    "courses/数据结构/2024-01-14 复习数据结构.md",
+    "courses/数据结构/数据结构.md",
+    "courses/数学与人工智能/《动手学深度学习》/《动手学深度学习》.md",
+    "courses/数学与人工智能/《动手学深度学习》/《动手学深度学习》 1.md",
+    "courses/数学与人工智能/Wiki/层次聚类.md",
+    "courses/数学与人工智能/Wiki/分类.md",
+    "courses/数学与人工智能/Wiki/回归算法.md",
+    "courses/数学与人工智能/Wiki/机器学习：实验10.md",
+    "courses/数学与人工智能/Wiki/机器学习：实验11.md",
+    "courses/数学与人工智能/Wiki/机器学习术语.md",
+    "courses/数学与人工智能/Wiki/激活函数.md",
+    "courses/数学与人工智能/Wiki/极大似然法maximum likelihood method.md",
+    "courses/数学与人工智能/Wiki/拉格朗日乘子法.md",
+    "courses/数学与人工智能/Wiki/李宏毅.md",
+    "courses/数学与人工智能/Wiki/模型评估与比较.md",
+    "courses/数学与人工智能/Wiki/泰勒公式-泰勒级数-泰勒展开.md",
+    "courses/数学与人工智能/Wiki/凸优化理论.md",
+    "courses/数学与人工智能/Wiki/微积分.md",
+    "courses/数学与人工智能/Wiki/雅可比.md",
+    "courses/数学与人工智能/Wiki/KKT条件.md",
+    "courses/数学与人工智能/Wiki/Lipschitz连续.md",
+    "courses/数学与人工智能/Wiki/Logistic Regression逻辑回归-对数均值回归.md",
+    "courses/数学与人工智能/Wiki/Pandas.md",
+    "courses/数学与人工智能/Wiki/Sklearn.md",
+    "courses/数学与人工智能/Wiki/SVM.md",
+    "courses/数学与人工智能/《西瓜书》.md",
+    "courses/数学与人工智能/对偶问题(dual problem).md",
+    "courses/数学与人工智能/二次规划问题.md",
+    "courses/数学与人工智能/归一化.md",
+    "courses/数学与人工智能/核函数.md",
+    "courses/数学与人工智能/机器学习.md",
+    "courses/数学与人工智能/激活函数.md",
+    "courses/数学与人工智能/数学与人工智能.md",
+    "courses/数学与人工智能/替代损失.md",
+    "courses/数学与人工智能/微积分.md",
+    "courses/数学与人工智能/AdaBoost.md",
+    "courses/数学与人工智能/Machine Learning & Pattern Analysis.md",
+    "courses/数学与人工智能/Pasted image 20240507155610.png",
+    "courses/数学与人工智能/Pasted image 20240620224744.png",
+    "projects/LLM-meet-KG/static/Logo.png",
     "projects/LLM-meet-KG/static/Pasted image 20231213224844.png",
     "projects/LLM-meet-KG/static/Pasted image 20231213224908.png",
     "projects/LLM-meet-KG/static/Pasted image 20231220225106.png",
+    "projects/LLM-meet-KG/static/Pasted image 20240426195447.jpg",
+    "projects/LLM-meet-KG/static/Pasted image 20240611172057.png",
     "projects/LLM-meet-KG/LLM-meet-KG.md",
-    "projects/LLM-meet-KG/Pasted image 20240426195447.jpg",
     "Resume/Szy-CV.md",
     "Resume/Szy-CV(English Version).md",
-    "static/第一期工作流分享.png",
-    "static/组会真实写照.jpg",
-    "static/Pasted image 20231218085619.jpg",
-    "技术栈：Linux&命令行.png",
+    "static/code/moveAttachiments.py",
+    "static/image/第一期工作流分享.png",
+    "static/image/技术栈：Linux&命令行.png",
+    "static/image/组会真实写照.jpg",
+    "static/image/CV-240820.png",
+    "static/image/Pasted image 20231218085619.jpg",
+    "static/image/Pasted image 20240428091809.jpg",
+    "static/image/SIAT.png",
     "index.md",
-    "Szy-Confidence.md",
-    "szy-project-stack.md",
     "SzyDescribe.md",
-    "tool-chest.md",
+    "lib/media/pasted-image-20240428091809.jpg",
+    "lib/media/组会真实写照.jpg",
+    "lib/media/cv-240820.png",
+    "lib/media/siat.png",
+    "lib/scripts/graph-wasm.wasm",
     "lib/fonts/94f2f163d4b698242fef.otf",
     "lib/fonts/72505e6a122c6acd5471.woff2",
     "lib/fonts/2d5198822ab091ce4305.woff2",
@@ -96,30 +152,45 @@
     "lib/fonts/05b618077343fbbd92b7.ttf",
     "lib/fonts/4bb6ac751d1c5478ff3a.woff2",
     "lib/media/874d8b8e340f75575caa.svg",
-    "lib/fonts/MathJax_Zero.woff",
-    "lib/fonts/MathJax_Main-Regular.woff",
-    "lib/fonts/MathJax_Main-Bold.woff",
-    "lib/fonts/MathJax_Math-Italic.woff",
-    "lib/fonts/MathJax_Main-Italic.woff",
-    "lib/fonts/MathJax_Math-BoldItalic.woff",
-    "lib/fonts/MathJax_Size1-Regular.woff",
-    "lib/fonts/MathJax_Size2-Regular.woff",
-    "lib/fonts/MathJax_Size3-Regular.woff",
-    "lib/fonts/MathJax_Size4-Regular.woff",
-    "lib/fonts/MathJax_AMS-Regular.woff",
-    "lib/fonts/MathJax_Calligraphic-Regular.woff",
-    "lib/fonts/MathJax_Calligraphic-Bold.woff",
-    "lib/fonts/MathJax_Fraktur-Regular.woff",
-    "lib/fonts/MathJax_Fraktur-Bold.woff",
-    "lib/fonts/MathJax_SansSerif-Regular.woff",
-    "lib/fonts/MathJax_SansSerif-Bold.woff",
-    "lib/fonts/MathJax_SansSerif-Italic.woff",
-    "lib/fonts/MathJax_Script-Regular.woff",
-    "lib/fonts/MathJax_Typewriter-Regular.woff",
-    "lib/fonts/MathJax_Vector-Regular.woff",
-    "lib/fonts/MathJax_Vector-Bold.woff"
+    "lib/fonts/mathjax_zero.woff",
+    "lib/fonts/mathjax_main-regular.woff",
+    "lib/fonts/mathjax_main-bold.woff",
+    "lib/fonts/mathjax_math-italic.woff",
+    "lib/fonts/mathjax_main-italic.woff",
+    "lib/fonts/mathjax_math-bolditalic.woff",
+    "lib/fonts/mathjax_size1-regular.woff",
+    "lib/fonts/mathjax_size2-regular.woff",
+    "lib/fonts/mathjax_size3-regular.woff",
+    "lib/fonts/mathjax_size4-regular.woff",
+    "lib/fonts/mathjax_ams-regular.woff",
+    "lib/fonts/mathjax_calligraphic-regular.woff",
+    "lib/fonts/mathjax_calligraphic-bold.woff",
+    "lib/fonts/mathjax_fraktur-regular.woff",
+    "lib/fonts/mathjax_fraktur-bold.woff",
+    "lib/fonts/mathjax_sansserif-regular.woff",
+    "lib/fonts/mathjax_sansserif-bold.woff",
+    "lib/fonts/mathjax_sansserif-italic.woff",
+    "lib/fonts/mathjax_script-regular.woff",
+    "lib/fonts/mathjax_typewriter-regular.woff",
+    "lib/fonts/mathjax_vector-regular.woff",
+    "lib/fonts/mathjax_vector-bold.woff",
+    "lib/html/file-tree.html",
+    "lib/scripts/webpage.js",
+    "lib/scripts/graph-view.js",
+    "lib/scripts/graph-wasm.js",
+    "lib/scripts/graph-render-worker.js",
+    "lib/scripts/tinycolor.js",
+    "lib/scripts/pixi.js",
+    "lib/scripts/minisearch.js",
+    "lib/media/favicon.png",
+    "lib/scripts/graph-data.js",
+    "lib/styles/obsidian.css",
+    "lib/styles/other-plugins.css",
+    "lib/styles/global-variable-styles.css",
+    "lib/styles/main-styles.css"
   ],
   "mainDependencies": [
+    "lib/scripts/graph-wasm.wasm",
     "lib/fonts/94f2f163d4b698242fef.otf",
     "lib/fonts/72505e6a122c6acd5471.woff2",
     "lib/fonts/2d5198822ab091ce4305.woff2",
@@ -134,700 +205,1262 @@
     "lib/fonts/05b618077343fbbd92b7.ttf",
     "lib/fonts/4bb6ac751d1c5478ff3a.woff2",
     "lib/media/874d8b8e340f75575caa.svg",
-    "lib/fonts/MathJax_Zero.woff",
-    "lib/fonts/MathJax_Main-Regular.woff",
-    "lib/fonts/MathJax_Main-Bold.woff",
-    "lib/fonts/MathJax_Math-Italic.woff",
-    "lib/fonts/MathJax_Main-Italic.woff",
-    "lib/fonts/MathJax_Math-BoldItalic.woff",
-    "lib/fonts/MathJax_Size1-Regular.woff",
-    "lib/fonts/MathJax_Size2-Regular.woff",
-    "lib/fonts/MathJax_Size3-Regular.woff",
-    "lib/fonts/MathJax_Size4-Regular.woff",
-    "lib/fonts/MathJax_AMS-Regular.woff",
-    "lib/fonts/MathJax_Calligraphic-Regular.woff",
-    "lib/fonts/MathJax_Calligraphic-Bold.woff",
-    "lib/fonts/MathJax_Fraktur-Regular.woff",
-    "lib/fonts/MathJax_Fraktur-Bold.woff",
-    "lib/fonts/MathJax_SansSerif-Regular.woff",
-    "lib/fonts/MathJax_SansSerif-Bold.woff",
-    "lib/fonts/MathJax_SansSerif-Italic.woff",
-    "lib/fonts/MathJax_Script-Regular.woff",
-    "lib/fonts/MathJax_Typewriter-Regular.woff",
-    "lib/fonts/MathJax_Vector-Regular.woff",
-    "lib/fonts/MathJax_Vector-Bold.woff"
+    "lib/fonts/mathjax_zero.woff",
+    "lib/fonts/mathjax_main-regular.woff",
+    "lib/fonts/mathjax_main-bold.woff",
+    "lib/fonts/mathjax_math-italic.woff",
+    "lib/fonts/mathjax_main-italic.woff",
+    "lib/fonts/mathjax_math-bolditalic.woff",
+    "lib/fonts/mathjax_size1-regular.woff",
+    "lib/fonts/mathjax_size2-regular.woff",
+    "lib/fonts/mathjax_size3-regular.woff",
+    "lib/fonts/mathjax_size4-regular.woff",
+    "lib/fonts/mathjax_ams-regular.woff",
+    "lib/fonts/mathjax_calligraphic-regular.woff",
+    "lib/fonts/mathjax_calligraphic-bold.woff",
+    "lib/fonts/mathjax_fraktur-regular.woff",
+    "lib/fonts/mathjax_fraktur-bold.woff",
+    "lib/fonts/mathjax_sansserif-regular.woff",
+    "lib/fonts/mathjax_sansserif-bold.woff",
+    "lib/fonts/mathjax_sansserif-italic.woff",
+    "lib/fonts/mathjax_script-regular.woff",
+    "lib/fonts/mathjax_typewriter-regular.woff",
+    "lib/fonts/mathjax_vector-regular.woff",
+    "lib/fonts/mathjax_vector-bold.woff",
+    "lib/html/file-tree.html",
+    "lib/scripts/webpage.js",
+    "lib/scripts/graph-view.js",
+    "lib/scripts/graph-wasm.js",
+    "lib/scripts/graph-render-worker.js",
+    "lib/scripts/tinycolor.js",
+    "lib/scripts/pixi.js",
+    "lib/scripts/minisearch.js",
+    "lib/media/favicon.png",
+    "lib/scripts/graph-data.js",
+    "lib/styles/obsidian.css",
+    "lib/styles/other-plugins.css",
+    "lib/styles/global-variable-styles.css",
+    "lib/styles/main-styles.css"
   ],
   "fileInfo": {
-    "Blog/荒野求生.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 149,
-      "exportedPath": "Blog/荒野求生.html",
+    "Blog/《如何做出伟大的工作》.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 14614,
+      "exportedPath": "blog/《如何做出伟大的工作》.html",
       "dependencies": []
     },
     "Blog/如何摘隐形眼镜？.md": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 2730,
-      "exportedPath": "Blog/如何摘隐形眼镜？.html",
+      "exportedPath": "blog/如何摘隐形眼镜？.html",
       "dependencies": []
     },
-    "Blog/Blog：打造极简丝滑工作流.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 734,
-      "exportedPath": "Blog/Blog：打造极简丝滑工作流.html",
+    "Blog/在Macbook上使用Ubuntu22.04x86.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1208,
+      "exportedPath": "blog/在macbook上使用ubuntu22.04x86.html",
       "dependencies": []
     },
     "Blog/Linux.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 22095,
-      "exportedPath": "Blog/Linux.html",
-      "dependencies": []
+      "modifiedTime": 1723771220671,
+      "sourceSize": 23256,
+      "exportedPath": "blog/linux.html",
+      "dependencies": [
+        "lib/media/pasted-image-20240428091809.jpg"
+      ]
     },
-    "Blog/MyRIL.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 1992,
-      "exportedPath": "Blog/MyRIL.html",
-      "dependencies": []
-    },
-    "Blog/Pasted image 20240428091809.jpg": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 133592,
-      "exportedPath": "Blog/Pasted image 20240428091809.jpg",
-      "dependencies": []
-    },
-    "Blog/szy-roadmap-Log.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 274,
-      "exportedPath": "Blog/szy-roadmap-Log.html",
+    "Blog/nps.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 3091,
+      "exportedPath": "blog/nps.html",
       "dependencies": []
     },
     "Blog/University.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 67484,
-      "exportedPath": "Blog/University.html",
+      "modifiedTime": 1723771220671,
+      "sourceSize": 67845,
+      "exportedPath": "blog/university.html",
+      "dependencies": [
+        "lib/media/组会真实写照.jpg"
+      ]
+    },
+    "courses/概率论与数理统计/images/概率论期末复习.dark.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1577672,
+      "exportedPath": "courses/概率论与数理统计/images/概率论期末复习.dark.png",
       "dependencies": []
     },
-    "Blogers/刘未鹏 - Mind Hacks.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 4002,
-      "exportedPath": "Blogers/刘未鹏 - Mind Hacks.html",
+    "courses/概率论与数理统计/images/概率论期末复习.light.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1555341,
+      "exportedPath": "courses/概率论与数理统计/images/概率论期末复习.light.png",
       "dependencies": []
     },
-    "Blogers/idealclover.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 135,
-      "exportedPath": "Blogers/idealclover.html",
+    "courses/概率论与数理统计/images/概率论期末题型.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 659,
+      "exportedPath": "courses/概率论与数理统计/images/概率论期末题型.html",
       "dependencies": []
     },
-    "Notes/概率论与数理统计/概率论.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 13045,
-      "exportedPath": "Notes/概率论与数理统计/概率论.html",
+    "courses/概率论与数理统计/images/卡西欧在概率论中的应用.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 171,
+      "exportedPath": "courses/概率论与数理统计/images/卡西欧在概率论中的应用.html",
       "dependencies": []
     },
-    "Notes/概率论与数理统计/Pasted image 20240528202511.png": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 108893,
-      "exportedPath": "Notes/概率论与数理统计/Pasted image 20240528202511.png",
-      "dependencies": []
-    },
-    "Notes/概率论与数理统计/Pasted image 20240529194814.png": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 79859,
-      "exportedPath": "Notes/概率论与数理统计/Pasted image 20240529194814.png",
-      "dependencies": []
-    },
-    "Notes/Probability.excalidraw.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 27150,
-      "exportedPath": "Notes/Probability.excalidraw.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/代码/`.env`.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 110,
-      "exportedPath": "projects/C++课程设计/代码/`.env`.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/代码/`.gitignore`.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 116,
-      "exportedPath": "projects/C++课程设计/代码/`.gitignore`.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/代码/`MINIFEST.in`.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 779,
-      "exportedPath": "projects/C++课程设计/代码/`MINIFEST.in`.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/代码/app.py.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 1985,
-      "exportedPath": "projects/C++课程设计/代码/app.py.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/代码/base.html.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 1081,
-      "exportedPath": "projects/C++课程设计/代码/base.html.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/《Python入门经典：以解决计算问题为导向的Python编程实践》.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 65,
-      "exportedPath": "projects/C++课程设计/技术栈/《Python入门经典：以解决计算问题为导向的Python编程实践》.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/编码.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 37,
-      "exportedPath": "projects/C++课程设计/技术栈/编码.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/博客.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 38,
-      "exportedPath": "projects/C++课程设计/技术栈/博客.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/产品文档.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 17,
-      "exportedPath": "projects/C++课程设计/技术栈/产品文档.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/命令行程序设计.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 1115,
-      "exportedPath": "projects/C++课程设计/技术栈/命令行程序设计.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/软件开发日志怎么写？.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 908,
-      "exportedPath": "projects/C++课程设计/技术栈/软件开发日志怎么写？.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/知识产权.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 155,
-      "exportedPath": "projects/C++课程设计/技术栈/知识产权.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/CSS.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 316,
-      "exportedPath": "projects/C++课程设计/技术栈/CSS.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/DOM.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 115,
-      "exportedPath": "projects/C++课程设计/技术栈/DOM.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/HTML.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 1367,
-      "exportedPath": "projects/C++课程设计/技术栈/HTML.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/JavaScript.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 1274,
-      "exportedPath": "projects/C++课程设计/技术栈/JavaScript.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/jsonify.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 0,
-      "exportedPath": "projects/C++课程设计/技术栈/jsonify.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/MarkDown.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 0,
-      "exportedPath": "projects/C++课程设计/技术栈/MarkDown.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/MVC.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 195,
-      "exportedPath": "projects/C++课程设计/技术栈/MVC.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/request.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 0,
-      "exportedPath": "projects/C++课程设计/技术栈/request.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/SQL.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 347,
-      "exportedPath": "projects/C++课程设计/技术栈/SQL.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/SQLite.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 119,
-      "exportedPath": "projects/C++课程设计/技术栈/SQLite.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/sqlite3.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 0,
-      "exportedPath": "projects/C++课程设计/技术栈/sqlite3.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/typescript.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 102,
-      "exportedPath": "projects/C++课程设计/技术栈/typescript.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/技术栈/yaml.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 696,
-      "exportedPath": "projects/C++课程设计/技术栈/yaml.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：产品文档/其他材料/更新日志.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 3339,
-      "exportedPath": "projects/C++课程设计/C++课程设计：产品文档/其他材料/更新日志.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：产品文档/用户指南/快速上手.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 442,
-      "exportedPath": "projects/C++课程设计/C++课程设计：产品文档/用户指南/快速上手.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：产品文档/用户指南/前言.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 3433,
-      "exportedPath": "projects/C++课程设计/C++课程设计：产品文档/用户指南/前言.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：产品文档/C++课程设计：产品文档.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 619,
-      "exportedPath": "projects/C++课程设计/C++课程设计：产品文档/C++课程设计：产品文档.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 2203,
-      "exportedPath": "projects/C++课程设计/C++课程设计.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：1-选题_ATimer.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 5020,
-      "exportedPath": "projects/C++课程设计/C++课程设计：1-选题_ATimer.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：2-设计程序.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 6884,
-      "exportedPath": "projects/C++课程设计/C++课程设计：2-设计程序.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：3-最小可用产品.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 8740,
-      "exportedPath": "projects/C++课程设计/C++课程设计：3-最小可用产品.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：3.1-注册登录.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 4352,
-      "exportedPath": "projects/C++课程设计/C++课程设计：3.1-注册登录.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：3.2-所有项目.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 16527,
-      "exportedPath": "projects/C++课程设计/C++课程设计：3.2-所有项目.html",
-      "dependencies": []
-    },
-    "projects/C++课程设计/C++课程设计：4.项目可安装化.md": {
-      "modifiedTime": 1717565719453,
+    "courses/概率论与数理统计/images/切比雪夫不等式.md": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 416,
-      "exportedPath": "projects/C++课程设计/C++课程设计：4.项目可安装化.html",
+      "exportedPath": "courses/概率论与数理统计/images/切比雪夫不等式.html",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：测试.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 53,
-      "exportedPath": "projects/C++课程设计/C++课程设计：测试.html",
+    "courses/概率论与数理统计/images/Pasted image 20240327110423.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1060483,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240327110423.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：代码.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 939,
-      "exportedPath": "projects/C++课程设计/C++课程设计：代码.html",
+    "courses/概率论与数理统计/images/Pasted image 20240407084702.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 149904,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240407084702.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：进阶.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 93,
-      "exportedPath": "projects/C++课程设计/C++课程设计：进阶.html",
+    "courses/概率论与数理统计/images/Pasted image 20240411202847.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 15661,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240411202847.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：课设要求.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 6870,
-      "exportedPath": "projects/C++课程设计/C++课程设计：课设要求.html",
+    "courses/概率论与数理统计/images/Pasted image 20240508171642.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 101866,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240508171642.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：目录结构.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 5406,
-      "exportedPath": "projects/C++课程设计/C++课程设计：目录结构.html",
+    "courses/概率论与数理统计/images/Pasted image 20240528213516.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 258401,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240528213516.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：前端设计.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 423,
-      "exportedPath": "projects/C++课程设计/C++课程设计：前端设计.html",
+    "courses/概率论与数理统计/images/Pasted image 20240529113358.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 270505,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240529113358.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：时子延.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 395,
-      "exportedPath": "projects/C++课程设计/C++课程设计：时子延.html",
+    "courses/概率论与数理统计/images/Pasted image 20240529113417.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 663306,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240529113417.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：数据库设计.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 2203,
-      "exportedPath": "projects/C++课程设计/C++课程设计：数据库设计.html",
+    "courses/概率论与数理统计/images/Pasted image 20240529160259.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 352562,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240529160259.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：与王琼老师沟通交流.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 343,
-      "exportedPath": "projects/C++课程设计/C++课程设计：与王琼老师沟通交流.html",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222658_270.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 7847,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222658_270.png",
       "dependencies": []
     },
-    "projects/C++课程设计/C++课程设计：MarkDown-yaml设计.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 428,
-      "exportedPath": "projects/C++课程设计/C++课程设计：MarkDown-yaml设计.html",
+    "courses/概率论与数理统计/images/Pasted Image 20240626222713_281.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 8650,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222713_281.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222713_305.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 8449,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222713_305.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222728_290.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 8814,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222728_290.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222743_298.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 23070,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222743_298.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222813_306.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 193814,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222813_306.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222828_307.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 4075,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222828_307.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222844_318.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 6311,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222844_318.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222859_319.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 12352,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222859_319.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626222959_338.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 14344,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626222959_338.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240626223014_348.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 12656,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240626223014_348.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240627154104_533.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 10870,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240627154104_533.jpg",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629102004_711.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 62356,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629102004_711.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629102022_711.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 20343,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629102022_711.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629102208_730.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 283979,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629102208_730.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629102253_733.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 16401,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629102253_733.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629102419_763.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 212340,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629102419_763.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629103235_755.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 409945,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629103235_755.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629103250_758.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 166509,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629103250_758.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629103305_759.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 123901,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629103305_759.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629165223_110.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 143604,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629165223_110.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629170323_224.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 541591,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629170323_224.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629170923_299.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 209133,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629170923_299.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted image 20240629191859.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 508207,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629191859.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629192405_911.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 144843,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629192405_911.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629192452_921.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 132691,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629192452_921.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629192537_930.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 241369,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629192537_930.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240629192552_936.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 275246,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240629192552_936.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240630080023_091.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 211175,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240630080023_091.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240630085458_434.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 73104,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240630085458_434.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Pasted Image 20240630085544_450.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 149657,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240630085544_450.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Poisson Distribution.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2388,
+      "exportedPath": "courses/概率论与数理统计/images/poisson-distribution.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/Probability.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 13460,
+      "exportedPath": "courses/概率论与数理统计/images/probability.html",
+      "dependencies": [
+        "courses/概率论与数理统计/images/pasted-image-20240411202847.png",
+        "courses/概率论与数理统计/images/pasted-image-20240407084702.png",
+        "courses/概率论与数理统计/images/pasted-image-20240407084702.png",
+        "courses/概率论与数理统计/images/pasted-image-20240327110423.png"
+      ]
+    },
+    "courses/概率论与数理统计/images/Uniform Distribution.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 143,
+      "exportedPath": "courses/概率论与数理统计/images/uniform-distribution.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/伽马函数.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 74,
+      "exportedPath": "courses/概率论与数理统计/wiki/伽马函数.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/卡方分布.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 695,
+      "exportedPath": "courses/概率论与数理统计/wiki/卡方分布.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/拉格朗日插值公式.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 88,
+      "exportedPath": "courses/概率论与数理统计/wiki/拉格朗日插值公式.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/线性.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 22,
+      "exportedPath": "courses/概率论与数理统计/wiki/线性.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/辛钦大数定律.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 22,
+      "exportedPath": "courses/概率论与数理统计/wiki/辛钦大数定律.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/Exponential distribution.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 920,
+      "exportedPath": "courses/概率论与数理统计/wiki/exponential-distribution.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Wiki/Normal distribution.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 5239,
+      "exportedPath": "courses/概率论与数理统计/wiki/normal-distribution.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/第5章 大数定律与中心极限定理.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 768,
+      "exportedPath": "courses/概率论与数理统计/第5章-大数定律与中心极限定理.html",
+      "dependencies": [
+        "courses/概率论与数理统计/images/pasted-image-20240508171642.png"
+      ]
+    },
+    "courses/概率论与数理统计/第7章.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 208,
+      "exportedPath": "courses/概率论与数理统计/第7章.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/概率论.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 15656,
+      "exportedPath": "courses/概率论与数理统计/概率论.html",
+      "dependencies": [
+        "courses/概率论与数理统计/pasted-image-20240528202511.png",
+        "courses/概率论与数理统计/images/pasted-image-20240528213516.png",
+        "courses/概率论与数理统计/images/pasted-image-20240529160259.png",
+        "courses/概率论与数理统计/pasted-image-20240529194814.png"
+      ]
+    },
+    "courses/概率论与数理统计/概率论与数理统计笔记.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 70114,
+      "exportedPath": "courses/概率论与数理统计/概率论与数理统计笔记.html",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/数理统计.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 5877,
+      "exportedPath": "courses/概率论与数理统计/数理统计.html",
+      "dependencies": [
+        "courses/概率论与数理统计/images/pasted-image-20240529113358.png",
+        "courses/概率论与数理统计/images/pasted-image-20240529113417.png"
+      ]
+    },
+    "courses/概率论与数理统计/Pasted image 20240528202511.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 108893,
+      "exportedPath": "courses/概率论与数理统计/pasted-image-20240528202511.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Pasted image 20240529194814.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 79859,
+      "exportedPath": "courses/概率论与数理统计/pasted-image-20240529194814.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/Probability.excalidraw.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 27238,
+      "exportedPath": "courses/概率论与数理统计/probability.excalidraw.html",
+      "dependencies": []
+    },
+    "courses/机器学习/机器学习.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2713,
+      "exportedPath": "courses/机器学习/机器学习.html",
+      "dependencies": []
+    },
+    "courses/数据结构/2024-01-14 复习数据结构.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2910,
+      "exportedPath": "courses/数据结构/2024-01-14-复习数据结构.html",
+      "dependencies": []
+    },
+    "courses/数据结构/数据结构.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2448,
+      "exportedPath": "courses/数据结构/数据结构.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/《动手学深度学习》/《动手学深度学习》.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 725,
+      "exportedPath": "courses/数学与人工智能/《动手学深度学习》/《动手学深度学习》.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/《动手学深度学习》/《动手学深度学习》 1.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2354,
+      "exportedPath": "courses/数学与人工智能/《动手学深度学习》/《动手学深度学习》-1.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/层次聚类.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 198,
+      "exportedPath": "courses/数学与人工智能/wiki/层次聚类.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/分类.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 30,
+      "exportedPath": "courses/数学与人工智能/wiki/分类.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/回归算法.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 218,
+      "exportedPath": "courses/数学与人工智能/wiki/回归算法.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/机器学习：实验10.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2241,
+      "exportedPath": "courses/数学与人工智能/wiki/机器学习：实验10.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/机器学习：实验11.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 66,
+      "exportedPath": "courses/数学与人工智能/wiki/机器学习：实验11.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/机器学习术语.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 153,
+      "exportedPath": "courses/数学与人工智能/wiki/机器学习术语.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/激活函数.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 95,
+      "exportedPath": "courses/数学与人工智能/wiki/激活函数.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/极大似然法maximum likelihood method.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 0,
+      "exportedPath": "courses/数学与人工智能/wiki/极大似然法maximum-likelihood-method.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/拉格朗日乘子法.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1719,
+      "exportedPath": "courses/数学与人工智能/wiki/拉格朗日乘子法.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/李宏毅.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 182,
+      "exportedPath": "courses/数学与人工智能/wiki/李宏毅.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/模型评估与比较.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 10,
+      "exportedPath": "courses/数学与人工智能/wiki/模型评估与比较.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/泰勒公式-泰勒级数-泰勒展开.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1084,
+      "exportedPath": "courses/数学与人工智能/wiki/泰勒公式-泰勒级数-泰勒展开.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/凸优化理论.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 0,
+      "exportedPath": "courses/数学与人工智能/wiki/凸优化理论.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/微积分.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 272,
+      "exportedPath": "courses/数学与人工智能/wiki/微积分.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/雅可比.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 3518,
+      "exportedPath": "courses/数学与人工智能/wiki/雅可比.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/KKT条件.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1892,
+      "exportedPath": "courses/数学与人工智能/wiki/kkt条件.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/Lipschitz连续.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 174,
+      "exportedPath": "courses/数学与人工智能/wiki/lipschitz连续.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/Logistic Regression逻辑回归-对数均值回归.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 44,
+      "exportedPath": "courses/数学与人工智能/wiki/logistic-regression逻辑回归-对数均值回归.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/Pandas.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 109,
+      "exportedPath": "courses/数学与人工智能/wiki/pandas.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/Sklearn.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 0,
+      "exportedPath": "courses/数学与人工智能/wiki/sklearn.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Wiki/SVM.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 124,
+      "exportedPath": "courses/数学与人工智能/wiki/svm.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/《西瓜书》.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 7050,
+      "exportedPath": "courses/数学与人工智能/《西瓜书》.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/对偶问题(dual problem).md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 156,
+      "exportedPath": "courses/数学与人工智能/对偶问题(dual-problem).html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/二次规划问题.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2006,
+      "exportedPath": "courses/数学与人工智能/二次规划问题.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/归一化.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 296,
+      "exportedPath": "courses/数学与人工智能/归一化.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/核函数.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1920,
+      "exportedPath": "courses/数学与人工智能/核函数.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/机器学习.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2625,
+      "exportedPath": "courses/数学与人工智能/机器学习.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/激活函数.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 3669,
+      "exportedPath": "courses/数学与人工智能/激活函数.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/数学与人工智能.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 276,
+      "exportedPath": "courses/数学与人工智能/数学与人工智能.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/替代损失.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1767,
+      "exportedPath": "courses/数学与人工智能/替代损失.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/微积分.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 22,
+      "exportedPath": "courses/数学与人工智能/微积分.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/AdaBoost.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 380,
+      "exportedPath": "courses/数学与人工智能/adaboost.html",
+      "dependencies": [
+        "courses/数学与人工智能/pasted-image-20240507155610.png"
+      ]
+    },
+    "courses/数学与人工智能/Machine Learning & Pattern Analysis.md": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 5060,
+      "exportedPath": "courses/数学与人工智能/machine-learning-&-pattern-analysis.html",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Pasted image 20240507155610.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 131462,
+      "exportedPath": "courses/数学与人工智能/pasted-image-20240507155610.png",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/Pasted image 20240620224744.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 97023,
+      "exportedPath": "courses/数学与人工智能/pasted-image-20240620224744.png",
+      "dependencies": []
+    },
+    "projects/LLM-meet-KG/static/Logo.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 38942,
+      "exportedPath": "projects/llm-meet-kg/static/logo.png",
       "dependencies": []
     },
     "projects/LLM-meet-KG/static/Pasted image 20231213224844.png": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 18529,
-      "exportedPath": "projects/LLM-meet-KG/static/Pasted image 20231213224844.png",
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20231213224844.png",
       "dependencies": []
     },
     "projects/LLM-meet-KG/static/Pasted image 20231213224908.png": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 43203,
-      "exportedPath": "projects/LLM-meet-KG/static/Pasted image 20231213224908.png",
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20231213224908.png",
       "dependencies": []
     },
     "projects/LLM-meet-KG/static/Pasted image 20231220225106.png": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 16969,
-      "exportedPath": "projects/LLM-meet-KG/static/Pasted image 20231220225106.png",
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20231220225106.png",
+      "dependencies": []
+    },
+    "projects/LLM-meet-KG/static/Pasted image 20240426195447.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 555550,
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20240426195447.jpg",
+      "dependencies": []
+    },
+    "projects/LLM-meet-KG/static/Pasted image 20240611172057.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 36026,
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20240611172057.png",
       "dependencies": []
     },
     "projects/LLM-meet-KG/LLM-meet-KG.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 3777,
-      "exportedPath": "projects/LLM-meet-KG/LLM-meet-KG.html",
-      "dependencies": []
-    },
-    "projects/LLM-meet-KG/Pasted image 20240426195447.jpg": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 555550,
-      "exportedPath": "projects/LLM-meet-KG/Pasted image 20240426195447.jpg",
-      "dependencies": []
+      "modifiedTime": 1723771220671,
+      "sourceSize": 3775,
+      "exportedPath": "projects/llm-meet-kg/llm-meet-kg.html",
+      "dependencies": [
+        "projects/llm-meet-kg/static/logo.png",
+        "projects/llm-meet-kg/static/pasted-image-20231213224908.png",
+        "projects/llm-meet-kg/static/pasted-image-20231213224844.png",
+        "projects/llm-meet-kg/static/pasted-image-20240426195447.jpg",
+        "projects/llm-meet-kg/static/pasted-image-20240611172057.png"
+      ]
     },
     "Resume/Szy-CV.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 11815,
-      "exportedPath": "Resume/Szy-CV.html",
-      "dependencies": []
+      "modifiedTime": 1723771220671,
+      "sourceSize": 12238,
+      "exportedPath": "resume/szy-cv.html",
+      "dependencies": [
+        "lib/media/cv-240820.png",
+        "lib/media/cv-240820.png",
+        "lib/media/siat.png",
+        "lib/media/siat.png"
+      ]
     },
     "Resume/Szy-CV(English Version).md": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 3251,
-      "exportedPath": "Resume/Szy-CV(English Version).html",
+      "exportedPath": "resume/szy-cv(english-version).html",
       "dependencies": []
     },
-    "static/第一期工作流分享.png": {
-      "modifiedTime": 1717565719453,
+    "static/code/moveAttachiments.py": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1200,
+      "exportedPath": "static/code/moveattachiments.py",
+      "dependencies": []
+    },
+    "static/image/第一期工作流分享.png": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 1260417,
-      "exportedPath": "static/第一期工作流分享.png",
+      "exportedPath": "static/image/第一期工作流分享.png",
       "dependencies": []
     },
-    "static/组会真实写照.jpg": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 53505,
-      "exportedPath": "static/组会真实写照.jpg",
-      "dependencies": []
-    },
-    "static/Pasted image 20231218085619.jpg": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 422737,
-      "exportedPath": "static/Pasted image 20231218085619.jpg",
-      "dependencies": []
-    },
-    "技术栈：Linux&命令行.png": {
-      "modifiedTime": 1717565719453,
+    "static/image/技术栈：Linux&命令行.png": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 127093,
-      "exportedPath": "技术栈：Linux&命令行.png",
+      "exportedPath": "static/image/技术栈：linux&命令行.png",
+      "dependencies": []
+    },
+    "static/image/组会真实写照.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 53505,
+      "exportedPath": "static/image/组会真实写照.jpg",
+      "dependencies": []
+    },
+    "static/image/CV-240820.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 662197,
+      "exportedPath": "static/image/cv-240820.png",
+      "dependencies": []
+    },
+    "static/image/Pasted image 20231218085619.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 422737,
+      "exportedPath": "static/image/pasted-image-20231218085619.jpg",
+      "dependencies": []
+    },
+    "static/image/Pasted image 20240428091809.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 133592,
+      "exportedPath": "static/image/pasted-image-20240428091809.jpg",
+      "dependencies": []
+    },
+    "static/image/SIAT.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 47015,
+      "exportedPath": "static/image/siat.png",
       "dependencies": []
     },
     "index.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 2286,
+      "modifiedTime": 1723771220671,
+      "sourceSize": 3108,
       "exportedPath": "index.html",
       "dependencies": []
     },
-    "Szy-Confidence.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 5445,
-      "exportedPath": "Szy-Confidence.html",
-      "dependencies": []
-    },
-    "szy-project-stack.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 7808,
-      "exportedPath": "szy-project-stack.html",
-      "dependencies": []
-    },
     "SzyDescribe.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 2176,
-      "exportedPath": "SzyDescribe.html",
+      "modifiedTime": 1723771220671,
+      "sourceSize": 2175,
+      "exportedPath": "szydescribe.html",
       "dependencies": []
     },
-    "tool-chest.md": {
-      "modifiedTime": 1717565719453,
-      "sourceSize": 5739,
-      "exportedPath": "tool-chest.html",
+    "lib/media/pasted-image-20240428091809.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 133592,
+      "exportedPath": "lib/media/pasted-image-20240428091809.jpg",
+      "dependencies": []
+    },
+    "lib/media/组会真实写照.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 53505,
+      "exportedPath": "lib/media/组会真实写照.jpg",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240411202847.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 15661,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240411202847.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240407084702.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 149904,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240407084702.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240327110423.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1060483,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240327110423.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240508171642.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 101866,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240508171642.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/pasted-image-20240528202511.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 108893,
+      "exportedPath": "courses/概率论与数理统计/pasted-image-20240528202511.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240528213516.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 258401,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240528213516.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240529160259.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 352562,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240529160259.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/pasted-image-20240529194814.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 79859,
+      "exportedPath": "courses/概率论与数理统计/pasted-image-20240529194814.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240529113358.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 270505,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240529113358.png",
+      "dependencies": []
+    },
+    "courses/概率论与数理统计/images/pasted-image-20240529113417.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 663306,
+      "exportedPath": "courses/概率论与数理统计/images/pasted-image-20240529113417.png",
+      "dependencies": []
+    },
+    "courses/数学与人工智能/pasted-image-20240507155610.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 131462,
+      "exportedPath": "courses/数学与人工智能/pasted-image-20240507155610.png",
+      "dependencies": []
+    },
+    "projects/llm-meet-kg/static/logo.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 38942,
+      "exportedPath": "projects/llm-meet-kg/static/logo.png",
+      "dependencies": []
+    },
+    "projects/llm-meet-kg/static/pasted-image-20231213224908.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 43203,
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20231213224908.png",
+      "dependencies": []
+    },
+    "projects/llm-meet-kg/static/pasted-image-20231213224844.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 18529,
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20231213224844.png",
+      "dependencies": []
+    },
+    "projects/llm-meet-kg/static/pasted-image-20240426195447.jpg": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 555550,
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20240426195447.jpg",
+      "dependencies": []
+    },
+    "projects/llm-meet-kg/static/pasted-image-20240611172057.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 36026,
+      "exportedPath": "projects/llm-meet-kg/static/pasted-image-20240611172057.png",
+      "dependencies": []
+    },
+    "lib/media/cv-240820.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 662197,
+      "exportedPath": "lib/media/cv-240820.png",
+      "dependencies": []
+    },
+    "lib/media/siat.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 47015,
+      "exportedPath": "lib/media/siat.png",
+      "dependencies": []
+    },
+    "lib/scripts/graph-wasm.wasm": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 23377,
+      "exportedPath": "lib/scripts/graph-wasm.wasm",
       "dependencies": []
     },
     "lib/fonts/94f2f163d4b698242fef.otf": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 66800,
       "exportedPath": "lib/fonts/94f2f163d4b698242fef.otf",
       "dependencies": []
     },
     "lib/fonts/72505e6a122c6acd5471.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 104232,
       "exportedPath": "lib/fonts/72505e6a122c6acd5471.woff2",
       "dependencies": []
     },
     "lib/fonts/2d5198822ab091ce4305.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 104332,
       "exportedPath": "lib/fonts/2d5198822ab091ce4305.woff2",
       "dependencies": []
     },
     "lib/fonts/c8ba52b05a9ef10f4758.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 98868,
       "exportedPath": "lib/fonts/c8ba52b05a9ef10f4758.woff2",
       "dependencies": []
     },
     "lib/fonts/cb10ffd7684cd9836a05.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 106876,
       "exportedPath": "lib/fonts/cb10ffd7684cd9836a05.woff2",
       "dependencies": []
     },
     "lib/fonts/b5f0f109bc88052d4000.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 105804,
       "exportedPath": "lib/fonts/b5f0f109bc88052d4000.woff2",
       "dependencies": []
     },
     "lib/fonts/cbe0ae49c52c920fd563.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 106108,
       "exportedPath": "lib/fonts/cbe0ae49c52c920fd563.woff2",
       "dependencies": []
     },
     "lib/fonts/535a6cf662596b3bd6a6.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 111708,
       "exportedPath": "lib/fonts/535a6cf662596b3bd6a6.woff2",
       "dependencies": []
     },
     "lib/fonts/70cc7ff27245e82ad414.ttf": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 192740,
       "exportedPath": "lib/fonts/70cc7ff27245e82ad414.ttf",
       "dependencies": []
     },
     "lib/fonts/454577c22304619db035.ttf": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 161376,
       "exportedPath": "lib/fonts/454577c22304619db035.ttf",
       "dependencies": []
     },
     "lib/fonts/52ac8f3034507f1d9e53.ttf": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 191568,
       "exportedPath": "lib/fonts/52ac8f3034507f1d9e53.ttf",
       "dependencies": []
     },
     "lib/fonts/05b618077343fbbd92b7.ttf": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 155288,
       "exportedPath": "lib/fonts/05b618077343fbbd92b7.ttf",
       "dependencies": []
     },
     "lib/fonts/4bb6ac751d1c5478ff3a.woff2": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 7876,
       "exportedPath": "lib/fonts/4bb6ac751d1c5478ff3a.woff2",
       "dependencies": []
     },
     "lib/media/874d8b8e340f75575caa.svg": {
-      "modifiedTime": 1717565719453,
+      "modifiedTime": 1723771220671,
       "sourceSize": 317,
       "exportedPath": "lib/media/874d8b8e340f75575caa.svg",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Zero.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_zero.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 1368,
-      "exportedPath": "lib/fonts/MathJax_Zero.woff",
+      "exportedPath": "lib/fonts/mathjax_zero.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Main-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_main-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 34160,
-      "exportedPath": "lib/fonts/MathJax_Main-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_main-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Main-Bold.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_main-bold.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 34464,
-      "exportedPath": "lib/fonts/MathJax_Main-Bold.woff",
+      "exportedPath": "lib/fonts/mathjax_main-bold.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Math-Italic.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_math-italic.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 19360,
-      "exportedPath": "lib/fonts/MathJax_Math-Italic.woff",
+      "exportedPath": "lib/fonts/mathjax_math-italic.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Main-Italic.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_main-italic.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 20832,
-      "exportedPath": "lib/fonts/MathJax_Main-Italic.woff",
+      "exportedPath": "lib/fonts/mathjax_main-italic.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Math-BoldItalic.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_math-bolditalic.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 19776,
-      "exportedPath": "lib/fonts/MathJax_Math-BoldItalic.woff",
+      "exportedPath": "lib/fonts/mathjax_math-bolditalic.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Size1-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_size1-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 5792,
-      "exportedPath": "lib/fonts/MathJax_Size1-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_size1-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Size2-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_size2-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 5464,
-      "exportedPath": "lib/fonts/MathJax_Size2-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_size2-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Size3-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_size3-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 3244,
-      "exportedPath": "lib/fonts/MathJax_Size3-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_size3-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Size4-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_size4-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 5148,
-      "exportedPath": "lib/fonts/MathJax_Size4-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_size4-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_AMS-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_ams-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 40808,
-      "exportedPath": "lib/fonts/MathJax_AMS-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_ams-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Calligraphic-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_calligraphic-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 9600,
-      "exportedPath": "lib/fonts/MathJax_Calligraphic-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_calligraphic-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Calligraphic-Bold.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_calligraphic-bold.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 9908,
-      "exportedPath": "lib/fonts/MathJax_Calligraphic-Bold.woff",
+      "exportedPath": "lib/fonts/mathjax_calligraphic-bold.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Fraktur-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_fraktur-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 21480,
-      "exportedPath": "lib/fonts/MathJax_Fraktur-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_fraktur-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Fraktur-Bold.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_fraktur-bold.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 22340,
-      "exportedPath": "lib/fonts/MathJax_Fraktur-Bold.woff",
+      "exportedPath": "lib/fonts/mathjax_fraktur-bold.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_SansSerif-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_sansserif-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 12660,
-      "exportedPath": "lib/fonts/MathJax_SansSerif-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_sansserif-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_SansSerif-Bold.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_sansserif-bold.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 15944,
-      "exportedPath": "lib/fonts/MathJax_SansSerif-Bold.woff",
+      "exportedPath": "lib/fonts/mathjax_sansserif-bold.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_SansSerif-Italic.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_sansserif-italic.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 14628,
-      "exportedPath": "lib/fonts/MathJax_SansSerif-Italic.woff",
+      "exportedPath": "lib/fonts/mathjax_sansserif-italic.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Script-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_script-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 11852,
-      "exportedPath": "lib/fonts/MathJax_Script-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_script-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Typewriter-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_typewriter-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 17604,
-      "exportedPath": "lib/fonts/MathJax_Typewriter-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_typewriter-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Vector-Regular.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_vector-regular.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 1136,
-      "exportedPath": "lib/fonts/MathJax_Vector-Regular.woff",
+      "exportedPath": "lib/fonts/mathjax_vector-regular.woff",
       "dependencies": []
     },
-    "lib/fonts/MathJax_Vector-Bold.woff": {
-      "modifiedTime": 1717565719453,
+    "lib/fonts/mathjax_vector-bold.woff": {
+      "modifiedTime": 1723771220671,
       "sourceSize": 1116,
-      "exportedPath": "lib/fonts/MathJax_Vector-Bold.woff",
+      "exportedPath": "lib/fonts/mathjax_vector-bold.woff",
+      "dependencies": []
+    },
+    "lib/html/file-tree.html": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 57459,
+      "exportedPath": "lib/html/file-tree.html",
+      "dependencies": []
+    },
+    "lib/scripts/webpage.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 47290,
+      "exportedPath": "lib/scripts/webpage.js",
+      "dependencies": []
+    },
+    "lib/scripts/graph-view.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 15519,
+      "exportedPath": "lib/scripts/graph-view.js",
+      "dependencies": []
+    },
+    "lib/scripts/graph-wasm.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 14021,
+      "exportedPath": "lib/scripts/graph-wasm.js",
+      "dependencies": []
+    },
+    "lib/scripts/graph-render-worker.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 5179,
+      "exportedPath": "lib/scripts/graph-render-worker.js",
+      "dependencies": []
+    },
+    "lib/scripts/tinycolor.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 29832,
+      "exportedPath": "lib/scripts/tinycolor.js",
+      "dependencies": []
+    },
+    "lib/scripts/pixi.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 449509,
+      "exportedPath": "lib/scripts/pixi.js",
+      "dependencies": []
+    },
+    "lib/scripts/minisearch.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 29422,
+      "exportedPath": "lib/scripts/minisearch.js",
+      "dependencies": []
+    },
+    "lib/media/favicon.png": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 1105,
+      "exportedPath": "lib/media/favicon.png",
+      "dependencies": []
+    },
+    "lib/scripts/graph-data.js": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 4552,
+      "exportedPath": "lib/scripts/graph-data.js",
+      "dependencies": []
+    },
+    "lib/styles/obsidian.css": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 157292,
+      "exportedPath": "lib/styles/obsidian.css",
+      "dependencies": []
+    },
+    "lib/styles/other-plugins.css": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 83,
+      "exportedPath": "lib/styles/other-plugins.css",
+      "dependencies": []
+    },
+    "lib/styles/global-variable-styles.css": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 419,
+      "exportedPath": "lib/styles/global-variable-styles.css",
+      "dependencies": []
+    },
+    "lib/styles/main-styles.css": {
+      "modifiedTime": 1723771220671,
+      "sourceSize": 23130,
+      "exportedPath": "lib/styles/main-styles.css",
       "dependencies": []
     }
   }
