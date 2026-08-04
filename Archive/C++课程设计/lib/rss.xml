@@ -1,0 +1,1959 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[C++课程设计]]></title><description><![CDATA[Obsidian digital garden]]></description><link>http://github.com/dylang/node-rss</link><image><url>lib\media\favicon.png</url><title>C++课程设计</title><link></link></image><generator>Webpage HTML Export plugin for Obsidian</generator><lastBuildDate>Thu, 27 Jun 2024 02:18:48 GMT</lastBuildDate><atom:link href="lib\rss.xml" rel="self" type="application/rss+xml"/><pubDate>Thu, 27 Jun 2024 02:18:42 GMT</pubDate><ttl>60</ttl><dc:creator></dc:creator><item><title><![CDATA[`.env`]]></title><description><![CDATA[ 
+ <br>from dotenv import load_dotenv
+load_dotenv()
+
+import os
+# 可以直接使用os.environ['FLASK_APP']等
+复制]]></description><link>代码\`.env`.html</link><guid isPermaLink="false">代码/`.env`.md</guid><pubDate>Tue, 15 Aug 2023 01:58:32 GMT</pubDate></item><item><title><![CDATA[`.gitignore`]]></title><description><![CDATA[ 
+ <br>venv/
+
+*.pyc
+__pycache__/
+
+instance/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+dist/
+build/
+*.egg-info/
+复制]]></description><link>代码\`.gitignore`.html</link><guid isPermaLink="false">代码/`.gitignore`.md</guid><pubDate>Tue, 15 Aug 2023 01:53:50 GMT</pubDate></item><item><title><![CDATA[`MINIFEST.in`]]></title><description><![CDATA[ 
+ <br>MANIFEST.in文件在Python项目打包时用于控制要包含的文件。<br>
+<br>include flaskr/schema.sql
+<br>明确包含flaskr/schema.sql文件,即使它没有被Python导入也将被包含在包中。<br>
+<br>graft flaskr/static 
+<br>递归包含flaskr/static目录下的所有文件,目录结构将被保留。<br>
+<br>graft flaskr/templates
+<br>递归包含flaskr/templates目录下的所有文件,目录结构将被保留。<br>
+<br>global-exclude *.pyc
+<br>全局排除所有的.pyc文件,这些是Python编译生成的字节码,不需要打包。<br>总结:<br>
+<br>
+include:显式包含文件
+
+<br>
+graft:递归包含目录保持目录结构
+
+<br>
+global-exclude:全局排除文件模式
+
+<br>MANIFEST.in让我们能更好地控制最终打包的内容,排除一些实际不需要的文件如缓存、日志等。]]></description><link>代码\`minifest.in`.html</link><guid isPermaLink="false">代码/`MINIFEST.in`.md</guid><pubDate>Fri, 25 Aug 2023 14:40:46 GMT</pubDate></item><item><title><![CDATA[app.py]]></title><description><![CDATA[ 
+ <br>import os
+
+import markdown
+
+import yaml
+
+from flask import Flask, request, jsonify
+
+  
+
+app = Flask(__name__)
+
+  
+
+PROJECTS_DIR = './data'
+
+  
+
+class Project:
+
+    def __init__(self, name, status,note,stats):
+
+        """
+
+        name: 项目名称
+
+        status: 项目状态: In Planning, In Process, Done, Pause
+
+        note: 项目描述
+
+        stats[daily,weekly,monthly,yearly]: 项目统计信息
+
+        """
+
+        self.name = name
+
+        self.status = status
+
+        self.note = note
+
+        self.stats = stats
+
+  
+  
+
+# 读取单个项目文件
+
+def load_project(project_file):
+
+    with open(project_file) as f:
+
+        content = f.read()
+
+  
+
+    metadata, content = content.split('\n---\n')
+
+    data = yaml.load(metadata)
+
+  
+
+    data['content'] = content
+
+  
+
+    return data
+
+  
+
+# 新加入的首页路由
+
+@app.route('/')
+
+def home():
+
+    return 'Welcome to the Project Manager App!'
+
+  
+
+# 读取所有项目文件
+
+@app.route('/api/projects', methods=['GET'])
+
+def get_projects():
+
+    # 返回项目列表
+
+    # 创建新项目
+
+    projects = []
+
+    for status in ['In Planning', 'In Process', 'Done']:
+
+        status_dir = f'{PROJECTS_DIR}/{status}'
+
+        for filename in os.listdir(status_dir):
+
+            project_file = f'{status_dir}/{filename}'
+
+            project = load_project(project_file)
+
+            projects.append(project)
+
+  
+
+    return jsonify(projects)
+
+  
+
+@app.route('/api/projects', methods=['POST'])
+
+def create_project():
+
+    data = request.json
+
+    name = data['name']
+
+    status = data['status'] or 'In Planning'
+
+  
+
+    filename = f'{name}.md'
+
+    project_file = f'{PROJECTS_DIR}/{status}/{filename}'
+
+    # 在对应目录下创建项目文件
+
+    open(project_file, 'w').close()
+
+    return jsonify({'message': 'Project created'})
+
+  
+
+if __name__ == '__main__':
+
+    app.run()
+复制]]></description><link>代码\app.py.html</link><guid isPermaLink="false">代码/app.py.md</guid><pubDate>Wed, 09 Aug 2023 09:21:23 GMT</pubDate></item><item><title><![CDATA[base.html]]></title><description><![CDATA[ 
+ <br>&lt;!doctype html&gt;
+
+&lt;title&gt;{% block title %}{% endblock %} PM's ATimer&lt;/title&gt;
+
+&lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;
+
+&lt;nav&gt;
+
+  &lt;img src="{{ url_for('static', filename='images/logo.jpg') }}"&gt;
+  
+  &lt;h1&gt;ATimer&lt;/h1&gt;
+
+  &lt;ul&gt;
+
+    &lt;li&gt;&lt;a href="{{ url_for('index') }}" style="{% if active_page=='index' %}font-weight:bold;color:red{% endif %}"&gt;日视图&lt;/a&gt;
+    
+    &lt;li&gt;&lt;a href="{{ url_for('weekly') }}" style="{% if active_page=='weekly' %}font-weight:bold;color:red{% endif %}"&gt;周视图&lt;/a&gt;
+
+    &lt;li&gt;&lt;a href="{{ url_for('monthly') }}" style="{% if active_page=='monthly' %}font-weight:bold;color:red{% endif %}"&gt;月视图&lt;/a&gt;
+
+    &lt;li&gt;&lt;a href="{{ url_for('yearly') }}" style="{% if active_page=='yearly' %}font-weight:bold;color:red{% endif %}"&gt;年视图&lt;/a&gt;
+
+    &lt;li&gt;&lt;span&gt;{{ current_user.username }}&lt;/span&gt;
+
+    &lt;li&gt;&lt;a href="{{ url_for('logout') }}"&gt;Log Out&lt;/a&gt;
+
+  &lt;/ul&gt;
+
+&lt;/nav&gt;
+
+&lt;section class="content"&gt;
+
+  {% block content %}{% endblock %}
+
+&lt;/section&gt;
+
+&lt;script src="{{ url_for('static', filename='js/script.js') }}"&gt;&lt;/script&gt;
+复制]]></description><link>代码\base.html.html</link><guid isPermaLink="false">代码/base.html.md</guid><pubDate>Fri, 17 May 2024 00:06:20 GMT</pubDate></item><item><title><![CDATA[《Python入门经典：以解决计算问题为导向的Python编程实践》]]></title><description><![CDATA[ 
+ <br>晶体管 <br>
+<br>设法解决Python浮点数计算不精确的BUG
+]]></description><link>技术栈\《python入门经典：以解决计算问题为导向的python编程实践》.html</link><guid isPermaLink="false">技术栈/《Python入门经典：以解决计算问题为导向的Python编程实践》.md</guid><pubDate>Wed, 29 Nov 2023 16:07:29 GMT</pubDate></item><item><title><![CDATA[编码]]></title><description><![CDATA[ 
+ <br>Unicode 编码
+Hex 编码
+复制]]></description><link>技术栈\编码.html</link><guid isPermaLink="false">技术栈/编码.md</guid><pubDate>Wed, 09 Aug 2023 02:29:48 GMT</pubDate></item><item><title><![CDATA[博客]]></title><description><![CDATA[ 
+ <br>
+<br><a rel="noopener" class="external-link" href="https://www.realworldml.xyz/blog" target="_blank">https://www.realworldml.xyz/blog</a>
+<br>
+]]></description><link>技术栈\博客.html</link><guid isPermaLink="false">技术栈/博客.md</guid><pubDate>Tue, 22 Aug 2023 04:23:10 GMT</pubDate></item><item><title><![CDATA[产品文档]]></title><description><![CDATA[ 
+ <br><a data-href="Read the Doc" href="Read the Doc" class="internal-link" target="_self" rel="noopener">Read the Doc</a> ]]></description><link>技术栈\产品文档.html</link><guid isPermaLink="false">技术栈/产品文档.md</guid><pubDate>Wed, 14 Feb 2024 05:33:17 GMT</pubDate></item><item><title><![CDATA[命令行程序设计]]></title><description><![CDATA[ 
+ <br>
+<br><a data-tooltip-position="top" aria-label="https://blog.csdn.net/ywj1225/article/details/5938294#:~:text=Linux%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%201%201%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%20%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E7%9A%84%E9%A6%96%E8%A6%81%E4%BB%BB%E5%8A%A1%E6%98%AF%E8%A7%A3%E6%9E%90%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%EF%BC%8CGUI%E6%B4%BE%E7%9A%84%E7%A8%8B%E5%BA%8F%E5%91%98%E5%BE%88%E5%B0%91%E5%85%B3%E5%BF%83%E8%BF%99%E4%B8%AA%E3%80%82%20...%202%202%E3%80%81POSIX%E7%BA%A6%E5%AE%9A%20POSIX%E8%A1%A8%E7%A4%BA%E5%8F%AF%E7%A7%BB%E6%A4%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%8F%A3%EF%BC%9APortable,...%207%207%E3%80%81GNU%E6%8F%90%E4%BE%9B%E7%9A%84getopt%20%28%29%E5%87%BD%E6%95%B0%E7%9A%84%E7%89%B9%E7%82%B9%20...%208%208%E3%80%81GNU%E9%95%BF%E9%80%89%E9%A1%B9%E5%91%BD%E4%BB%A4%E8%A1%8C%E8%A7%A3%E6%9E%90%20" rel="noopener" class="external-link" href="https://blog.csdn.net/ywj1225/article/details/5938294#:~:text=Linux%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%201%201%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%20%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E7%9A%84%E9%A6%96%E8%A6%81%E4%BB%BB%E5%8A%A1%E6%98%AF%E8%A7%A3%E6%9E%90%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%EF%BC%8CGUI%E6%B4%BE%E7%9A%84%E7%A8%8B%E5%BA%8F%E5%91%98%E5%BE%88%E5%B0%91%E5%85%B3%E5%BF%83%E8%BF%99%E4%B8%AA%E3%80%82%20...%202%202%E3%80%81POSIX%E7%BA%A6%E5%AE%9A%20POSIX%E8%A1%A8%E7%A4%BA%E5%8F%AF%E7%A7%BB%E6%A4%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%8F%A3%EF%BC%9APortable,...%207%207%E3%80%81GNU%E6%8F%90%E4%BE%9B%E7%9A%84getopt%20%28%29%E5%87%BD%E6%95%B0%E7%9A%84%E7%89%B9%E7%82%B9%20...%208%208%E3%80%81GNU%E9%95%BF%E9%80%89%E9%A1%B9%E5%91%BD%E4%BB%A4%E8%A1%8C%E8%A7%A3%E6%9E%90%20" target="_blank">Linux命令行程序设计 _编程linux命令行程序_wjain的博客-CSDN博客</a> 
+<br><a data-tooltip-position="top" aria-label="http://ruanyifeng.com/blog/2015/05/command-line-with-node.html" rel="noopener" class="external-link" href="http://ruanyifeng.com/blog/2015/05/command-line-with-node.html" target="_blank">Node.js 命令行程序开发教程 - 阮一峰的网络日志 (ruanyifeng.com)</a>
+<br>
+]]></description><link>技术栈\命令行程序设计.html</link><guid isPermaLink="false">技术栈/命令行程序设计.md</guid><pubDate>Tue, 08 Aug 2023 08:45:02 GMT</pubDate></item><item><title><![CDATA[软件开发日志怎么写？]]></title><description><![CDATA[ 
+ <br><br>
+<br>Added － 这里记录新增加了哪些功能／接口
+<br>Changed － 功能／接口变更
+<br>Deprecated － 不建议使用的功能／接口，将来会删掉
+<br>Removed － 之前不建议使用的功能／接口，这次真的删掉了
+<br>Fixed － 这里记录解决了哪些问题
+<br>Others － 这里记录性能优化和安全性增强等改进。
+<br><br><br>
+<br>build：影响构建系统或外部依赖关系的更改（示例范围：gulp，broccoli，npm）
+<br>ci：更改我们的持续集成文件和脚本（示例范围：Travis，Circle，BrowserStack，SauceLabs）
+<br>docs：仅文档更改
+<br>feat：一个新功能
+<br>fix：修复错误
+<br>perf：改进性能的代码更改
+<br>refactor：代码更改，既不修复错误也不添加功能
+<br>style：不影响代码含义的变化（空白，格式化，缺少分号等）
+<br>test：添加缺失测试或更正现有测试
+]]></description><link>技术栈\软件开发日志怎么写？.html</link><guid isPermaLink="false">技术栈/软件开发日志怎么写？.md</guid><pubDate>Wed, 14 Feb 2024 05:32:24 GMT</pubDate></item><item><title><![CDATA[知识产权]]></title><description><![CDATA[ 
+ <br>
+<br>版权声明：自由转载-非商用-非衍生-保持署名（<a data-tooltip-position="top" aria-label="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" rel="noopener" class="external-link" href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank">创意共享3.0许可证</a>）
+<br>
+]]></description><link>技术栈\知识产权.html</link><guid isPermaLink="false">技术栈/知识产权.md</guid><pubDate>Wed, 09 Aug 2023 02:41:58 GMT</pubDate></item><item><title><![CDATA[CSS]]></title><description><![CDATA[ 
+ <br>
+<br><a data-tooltip-position="top" aria-label="https://developer.mozilla.org/zh-CN/docs/Web/CSS" rel="noopener" class="external-link" href="https://developer.mozilla.org/zh-CN/docs/Web/CSS" target="_blank">CSS：层叠样式表 | MDN (mozilla.org)</a> 
+<br><a data-tooltip-position="top" aria-label="https://tailwindcss.com/" rel="noopener" class="external-link" href="https://tailwindcss.com/" target="_blank">Tailwind CSS - Rapidly build modern websites without ever leaving your HTML.</a> 
+<br>完全仿写一些站点的样式
+
+<br>三体
+<br>细节：响应式 暗黑模式 CSS变量 
+
+
+]]></description><link>技术栈\css.html</link><guid isPermaLink="false">技术栈/CSS.md</guid><pubDate>Sun, 08 Oct 2023 16:01:48 GMT</pubDate></item><item><title><![CDATA[DOM]]></title><description><![CDATA[ 
+ <br>DOM (Document&nbsp;Object&nbsp;Model)（文档对象模型）是用于访问 HTML 元素的正式 W3C 标准。]]></description><link>技术栈\dom.html</link><guid isPermaLink="false">技术栈/DOM.md</guid><pubDate>Thu, 10 Aug 2023 09:47:57 GMT</pubDate></item><item><title><![CDATA[学习计划]]></title><description><![CDATA[ 
+ <br><br>
+<br><a data-tooltip-position="top" aria-label="http://catb.org/~esr/html-hell.html" rel="noopener" class="external-link" href="http://catb.org/~esr/html-hell.html" target="_blank">The HTML Hell Page (catb.org)</a> 
+<br><a data-tooltip-position="top" aria-label="https://htmldog.com/" rel="noopener" class="external-link" href="https://htmldog.com/" target="_blank">HTML, CSS, and JavaScript Tutorials, References, and Articles | HTML Dog</a>
+<br><a data-tooltip-position="top" aria-label="https://docs.net9.org/languages/html/" rel="noopener" class="external-link" href="https://docs.net9.org/languages/html/" target="_blank">HTML 语言基础 - SAST skill docs (net9.org)</a>
+<br><a data-tooltip-position="top" aria-label="https://www.w3school.com.cn/html/index.asp" rel="noopener" class="external-link" href="https://www.w3school.com.cn/html/index.asp" target="_blank">HTML 教程 (w3school.com.cn)</a>
+<br><a data-tooltip-position="top" aria-label="https://www.w3school.com.cn/tags/index.asp" rel="noopener" class="external-link" href="https://www.w3school.com.cn/tags/index.asp" target="_blank">HTML 标签参考手册 (w3school.com.cn)</a>
+<br><a data-tooltip-position="top" aria-label="https://www.w3school.com.cn/tags/html_ref_standardattributes.asp" rel="noopener" class="external-link" href="https://www.w3school.com.cn/tags/html_ref_standardattributes.asp" target="_blank">HTML 全局属性 (w3school.com.cn)</a>
+<br><a data-tooltip-position="top" aria-label="https://www.runoob.com/html/html-tutorial.html" rel="noopener" class="external-link" href="https://www.runoob.com/html/html-tutorial.html" target="_blank">HTML 教程 | 菜鸟教程 (runoob.com)</a> 
+<br><a data-tooltip-position="top" aria-label="https://developer.mozilla.org/zh-CN/docs/Web/HTML" rel="noopener" class="external-link" href="https://developer.mozilla.org/zh-CN/docs/Web/HTML" target="_blank">HTML（超文本标记语言） | MDN (mozilla.org)</a> 
+<br><a data-tooltip-position="top" aria-label="https://learn-html.org/" rel="noopener" class="external-link" href="https://learn-html.org/" target="_blank">Learn HTML - Free Interactive HTML Tutorial (learn-html.org)</a> 
+<br>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+
+&lt;head&gt;
+&lt;title&gt;&lt;/title&gt;
+&lt;/head&gt;
+
+
+&lt;body&gt;
+
+&lt;B&gt;&lt;/B&gt; &lt;I&gt;&lt;/I&gt; &lt;U&gt;&lt;/U&gt; &lt;font&gt;&lt;/font&gt; 
+&lt;sub&gt;&lt;/sub&gt; &lt;sup&gt;&lt;/sup&gt; &lt;hr&gt;
+&lt;/body&gt;
+
+
+&lt;/html&gt;
+复制<br>删除 <br> <br>
+<br>标记
+
+<br>&lt;body&gt;&lt;/body&gt;
+<br>文字
+<br>&lt;img&gt; 
+<br>&lt;a&gt;&lt;/a&gt;
+<br>列表
+
+<br>有序
+<br>无序
+<br>定义&lt;dl&gt;&lt;/dl&gt; 
+<br>预定格式&lt;pre&gt;&lt;/pre&gt;
+
+
+<br>&lt;table&gt;
+
+<br>表单
+<br>
+
+
+
+
+]]></description><link>技术栈\html.html</link><guid isPermaLink="false">技术栈/HTML.md</guid><pubDate>Tue, 30 Jan 2024 07:56:50 GMT</pubDate></item><item><title><![CDATA[学习资料]]></title><description><![CDATA[ 
+ <br>了解：<a data-href="JavaScript" href="技术栈\javascript.html" class="internal-link" target="_self" rel="noopener">JavaScript</a> 
+
+<br>凡是涉及到网页前端相关的内容，我们都需要 JavaScript
+
+<br><a data-href="Node.js" href="Node.js" class="internal-link" target="_self" rel="noopener">Node.js</a> <a data-href="Cordova" href="Cordova" class="internal-link" target="_self" rel="noopener">Cordova</a> <br><br>
+<br><a data-tooltip-position="top" aria-label="https://www.runoob.com/js/js-tutorial.html" rel="noopener" class="external-link" href="https://www.runoob.com/js/js-tutorial.html" target="_blank">JavaScript 教程 | 菜鸟教程 (runoob.com)</a>
+<br>document.write("&lt;p&gt;这是一个段落&lt;/p&gt;");
+&lt;button type="button" onclick="alert('欢迎!')"&gt;点我!&lt;/button&gt;
+alert()
+onclick=""
+function myFunction()
+{
+	x=document.getElementById("demo");  // 找到元素
+	x.innerHTML="Hello JavaScript!";    // 改变内容
+}
+
+&lt;script&gt;
+function changeImage()
+{
+    element=document.getElementById('myimage')
+    if (element.src.match("bulbon"))
+    {
+        element.src="/images/pic_bulboff.gif";
+    }
+    else
+    {
+        element.src="/images/pic_bulbon.gif";
+    }
+}
+&lt;/script&gt;
+&lt;img decoding="async" loading="lazy" id="myimage" onclick="changeImage()" src="/images/pic_bulboff.gif" width="100" height="180"&gt;
+
+if isNaN(x) {
+    alert("不是数字");
+}
+
+if(isNaN(x)||x.replace(/(^\s*)|(\s*$)/g,"")==""){ alert("不是数字"); }
+复制<br>嵌入<a data-tooltip-position="top" aria-label="HTML" data-href="HTML" href="技术栈\html.html" class="internal-link" target="_self" rel="noopener">HTML</a><br>&lt;script&gt;
+function myFunction()
+{
+	x=document.getElementById("demo");  // 找到元素
+	x.innerHTML="Hello JavaScript!";    // 改变内容
+}
+&lt;/script&gt;
+复制<br><a data-href="DOM" href="技术栈\dom.html" class="internal-link" target="_self" rel="noopener">DOM</a> <a data-href="Regex正则表达式" href="Regex正则表达式" class="internal-link" target="_self" rel="noopener">Regex正则表达式</a> ]]></description><link>技术栈\javascript.html</link><guid isPermaLink="false">技术栈/JavaScript.md</guid><pubDate>Mon, 05 Feb 2024 04:39:28 GMT</pubDate></item><item><title><![CDATA[jsonify]]></title><description><![CDATA[ 
+ ]]></description><link>技术栈\jsonify.html</link><guid isPermaLink="false">技术栈/jsonify.md</guid><pubDate>Wed, 09 Aug 2023 01:17:17 GMT</pubDate></item><item><title><![CDATA[MarkDown]]></title><description><![CDATA[ 
+ ]]></description><link>技术栈\markdown.html</link><guid isPermaLink="false">技术栈/MarkDown.md</guid><pubDate>Wed, 09 Aug 2023 11:09:22 GMT</pubDate></item><item><title><![CDATA[MVC]]></title><description><![CDATA[ 
+ <br>M：Model ==&gt; 与数据库相关的模型层<br>V：Views ==&gt; 网页的地址，以及渲染网页等<br>C：Controller ==&gt; 访问网页地址后，读取页面数据，调用业务逻辑]]></description><link>技术栈\mvc.html</link><guid isPermaLink="false">技术栈/MVC.md</guid><pubDate>Fri, 11 Aug 2023 10:54:43 GMT</pubDate></item><item><title><![CDATA[request]]></title><description><![CDATA[ 
+ ]]></description><link>技术栈\request.html</link><guid isPermaLink="false">技术栈/request.md</guid><pubDate>Wed, 09 Aug 2023 01:17:14 GMT</pubDate></item><item><title><![CDATA[SQL]]></title><description><![CDATA[ 
+ <br><br>
+<br><a data-tooltip-position="top" aria-label="https://github.com/vanna-ai/vanna" rel="noopener" class="external-link" href="https://github.com/vanna-ai/vanna" target="_blank">vanna-ai/vanna: 🤖 Chat with your SQL database 📊. Accurate Text-to-SQL Generation via LLMs using RAG 🔄. (github.com)</a> 
+<br><br>
+<br><a data-href="SQLite" href="技术栈\sqlite.html" class="internal-link" target="_self" rel="noopener">SQLite</a> <a data-href="pymysql" href="pymysql" class="internal-link" target="_self" rel="noopener">pymysql</a> 
+<br>SQL 查询语句
+<br>使用占位符的好处是会自动帮你转义输入值，以抵御&nbsp;SQL 注入攻击
+]]></description><link>技术栈\sql.html</link><guid isPermaLink="false">技术栈/SQL.md</guid><pubDate>Wed, 17 Jan 2024 09:24:47 GMT</pubDate></item><item><title><![CDATA[SQLite]]></title><description><![CDATA[ 
+ <br>
+<br><a data-tooltip-position="top" aria-label="https://sqlite.org/about.html" rel="noopener" class="external-link" href="https://sqlite.org/about.html" target="_blank">About SQLite</a> 
+<br><a data-tooltip-position="top" aria-label="https://sqlite.org/lang.html" rel="noopener" class="external-link" href="https://sqlite.org/lang.html" target="_blank">Query Language Understood by SQLite</a> 
+]]></description><link>技术栈\sqlite.html</link><guid isPermaLink="false">技术栈/SQLite.md</guid><pubDate>Fri, 11 Aug 2023 11:44:19 GMT</pubDate></item><item><title><![CDATA[sqlite3]]></title><description><![CDATA[ 
+ ]]></description><link>技术栈\sqlite3.html</link><guid isPermaLink="false">技术栈/sqlite3.md</guid><pubDate>Wed, 09 Aug 2023 01:17:19 GMT</pubDate></item><item><title><![CDATA[typescript]]></title><description><![CDATA[ 
+ <br>
+<br><a data-tooltip-position="top" aria-label="https://docs.net9.org/languages/typescript/" rel="noopener" class="external-link" href="https://docs.net9.org/languages/typescript/" target="_blank">TypeScript 语言基础 - SAST skill docs (net9.org)</a> 
+]]></description><link>技术栈\typescript.html</link><guid isPermaLink="false">技术栈/typescript.md</guid><pubDate>Sat, 12 Aug 2023 08:01:15 GMT</pubDate></item><item><title><![CDATA[相关阅读]]></title><description><![CDATA[ 
+ <br>.yml <br>
+<br><a data-tooltip-position="top" aria-label="https://zhuanlan.zhihu.com/p/145173920" rel="noopener" class="external-link" href="https://zhuanlan.zhihu.com/p/145173920" target="_blank">一文看懂 YAML - 知乎 (zhihu.com)</a>
+<br>
+<br>
+<br><a data-href="ISO 8601 格式" href="ISO 8601 格式" class="internal-link" target="_self" rel="noopener">ISO 8601 格式</a> 
+<br><br>
+<br><a data-tooltip-position="top" aria-label="https://zh.wikipedia.org/wiki/YAML" rel="noopener" class="external-link" href="https://zh.wikipedia.org/wiki/YAML" target="_blank">YAML - 维基百科，自由的百科全书 (wikipedia.org)</a>
+<br><a data-tooltip-position="top" aria-label="https://yaml.org/" rel="noopener" class="external-link" href="https://yaml.org/" target="_blank">The Official YAML Web Site</a>
+<br><a data-tooltip-position="top" aria-label="https://yaml.org/spec/1.2.2/" rel="noopener" class="external-link" href="https://yaml.org/spec/1.2.2/" target="_blank">YAML Ain’t Markup Language (YAML™) revision 1.2.2</a>
+<br><a data-tooltip-position="top" aria-label="https://www.runoob.com/w3cnote/yaml-intro.html" rel="noopener" class="external-link" href="https://www.runoob.com/w3cnote/yaml-intro.html" target="_blank">YAML 入门教程 | 菜鸟教程 (runoob.com)</a>
+<br><a data-tooltip-position="top" aria-label="https://www.ruanyifeng.com/blog/2016/07/yaml.html" rel="noopener" class="external-link" href="https://www.ruanyifeng.com/blog/2016/07/yaml.html" target="_blank">YAML 语言教程 - 阮一峰的网络日志 (ruanyifeng.com)</a>
+<br>
+<br><br>
+<br><a data-tooltip-position="top" aria-label="https://www.json2yaml.com/convert-yaml-to-json" rel="noopener" class="external-link" href="https://www.json2yaml.com/convert-yaml-to-json" target="_blank">json2yaml.com/convert-yaml-to-json</a>
+<br>
+]]></description><link>技术栈\yaml.html</link><guid isPermaLink="false">技术栈/yaml.md</guid><pubDate>Wed, 09 Aug 2023 02:39:24 GMT</pubDate></item><item><title><![CDATA[更新日志]]></title><description><![CDATA[<a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:changed" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#changed</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:remove" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#remove</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> <a class="tag" href="?query=tag:add" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#add</a> 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br><a data-href="软件开发日志怎么写？" href="技术栈\软件开发日志怎么写？.html" class="internal-link" target="_self" rel="noopener">软件开发日志怎么写？</a> <br>1.0.0 Beta 发布日期：2023-09-04
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 实现了record，成为最小可用程序
+
+<br>0.2.1 Beta 发布日期：2023-09-03
+
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> 将duration从Interval更改为String存储HH:MM:SS格式的时间数据
+<br>
+
+<br>0.2.0 Beta 发布日期：2023-09-02
+
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> 解决了register/login的db.init()的bug
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> 调整了数据库的存储结构，使用<a data-href="JSON" href="JSON" class="internal-link" target="_self" rel="noopener">JSON</a>来存储统计数据。
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 完善了models.py和schema.sql 
+<br>设计数据库结构，重构schema.sql与models.py 中的class Project 
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> 时间数据直接使用Python字典,但实际存储为JSON字符串
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 实现新建项目(create.html)的POST接口，跳转，数据存储
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> 新建项目移动到header右侧
+
+<br>0.1.5 Beta 发布日期：2023-09-01
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 所有页面之间的展示
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> /create后的POST与跳转
+
+<br>0.1.4 Beta 发布日期：2023-08-29
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> “所有项目”视图展示
+<br><a href=".?query=tag:changed" class="tag" target="_blank" rel="noopener">#changed</a> 重构了Project类，增加了日/周/月/年/所有参数的缓存。直接调取无需重复计算
+
+<br>0.1.3 Beta 发布日期：2023-08-26
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 实现了注册登录
+
+<br>0.1.2 Beta 发布日期：2023-08-19
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> Hash 密码映射
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> register &amp; login
+
+<br>0.1.2 Beta 发布日期：2023-08-17
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> nav
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> register &amp; login
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> Create
+
+<br>0.1.1 Beta 发布日期：2023-08-15
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> <a data-href="`.gitignore`" href="代码\`.gitignore`.html" class="internal-link" target="_self" rel="noopener">`.gitignore`</a> 忽略运行项目时产生的临时文件以及编辑代码时编辑 器产生的临时文件.
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> <a data-href="`.env`" href="代码\`.env`.html" class="internal-link" target="_self" rel="noopener">`.env`</a> 避免手动set export的麻烦
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> <a data-href="C++课程设计：3-最小可用产品#需求分析" href="c++课程设计：3-最小可用产品.html#需求分析" class="internal-link" target="_self" rel="noopener">C++课程设计：3-最小可用产品 &gt; 需求分析</a> 
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 上线了index.html,成功展示首页！
+
+<br>0.1.0 Beta 发布日期：2023-08-12
+
+<br><a href=".?query=tag:remove" class="tag" target="_blank" rel="noopener">#remove</a> 取消以MarkDown作为文件存储格式，删除./data/...相关内容
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 使用<a data-href="SQLite" href="技术栈\sqlite.html" class="internal-link" target="_self" rel="noopener">SQLite</a>作为数据库
+<br>参考昨天学习的Flask-Blog-Tutorial，重构了文件树结构：<a data-href="C++课程设计：目录结构" href="c++课程设计：目录结构.html" class="internal-link" target="_self" rel="noopener">C++课程设计：目录结构</a>
+
+<br>0.0.3 Beta 发布日期：2023-08-11
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> /script/css/style.css
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> /script/js/script.js
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> /bin-env/ 支持MacOS.,Linux,Windows
+<br>学习了Flask，完成了Blog的Tutorial
+
+<br>0.0.2 Beta 发布日期：2023-08-10
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 实现 Home：介绍项目内容
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 创建Github repo，使用Github版本控制源代码，管理发布
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> <a data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">C++课程设计：产品文档</a> 
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 使用VScode管理Git提交
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 创建项目的前端弹窗初稿，准备添加js
+
+<br>0.0.1 Beta内测发布日期：2023-08-09
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> <a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="" rel="noopener" class="external-link" href="" target="_blank">Download</a>  <a data-tooltip-position="top" aria-label="" rel="noopener" class="external-link" href="" target="_blank">About</a> 
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> uuid,生成项目ID,保证每个项目唯一标识
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> 信息框来展示首页介绍内容
+
+<br>0.0.0 Beta内测发布日期：2023-08-09
+
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> app.py
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> project的类，单个读取与批量初始化加载
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> Flask,成功在http://127.0.0.1:5000进行网页端访问
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> ./venv/
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> ./requirements.txt
+<br><a href=".?query=tag:add" class="tag" target="_blank" rel="noopener">#add</a> home() 函数返回欢迎信息，解决404问题。
+
+]]></description><link>c++课程设计：产品文档\其他材料\更新日志.html</link><guid isPermaLink="false">C++课程设计：产品文档/其他材料/更新日志.md</guid><pubDate>Mon, 04 Sep 2023 02:23:35 GMT</pubDate></item><item><title><![CDATA[快速上手]]></title><description><![CDATA[ 
+ <br>cd ATimer
+python -m venv env
+source env/bin/activate  //linux MacOS
+env\Scripts\activate     //Windows
+
+python.exe -m pip install --upgrade pip
+pip install -U xxxxx
+
+pip install -r requirements.txt
+python setup.py install
+
+/*
+set FLASK_APP=ATimer       
+export FLASK_APP=ATimer
+set FLASK_ENV=development  
+export FLASK_ENV=development
+*/
+
+flask run
+
+
+find . -name "*.pyc" -delete. //删除python缓存
+pip install -U flask-sqlalchemy
+复制]]></description><link>c++课程设计：产品文档\用户指南\快速上手.html</link><guid isPermaLink="false">C++课程设计：产品文档/用户指南/快速上手.md</guid><pubDate>Fri, 25 Aug 2023 09:27:35 GMT</pubDate></item><item><title><![CDATA[我的想法]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> Download About<br><br>Prompt
+我正在设计一个程序，用于项目管理。负责记录项目执行事件并可视化监视我的项目执行时间分布。
+这个程序可以增，删，查，改项目，并记录某个项目的每一段开始，结束时间，存储在markdown文件构成的数据日志上。
+每个项目存储在SQL数据库中。项目具有“In Planing”,"In Process", “Done”等属性，并可以输入“#”形式的标签并支持后续编辑。具有若干条“执行”，每条执行包括了“开始日期-时间”，“结束日期-时间”，“用时（结束-开始时间）”以及对上述所有条目的“日统计”，“周统计”，“月统计”，“年统计”。
+当打开程序时，程序自动读取数据库。
+整体为视图页面，展示“当日”的统计数据，并可以切换为：“本周”“本月”“本年度”视图。当日的统计数据按照“总时间”降序排行榜地形式显示{项目名称}：{HH/MM/SS},其中{HH/MM/SS}表示当日总用时，为属于当日所有事件持续时间的总和，按照HH/MM/SS的时间格式显示。<br>
+点击排行榜中的项目名称，开始计时，作为新的“执行”的“开始时间”记录到数据库中，并在再次点击时结束计时，记录始末时刻及其持续时间。作为一条“执行日志”
+视图页面最下方为一个“+”号按钮，用于新建项目，输入项目名称并选择“In Planing”,"In Process", “Done”之一的属性后会在对应的数据库中添加数据
+<br>Prompt
+我准备设计一个程序，用于项目管理。负责记录项目执行事件并可视化监视我的项目执行时间分布。
+这个程序可以增，删，查，改项目，并记录某个项目的每一段开始，结束时间，存储在markdown文件构成的数据日志上。
+每个项目存储为一个markdown .md文件。项目具有“In Planing”,"In Process", “Done”等属性，并可以输入“#”形式的标签并支持后续编辑。具有若干条“执行”，每条执行包括了“开始日期-时间”，“结束日期-时间”，“用时（结束-开始时间）”以及对上述所有条目的“日统计”，“周统计”，“月统计”，“年统计”。
+当打开程序时，程序自动读取文件目录下所有项目的markdown文件。
+整体为视图页面，展示“当日”的统计数据，并可以切换为：“本周”“本月”“本年度”视图。当日的统计数据按照“总时间”降序排行榜地形式显示{项目名称}：{HH/MM/SS},其中{HH/MM/SS}表示当日总用时，为属于当日所有事件持续时间的总和，按照HH/MM/SS的时间格式显示。<br>
+点击排行榜中的项目名称，开始计时，作为新的“执行”的“开始时间”记录到.md文件中，并在再次点击时
+视图页面最下方为一个“+”号按钮，用于新建项目，输入项目名称并选择“In Planing”,"In Process", “Done”之一的属性后会在对应的属性文件夹下新建{项目名}.md文件，当修改其属性时，就会从原来属性所在的文件夹移动到目标属性的文件夹。
+<br><br><a data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">C++课程设计：产品文档</a>&lt;--  <a data-href="前言" href="c++课程设计：产品文档\用户指南\前言.html" class="internal-link" target="_self" rel="noopener">前言</a>  --&gt; <a data-href="安装 venv" href="安装 venv" class="internal-link" target="_self" rel="noopener">安装 venv</a>  ]]></description><link>c++课程设计：产品文档\用户指南\前言.html</link><guid isPermaLink="false">C++课程设计：产品文档/用户指南/前言.md</guid><pubDate>Tue, 15 Aug 2023 08:50:02 GMT</pubDate></item><item><title><![CDATA[用户指南]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>欢迎阅读ATimer产品文档。<br><br>
+<br><a data-href="前言" href="c++课程设计：产品文档\用户指南\前言.html" class="internal-link" target="_self" rel="noopener">前言</a>
+<br><a data-href="安装 venv" href="安装 venv" class="internal-link" target="_self" rel="noopener">安装 venv</a>  
+<br><a data-href="快速上手" href="c++课程设计：产品文档\用户指南\快速上手.html" class="internal-link" target="_self" rel="noopener">快速上手</a> 
+<br>教程
+<br><a data-href="功能" href="功能" class="internal-link" target="_self" rel="noopener">功能</a> 
+<br><br>
+<br>暂未提供API
+<br><br>
+<br><a data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">更新日志</a> 
+<br>设计思路
+<br>FQA
+<br>License
+<br>Contribute to ATimer
+<br>--&gt; <a data-href="前言" href="c++课程设计：产品文档\用户指南\前言.html" class="internal-link" target="_self" rel="noopener">前言</a> <br>如何制作产品文档？
+
+<br><a data-tooltip-position="top" aria-label="https://vuepress.vuejs.org/" rel="noopener" class="external-link" href="https://vuepress.vuejs.org/" target="_blank">VuePress (vuejs.org)</a>
+<br><a data-href="GitBook" href="GitBook" class="internal-link" target="_self" rel="noopener">GitBook</a> 
+<br><a data-href="Github Page" href="Github Page" class="internal-link" target="_self" rel="noopener">Github Page</a>
+<br><a data-href="Read the Doc" href="Read the Doc" class="internal-link" target="_self" rel="noopener">Read the Doc</a>
+
+]]></description><link>c++课程设计：产品文档\c++课程设计：产品文档.html</link><guid isPermaLink="false">C++课程设计：产品文档/C++课程设计：产品文档.md</guid><pubDate>Fri, 11 Aug 2023 23:57:53 GMT</pubDate></item><item><title><![CDATA[Program Administer]]></title><description><![CDATA[<a class="tag" href="?query=tag:Github" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#Github</a> <a class="tag" href="?query=tag:Obsidian" style="background-color: rgb(4, 108, 116); color: white; font-weight: 700; border: none; border-radius: 1em; padding: 0.2em 0.5em;">#Obsidian</a> 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br><br>
+<br><a data-href="C++课程设计：1-选题_ATimer" href="c++课程设计：1-选题_atimer.html" class="internal-link" target="_self" rel="noopener">C++课程设计：1-选题_ATimer</a>   
+<br><a data-href="C++课程设计：2-设计程序" href="c++课程设计：2-设计程序.html" class="internal-link" target="_self" rel="noopener">C++课程设计：2-设计程序</a>      
+<br><a data-href="C++课程设计：3-最小可用产品" href="c++课程设计：3-最小可用产品.html" class="internal-link" target="_self" rel="noopener">C++课程设计：3-最小可用产品</a>  0.0.3-Beta
+<br><a data-href="C++课程设计：3.1-注册登录" href="c++课程设计：3.1-注册登录.html" class="internal-link" target="_self" rel="noopener">C++课程设计：3.1-注册登录</a>    0.2.0-Beta
+<br><a data-href="C++课程设计：3.2-所有项目" href="c++课程设计：3.2-所有项目.html" class="internal-link" target="_self" rel="noopener">C++课程设计：3.2-所有项目</a>    0.3.0-Beta
+<br><a data-href="C++课程设计：4.项目可安装化" href="c++课程设计：4.项目可安装化.html" class="internal-link" target="_self" rel="noopener">C++课程设计：4.项目可安装化</a>  1.0.0-Beta
+<br><a data-href="C++课程设计：数据库设计" href="c++课程设计：数据库设计.html" class="internal-link" target="_self" rel="noopener">C++课程设计：数据库设计</a>      
+<br><a data-href="C++课程设计：前端设计" href="c++课程设计：前端设计.html" class="internal-link" target="_self" rel="noopener">C++课程设计：前端设计</a>        
+<br><a data-href="C++课程设计：代码" href="c++课程设计：代码.html" class="internal-link" target="_self" rel="noopener">C++课程设计：代码</a>            
+<br><a data-href="C++课程设计：测试" href="c++课程设计：测试.html" class="internal-link" target="_self" rel="noopener">C++课程设计：测试</a>             
+<br><a data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">C++课程设计：时子延</a>          
+<br><a data-href="C++课程设计：课设要求" href="c++课程设计：课设要求.html" class="internal-link" target="_self" rel="noopener">C++课程设计：课设要求</a>         
+<br><a data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">C++课程设计：产品文档</a> 
+<br><a data-href="C++课程设计：目录结构" href="c++课程设计：目录结构.html" class="internal-link" target="_self" rel="noopener">C++课程设计：目录结构</a> 
+<br><a data-href="C++课程设计：MarkDown-yaml设计" href="c++课程设计：markdown-yaml设计.html" class="internal-link" target="_self" rel="noopener">C++课程设计：MarkDown-yaml设计</a> 
+<br><a data-href="C++课程设计：与王琼老师沟通交流" href="c++课程设计：与王琼老师沟通交流.html" class="internal-link" target="_self" rel="noopener">C++课程设计：与王琼老师沟通交流</a> 
+<br><a data-href="C++课程设计：进阶" href="c++课程设计：进阶.html" class="internal-link" target="_self" rel="noopener">C++课程设计：进阶</a>
+
+<br>C++课程设计：?-发布Release： ATimer-1.0.0-alpha
+<br>C++课程设计：?-扩展后端功能：ATimer-2.0.0
+<br>C++课程设计：?-雕琢前端展示：ATimer-3.0.0
+<br>C++课程设计：?-服务器部署:   ATimer-4.0.0  
+
+
+<br><br>
+<br><a data-href="统一架构/大二下项目/Python/Python" href="统一架构\大二下项目\Python\Python" class="internal-link" target="_self" rel="noopener">统一架构/大二下项目/Python/Python</a> <a data-href="统一架构/大二下项目/Python/Flask" href="统一架构\大二下项目\Python\Flask" class="internal-link" target="_self" rel="noopener">统一架构/大二下项目/Python/Flask</a> <a data-href="MarkDown" href="技术栈\markdown.html" class="internal-link" target="_self" rel="noopener">MarkDown</a> <a data-href="JavaScript" href="技术栈\javascript.html" class="internal-link" target="_self" rel="noopener">JavaScript</a> <a data-tooltip-position="top" aria-label="HTML" data-href="HTML" href="技术栈\html.html" class="internal-link" target="_self" rel="noopener">HTML</a> <a data-href="CSS" href="技术栈\css.html" class="internal-link" target="_self" rel="noopener">CSS</a> <a data-href="DOM" href="技术栈\dom.html" class="internal-link" target="_self" rel="noopener">DOM</a> <a data-href="jinja2" href="jinja2" class="internal-link" target="_self" rel="noopener">jinja2</a> Django
+<br>Django MySQL NoSQL Werkzeug Tornado
+<br>Flask及其扩展库:<a data-href="统一架构/大二下项目/Python/Flask" href="统一架构\大二下项目\Python\Flask" class="internal-link" target="_self" rel="noopener">统一架构/大二下项目/Python/Flask</a>-<a data-href="SQLAlchemy" href="SQLAlchemy" class="internal-link" target="_self" rel="noopener">SQLAlchemy</a>、Flask-Login等
+<br>数据库:SQLite
+<br>ORM: SQLAlchemy
+<br>迁移:Alembic
+<br>测试:pytest
+<br>通用库:Click、Arrow等
+<br>Markdown支持
+<br>生产服务器:Gunicorn
+<br><a data-href="3-NNU本科/2-吃过ICS2023-PA的苦/PA技术栈/Git" href="3-NNU本科\2-吃过ICS2023-PA的苦\PA技术栈\Git" class="internal-link" target="_self" rel="noopener">3-NNU本科/2-吃过ICS2023-PA的苦/PA技术栈/Git</a> DOM元素 AJAX请求 
+<br><br>
+<br><a href=".?query=tag:Github" class="tag" target="_blank" rel="noopener">#Github</a> 
+
+<br><a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">AWSzyAI/ATimer: C++课设 (github.com)</a>
+<br>设计报告：Word
+<br>程序代码：VScode
+
+
+<br><a href=".?query=tag:Obsidian" class="tag" target="_blank" rel="noopener">#Obsidian</a> &amp; Github.io 
+
+<br><a data-tooltip-position="top" aria-label="https://awszyai.github.io/projects/C++%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1/c++%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1.html" rel="noopener" class="external-link" href="https://awszyai.github.io/projects/C++%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1/c++%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1.html" target="_blank">C++课程设计 (awszyai.github.io)</a>
+<br>产品手册
+<br>开发日志
+
+
+<br><br>版权声明：自由转载-非商用-非衍生-保持署名（<a data-tooltip-position="top" aria-label="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" rel="noopener" class="external-link" href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank">创意共享3.0许可证</a>）]]></description><link>c++课程设计.html</link><guid isPermaLink="false">C++课程设计.md</guid><pubDate>Fri, 07 Jun 2024 00:29:26 GMT</pubDate></item><item><title><![CDATA[C++课程设计：1-选题_ATimer]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>
+我想开发一个有用的程序，而不仅仅是为了完成作业反复抄写前人的代码。
+<br>
+<br><a data-href="build-your-own-X" href="build-your-own-X" class="internal-link" target="_self" rel="noopener">build-your-own-X</a> 
+<br>
+<br>定义项目和任务的数据结构。可以创建Project和Task两个类,包含名称、描述、开始时间、结束时间等属性。
+<br>建立数据库表来存储项目和任务数据。可以创建projects和tasks两张表,与Project和Task类属性对应。
+<br>提供界面录入项目和任务。可以用表单收集项目和任务信息,提交到服务器端后存入数据库。
+<br>实现查看项目和任务的界面。可以输出项目和任务列表,以及按日期过滤的项目视图。
+<br>用不同颜色在日历上可视化项目进度。可以在日历日期上用工程颜色表示存在项目或任务的日期。
+<br>添加进一步功能,如项目和任务管理、进度跟踪、提醒等。
+<br>测试程序,确保所有功能正常工作。测试数据录入、查看和日历展示等功能。
+<br>完善文档,编写使用说明。记录程序使用方法和关键代码的注释。
+<br>发布程序,开源或商业授权。可以在GitHub等开源社区发布,或构建SaaS应用提供订阅服务。
+<br>持续迭代优化。根据用户反馈添加新功能,修复bug,改进体验。使其成为易用的项目管理工具。
+<br>使用click或者argparse创建命令行接口,可以定义添加、查看、修改、删除等子命令。<br>
+定义项目(Project)和任务(Task)两个类,包含名称、状态、开始时间、结束时间等属性。<br>
+使用SQLite等轻量级数据库保存项目和任务数据,在命令行接口中调用数据库接口实现CRUD。<br>
+命令行界面可以输出项目和任务的列表、日历视图等信息。可以添加颜色、格式等来美化输出。<br>
+使用python-dotenv管理配置信息,如数据库路径等。<br>
+编写文档注释和README,记录程序使用说明。<br>
+用unittest等构建自动化测试,保证各功能正确性。<br>
+使用GitHub打标签发布版本,便于将来部署和迁移。<br>
+功能开发建议从最简单的增删改查开始,逐步扩展新功能。控制好项目规模。<br>
+界面设计要注意命令、参数等命名的一致性和语义明确性。<br>Python GUI<br>开发一款好用的命令行程序，你至少需要了解：<br>
+<br>如何建立简单的语法分析器
+<br>如何制作简单的脚本解释器
+<br>如何灵活地运用操作字符串的技巧（正则表达式等）
+<br>如何实现简单的配置文件分析器，以及自己的配置文件语法。<br>
+<a data-tooltip-position="top" aria-label="https://zhuanlan.zhihu.com/p/435614563" rel="noopener" class="external-link" href="https://zhuanlan.zhihu.com/p/435614563" target="_blank">手把手教你开发一款命令行工具 - 知乎 (zhihu.com)</a> 
+<br><br>如果要避免使用数据库,可以考虑使用Markdown文件来存储项目和任务信息,步骤如下:<br>
+<br>
+定义项目和任务的 Markdown 文件存储格式。可以参考 YAML 语法,在每个文件开头添加项目/任务的元信息,包括名称、描述、状态等。
+
+<br>
+使用 Python 的 Markdown 库(如 Markdown2)来解析和生成 Markdown 文件。
+
+<br>
+将项目和任务的 Markdown 文件组织到指定文件夹中。可以创建 projects 和 tasks 两个文件夹分别存储。
+
+<br>
+在命令行接口中,使用 Python 的文件读写来实现 CRUD:
+
+<br>创建项目/任务时生成新的 Markdown 文件
+<br>读取时解析文件并输出相关信息
+<br>更新时直接修改 Markdown 文件内容
+<br>删除时直接删除文件
+
+
+<br>
+可以建立一个 index.md 来记录所有的项目和任务文件列表。
+
+<br>
+使用 Click 来定义命令行界面,调用上述的 Markdown 文件操作函数。
+
+<br>
+可以使用 Python 的 unittest 来测试 Markdown 文件接口的功能是否正确。
+
+<br>
+在 README 中记录文件存储格式,方便未来迁移。
+
+<br>这种方案的优点是不需要数据库,可以利用版本控制系统如 Git 来跟踪文件变化。但需要定义好文档格式,并控制文件组织的复杂度。<br><br>这里给出使用Python从零开始开发命令行项目管理工具每个原子步骤的清单:<br>创建项目目录和虚拟环境<br>
+用pip安装依赖库:click、markdown2<br>
+定义Project和Task数据模型类<br>
+设计项目/任务Markdown存储格式<br>
+创建项目和任务目录保存Markdown文件<br>
+实现Markdown文件的读取和写入<br>
+用Click定义命令行界面结构和命令<br>
+链接命令行命令和Markdown文件操作函数<br>
+编写添加项目/任务命令和实现<br>
+编写查看项目/任务列表命令和实现<br>
+编写更新项目/任务命令和实现<br>
+编写删除项目/任务命令和实现<br>
+添加统计项目/任务数目的命令<br>
+用unittest编写单元测试,测试每个命令<br>
+编写文档注释和README<br>
+创建requirements.txt定义依赖<br>
+在GitHub上创建仓库,进行版本控制<br>
+发布0.1版本的RELEASE<br>
+不断迭代优化,添加新功能<br>
+后续开发Web前端和服务器部署]]></description><link>c++课程设计：1-选题_atimer.html</link><guid isPermaLink="false">C++课程设计：1-选题_ATimer.md</guid><pubDate>Tue, 15 Aug 2023 08:50:25 GMT</pubDate></item><item><title><![CDATA[C++课程设计：2-设计程序]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>Prompt
+我准备设计一个程序，用于项目管理。负责记录项目执行事件并可视化监视我的项目执行时间分布。
+这个程序可以增，删，查，改项目，并记录某个项目的每一段开始，结束时间，存储在markdown文件构成的数据日志上。
+每个项目存储为一个markdown .md文件。项目具有“In Planing”,"In Process", “Done”等属性，并可以输入“#”形式的标签并支持后续编辑。具有若干条“执行”，每条执行包括了“开始日期-时间”，“结束日期-时间”，“用时（结束-开始时间）”以及对上述所有条目的“日统计”，“周统计”，“月统计”，“年统计”。
+当打开程序时，程序自动读取文件目录下所有项目的markdown文件。
+整体为视图页面，展示“当日”的统计数据，并可以切换为：“本周”“本月”“本年度”视图。当日的统计数据按照“总时间”降序排行榜地形式显示{项目名称}：{HH/MM/SS},其中{HH/MM/SS}表示当日总用时，为属于当日所有事件持续时间的总和，按照HH/MM/SS的时间格式显示。<br>
+点击排行榜中的项目名称，开始计时，作为新的“执行”的“开始时间”记录到.md文件中，并在再次点击时
+视图页面最下方为一个“+”号按钮，用于新建项目，输入项目名称并选择“In Planing”,"In Process", “Done”之一的属性后会在对应的属性文件夹下新建{项目名}.md文件，当修改其属性时，就会从原来属性所在的文件夹移动到目标属性的文件夹。
+给出需要用到的技术栈，markdown数据存储的文件树，程序项目的文件树和每个代码文件的功能职责，以及关于数据展示的细节解释。
+<br>Technical Stack<br>Frontend: <a data-href="React" href="React" class="internal-link" target="_self" rel="noopener">React</a> or <a data-href="Vue" href="Vue" class="internal-link" target="_self" rel="noopener">Vue</a> for building the UI components<br>
+Backend: <a data-href="Node.js" href="Node.js" class="internal-link" target="_self" rel="noopener">Node.js</a> + <a data-href="Express" href="Express" class="internal-link" target="_self" rel="noopener">Express</a> for the server and API<br>
+Database: Markdown files stored locally to persist project data<br>File Structure<br>├── server/
+│   ├── api/
+│   │   └── projects.js // CRUD APIs for projects
+│   └── index.js // Express app
+├── client/
+│   ├── src/
+│   │   ├── components/ // React/Vue components
+│   │   ├── App.jsx
+│   │   └── index.js
+│   └── public/
+│       └── index.html  
+├── data/
+│   ├── inPlanning/ // Markdown files for 'In Planning' projects
+│   ├── inProgress/ // Markdown files for 'In Progress' projects  
+│   └── done/ // Markdown files for completed projects
+复制<br>组件职责<br>App - 父组件,管理状态和子组件<br>
+ProjectList - 显示按今日总时间排序的项目排行榜<br>
+ProjectDetail - 显示项目的详细信息和历史记录<br>
+ProjectForm - 用于创建/编辑项目的表单<br>
+项目数据展示<br>主页的 ProjectList 根据今日总时间对项目排行<br>
+点击项目会显示 ProjectDetail 组件,展示历史记录和元数据<br>
+通过 ProjectForm 组件创建新项目<br>
+从 /data 文件夹中的 Markdown 文件加载数据<br>
+当改变项目状态时,调用 API 将项目文件移动<br><br>
+如果使用Python GNU或者基于Python的web Demo，应该如何设计？全部重新设计。
+<br>技术栈<br>前端:Vue + Element UI<br>
+后端:Python + <a data-href="统一架构/大二下项目/Python/Flask" href="统一架构\大二下项目\Python\Flask" class="internal-link" target="_self" rel="noopener">统一架构/大二下项目/Python/Flask</a><br>
+数据库:SQLite<br>project_manager
+├─ app.py # Flask应用入口
+├─ requirements.txt # 依赖包列表
+├─ manage.py # Flask项目命令脚本
+├─ config.py # 配置文件
+
+├─ app/
+|  ├─ __init__.py 
+|  ├─ views.py # 视图函数
+|  ├─ models.py # 数据模型
+|  ├─ util.py # 工具函数
+
+├─ migrations/ # 数据库迁移脚本
+
+├─ static/
+|  ├─ css/ 
+|  ├─ js/
+|  └─ images/
+
+├─ templates/ # HTML模板
+|  ├─ index.html 
+|  ├─ project.html
+|  └─ base.html
+
+└─ vue-app/ # Vue前端
+   ├─ ...
+复制<br>组件设计<br>App.vue - 根组件,包含导航栏和路由<br>
+ProjectList.vue - 项目列表排行组件<br>
+ProjectDetail.vue - 项目详情组件<br>
+ProjectEdit.vue - 项目编辑组件<br>
+接口设计<br>GET /api/projects - 获取所有项目<br>
+GET /api/projects/:id - 获取单个项目<br>
+POST /api/projects - 新建项目<br>
+PUT /api/projects/:id - 更新项目<br>
+DELETE /api/projects/:id - 删除项目<br><br>使用Python GNU或者基于Python的web Demo,后端最好也使用Python或者C++，数据库采用纯本地文件夹+MarkDown体系，基于这个技术栈，提供软件开发的工程部署和分工。<br><br>前端:Vue<br>
+后端:Python + C++ flask<br>
+数据库:本地文件夹 + Markdown文件 <a data-href="yaml" href="技术栈\yaml.html" class="internal-link" target="_self" rel="noopener">yaml</a> <br><br>前后端代码在一个仓库,采用分支开发<br>
+master分支 - 生产环境代码<br>
+dev分支 - 开发环境代码<br>
+feature分支 - 开发新功能时创建的分支<br>
+目录结构<br>project_manager
+├─ frontend/ # 前端代码
+│  ├─ src
+│  ├─ public
+│  ├─ package.json
+│  └─ ...
+├─ backend/
+│  ├─ app.py # Python后端主入口  
+│  ├─ cpp_modules/ # C++模块
+│  ├─ api/ 
+│  ├─ model/
+│  ├─ utils.py
+│  └─ ...
+└─ docs/ # 项目文档
+   ├─ README.md
+   └─ ...
+复制<br><br>1名前端工程师:负责Vue应用的开发<br>
+1名后端工程师:负责Python后端和C++模块开发 @时子延<br>
+1名全栈工程师:负责系统设计,接口设计,工程部署等<br>
+1名产品经理:负责需求管理,跟进调度等 @时子延<br><br>产品提出需求,分配任务<br>
+开发人员在feature分支上开发功能<br>
+开发完成后,发起pull request<br>
+review代码,通过测试后merge到dev分支<br>
+dev环境测试通过后,merge到master发布新版本<br><br>
+<br>项目数据模块
+
+<br>设计项目数据模型,包含项目名称、状态、时间日志等字段
+<br>使用Markdown文件存储格式持久化项目数据
+<br>实现项目CRUD操作的接口
+
+
+<br>项目业务模块
+
+<br>实现添加/停止时间日志的功能
+<br>实现修改项目状态的功能
+<br>计算项目时间统计(日/周/月/年)的功能
+
+
+<br>数据分析模块
+
+<br>按时间统计给项目排行的功能
+<br>项目详情数据可视化的功能
+
+
+<br>Web应用模块
+
+<br>使用Vue/React等构建前端应用
+<br>展示项目排行榜、项目详情、新建项目等页面
+<br>调用后端接口获取和操作数据
+
+
+<br>数据库模块
+
+<br>设计本地文件系统存储项目Markdown文件
+<br>根据项目状态在不同目录存储
+<br>提供接口用于CRUD文件
+
+
+<br>后端服务模块
+
+<br>使用Python/Flask提供Web API接口
+<br>接收并处理前端请求
+<br>负责业务逻辑和数据处理
+
+
+<br>测试及部署模块
+
+<br>对功能和接口进行测试
+<br>CI/CD部署流程
+<br>配置生产环境
+
+
+<br>2023-08-08 17:55]]></description><link>c++课程设计：2-设计程序.html</link><guid isPermaLink="false">C++课程设计：2-设计程序.md</guid><pubDate>Fri, 07 Jun 2024 00:29:26 GMT</pubDate></item><item><title><![CDATA[Web软件]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>
+发布版本1.0.0，快速实现一个最小可用产品,供用户试用和验证核心需求,之后再迭代添加更多功能。
+<br><br><br>
+<br>运行程序，通过网页打开，进入首页。首页提示“作者的话”，登录/注册链接。
+
+<br>nav
+<br>content : description login register
+
+
+<br>注册页 / 登录页 register.html / login.html
+
+<br>参考<a data-href="Flask_tutorial：Blog" href="Flask_tutorial：Blog" class="internal-link" target="_self" rel="noopener">Flask_tutorial：Blog</a>
+
+
+<br>登录后展示首页：  属性g.username!=null
+
+<br>顶部nav为 logo+日+周+月+年+用户名+ logout ，其中当前视图对应的“日”为红色加粗，点击其他选项时也切换到红色加粗，其余都为黑色
+<br>中间主体content 按照当日项目累计时间降序展示目前项目排行榜，格式为“{项目名称}--{累计时间}”，
+<br>底部有一个新建按钮，click后跳转到create.html
+<br>简约的黑白灰css渲染
+
+
+<br>顶部nav为 logo+日+周+月+年+用户名+ logout ，点击logo回到首页，点击日/周/月/年跳转到对应的视图，点击用户名进入profile.html查看修改密码和个人信息，点击logout退出登录
+<br>底部有一个新建按钮，click后跳转到create.html，输入项目的名称，复选框选择status（In Process/In Planing/Done,默认为In Process），cancel 和 OK按钮，点击cancel回到上一个页面，取消新建项目，点击OK完成project类的创建并在数据库和首页上更新排行榜，自动记录属性：创建时间
+<br>中间主体content 按照当日项目累计时间降序展示目前项目排行榜，格式为“{项目名称}--{累计时间}”，每一个项目名称都可以点击，点击后自动开始计时，右侧显示开始时间，当前记录时长，总项目时长。再次点击结束计时，记录一次执行数据：{name，start-time,end-time到数据库}
+<br>
+<br><br><br>创建&nbsp;ATimer&nbsp;文件夹并且文件夹内添加&nbsp;__init__.py&nbsp;文件。&nbsp;__init__.py&nbsp;有两个作用：一是包含应用工厂；二是 告诉 Python&nbsp;ATimer&nbsp;文件夹应当视作为一个包。<br><br><br>
+<br>接下来实现创建新项目的的功能，在项目介绍底部设置一个名称为“新建”的按钮，按下按钮后弹窗一个提示框，第一行是一个用于输入项目名称的文本框，第二行是一个复选框，可以选择“In Planning, In Process, Done, Pause”等选项作为Project实例的status参数，第三行是“确定”“取消”两个按钮。
+Warning
+
+<br>按下“新建项目”按钮后不显示弹窗<br>
+<img src="https://i.imgur.com/v8ejh0j.png" referrerpolicy="no-referrer">
+
+
+
+<br>Warning
+
+<br>刷新页面不显示GET POST 信息<br>
+<img src="https://i.imgur.com/dehqM0E.png" referrerpolicy="no-referrer">
+
+<br>
+<br>
+<br>当按下取消时，回到提示框弹出前的界面
+<br>当按下确定时，新建一个project类的实例，然后根据实例数据在对应status目录下新建一个{name}.md文件，
+<br>
+卡住了，新建的弹窗始终出不来
+<br>
+<br>参考：<a data-tooltip-position="top" aria-label="https://zhuanlan.zhihu.com/p/73278003" rel="noopener" class="external-link" href="https://zhuanlan.zhihu.com/p/73278003" target="_blank">初识flask，搭建第一个自己的网页 - 知乎 (zhihu.com)</a> 
+<br><a data-href="MVC" href="技术栈\mvc.html" class="internal-link" target="_self" rel="noopener">MVC</a> <a data-href="统一架构/大二下项目/Python/Flask" href="统一架构\大二下项目\Python\Flask" class="internal-link" target="_self" rel="noopener">统一架构/大二下项目/Python/Flask</a> 
+<br>
+<br>
+views.py中create视图缺少保存数据的代码,需要添加将请求数据保存到数据库的逻辑。
+
+<br>
+models.py中缺少User模型类,需要添加用于表示用户信息的模型。
+
+<br>
+login和register视图需要添加验证用户名和密码,以及记录用户登录状态的代码。
+
+<br>
+base.html中的用户状态检查逻辑可以优化,使用current_user而不是直接访问g对象。
+
+<br>
+script.js文件为空,需要添加表单验证、DOM操作等JavaScript代码。
+
+<br>
+可以添加自定义错误页面模板来展示友好的错误信息。
+
+<br>
+注册成功后需要设置用户登录状态再重定向。
+
+<br>
+登录验证成功后需要设置用户登录session才能访问保护视图。
+
+<br>
+登录后重定向到daily视图。
+
+<br><br><br>
+<br>在 JavaScript 中可以通过操作 DOM 来显示隐藏弹窗、获取用户输入等,实现交互功能。
+<br><br>
+<br>
+确定项目需求和功能规格
+
+<br>与客户或产品经理进行需求讨论,确定需要实现的核心功能点
+
+<br>增删查改
+<br>前端显示
+
+<br>日-周-月-年 切换
+<br>统计数据
+<br>分布数据
+
+
+
+
+
+
+<br>
+设计项目结构和技术框架
+
+<br>根据功能需求,确定技术选型,比如前后端框架
+
+<br>前端:Vue
+<br>后端:Python + C++
+<br>数据库:本地文件夹 + Markdown文件
+
+
+<br>设计项目的目录结构,代码库组织方式
+
+<br><a data-href="C++课程设计：目录结构" href="c++课程设计：目录结构.html" class="internal-link" target="_self" rel="noopener">C++课程设计：目录结构</a> 
+
+
+<br>搭建简单的前后端框架,确保技术可行性
+
+
+<br>
+设计数据库结构
+
+<br>根据需求,设计项目存储的数据模型
+
+<br><a data-href="C++课程设计：MarkDown-yaml设计" href="c++课程设计：markdown-yaml设计.html" class="internal-link" target="_self" rel="noopener">C++课程设计：MarkDown-yaml设计</a> 
+
+
+<br>选择合适的数据库,如SQLite
+
+<br>markdown
+
+
+<br>用版本控制工具如Git跟踪数据库变更
+
+
+<br>
+实现核心业务逻辑
+
+<br>在后端实现添加/修改/删除项目的API接口
+<br>处理项目状态变更的业务逻辑
+<br>实现项目时间统计的计算函数
+
+
+<br>
+搭建基本的Web页面
+
+<br>使用Vue/React等构建简单的Web页面
+<br>展示示例项目,格式化时间统计数据
+<br>实现页面与后端API的交互
+
+
+<br>
+编写关键组件
+
+<br>项目时间统计组件  
+<br>项目列表/详情组件
+<br>新建/编辑项目组件
+
+
+<br>app.py <br>
+<br>请求：<a data-href="统一架构/大二下项目/Python/Flask" href="统一架构\大二下项目\Python\Flask" class="internal-link" target="_self" rel="noopener">统一架构/大二下项目/Python/Flask</a> <a data-href="request" href="技术栈\request.html" class="internal-link" target="_self" rel="noopener">request</a> 
+<br>返回<a data-href="JSON" href="JSON" class="internal-link" target="_self" rel="noopener">JSON</a>数据：<a data-href="jsonify" href="技术栈\jsonify.html" class="internal-link" target="_self" rel="noopener">jsonify</a> 
+<br>操作markdown：<a data-href="yaml" href="技术栈\yaml.html" class="internal-link" target="_self" rel="noopener">yaml</a> 
+<br><br>
+<br>项目数据的CRUD(创建/读取/更新/删除)接口:
+<br>
+<br>POST /api/projects - 创建新项目
+<br>GET /api/projects/:id - 获取单个项目
+<br>GET /api/projects - 获取所有项目
+<br>PUT /api/projects/:id - 更新项目
+<br>DELETE /api/projects/:id - 删除项目
+<br>
+<br>项目时间日志的接口:
+<br>
+<br>POST /api/projects/:id/logs - 新增时间日志 
+<br>GET /api/projects/:id/logs - 获取时间日志
+<br>PUT /api/projects/:id/logs/:id - 更新时间日志
+<br>DELETE /api/projects/:id/logs/:id - 删除时间日志
+<br>
+<br>项目统计数据的生成:
+<br>
+<br>按天/周/月等统计时间
+<br>提供查询项目给定时间范围统计的接口
+<br>
+<br>Web页面:
+<br>
+<br>项目大盘看板页面
+<br>项目详情页面
+<br>新建/编辑项目页面
+<br>
+<br>持久化和文件处理:
+<br>
+<br>将数据保存到Markdown文件
+<br>定期备份和清理日志
+<br>这些功能模块可以逐步扩展,从简单的CRUD接口开始,到统计分析,再到Web页面,最后是其他辅助功能。<br>1.运行python app.py时，显示欢迎描述文本信息框，中间主体日排行数据以及底部加号图标对应的新建按钮，<br>3.根据时间长度显示项目-持续时间排行榜，并在每个条目右侧添加三个点图标的“更多“按钮，当点击后能过够出现”删除选项“<br>2.点击新建按钮后显示输入文本框，输入要新建的项目名称，并利用uuid生成独有的project.id，若id已存在，则提示“项目已存在”一秒后回到初始看板，若id不存在，则新建项目条目和markdown文件，<br><br>2023-08-25<br>
+根据提供的代码,我看到主要问题在于:<br>
+<br>
+数据库模型schema.sql和实际的models.py不匹配。schema.sql中定义了projects, records, users表,但models.py中是User, Project, Record模型。
+
+<br>
+schema.sql中的表没有定义关系,但models.py中的模型有关系定义,如外键等。
+
+<br>
+init.py中配置的DATABASE路径和schema.sql不一致。
+
+<br>
+没有看到使用models.py中定义的模型进行数据库操作的代码。
+
+<br>为了使它们匹配和工作,我的建议是:<br>
+<br>
+调整models.py中的模型定义,与schema.sql中的表结构一致。
+
+<br>
+在models.py中移除关系定义,直接匹配schema.sql。
+
+<br>
+调整init.py中的DATABASE配置路径,指向实际的数据库文件。
+
+<br>
+在视图函数和数据库操作中,导入并使用models中的模型类,而不是直接执行SQL。
+
+<br>
+使用Flask-Migrate实现数据库迁移,根据models自动创建表,而不是手动编写schema.sql。
+
+<br>
+在启动时,先初始化数据库,再创建APP实例。
+
+<br>一个可能的修改方案是:<br>
+<br>
+删除models.py中的关系定义。
+
+<br>
+创建数据库文件如data.db。
+
+<br>
+在init.py中设置DATABASE路径指向data.db。 
+
+<br>
+初始化数据库,创建表。
+
+<br>
+在视图函数中导入models,并使用models查询数据库。
+
+<br>
+后续再使用Flask-Migrate调整models和表的关系。
+
+<br>请让我知道如果还有其他问题,我可以提供更多针对性的建议。总体上需要调整代码使数据库模型与实际表结构匹配。]]></description><link>c++课程设计：3-最小可用产品.html</link><guid isPermaLink="false">C++课程设计：3-最小可用产品.md</guid><pubDate>Fri, 07 Jun 2024 00:29:26 GMT</pubDate><enclosure url="https://i.imgur.com/v8ejh0j.png" length="0" type="image/png"/><content:encoded>&lt;figure&gt;&lt;img src=&quot;https://i.imgur.com/v8ejh0j.png&quot;&gt;&lt;/figure&gt;</content:encoded></item><item><title><![CDATA[C++课程设计：3.1-注册登录]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>Prompt
+我设计了一个程序，用于项目管理。功能是记录并统计项目执行时间，最终可视化呈现在日历上，以监视我的项目执行时间分布。
+这个程序将运行在我的服务器上，最终打包为程序，因此需要通过账号注册登录来管理，同步数据。
+nav 栏包括左侧的Logo+程序名称，点击后进入默认视图（登陆后为所有,未登录则为注册/登录页），右侧为：
+
+<br>未登录
+
+<br>register：点击跳转到register.html注册页
+<br>login：点击跳转到login.html登录页
+
+
+<br>登录后
+
+<br>用户名：点击跳转到profile.html查看修改用户信息
+<br>logout ：点击退出登录
+
+
+
+注册登录后直接进入数据看板，顶部有所有，日，周，月，年五个视图按钮和一个新建按钮，登录后默认为所有视图，并可通过nav跳转到其他视图。视图以排行榜降序的形式呈现数据，左侧为执行/停止执行按钮，中间为proj_name,右侧为对应视图的统计持续时间。点击新建按钮后跳转到create.html,用以新建项目，填写一个表单后将项目数据添加到数据库
+
+<br>project_name
+<br>id:自动生成，项目的唯一代表
+<br>status：复选框，共有：进行中，暂停，已完成，取消四个状态选项
+<br>note：文本备注，可以是任何内容
+
+新建后排行榜底部应该出现一个时长为0的新项目。点击执行按钮后开始一次计时record,记录record的start_time,按钮变成停止执行，点击停止执行后,记录record的end_time,按钮变回执行，并自动计算lasting_time=end_time-start_time,作为这个project的records中的一个record数据。更新project的当日，当周，当月，当年，总计数据，加上这个新的record的时长数据。在打开不同视图时读取每一个项目对应的时长参数并排序降序渲染为排行榜。默认展示“所有”视图。
+<br>下面是整个项目的文件树，使用python-flask+html+css+javascript+SQLite实现。<br># 2023-08-12
+├── ATimer
+│&nbsp;&nbsp; ├── __init__.py
+│&nbsp;&nbsp; ├── db.py
+│&nbsp;&nbsp; ├── views.py      # 处理不同URL的逻辑，渲染html模板展示数据。
+│&nbsp;&nbsp; ├── auth.py       # register &amp; login &amp; profile
+│&nbsp;&nbsp; ├── models.py     # 定义User,Project和record三个模型类,用于对数据库进行CRUD操作
+│&nbsp;&nbsp; ├── config.py     
+│&nbsp;&nbsp; ├── schema.sql    
+│&nbsp;&nbsp; ├── static
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── css
+│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── style.css
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── js
+│&nbsp;&nbsp; │&nbsp;&nbsp;     └── script.js
+│&nbsp;&nbsp; └── templates
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── auth
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── register.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── login.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; └── profile.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── views
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── all.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── day.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── week.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── month.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; └── year.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── create.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── index.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; └── base.html          # 使用Jinja2模板引擎生成，作为基模板,其他页面继承它。
+├── MANIFEST.in
+├── requirements.txt
+├── .env
+├── .gitignore
+└── setup.py                   # python setup.py install
+
+
+#auth.py is a blueprint for the authentication system of the app. It handles the login, logout and register pages.
+
+#db.py is a blueprint for the database system of the app. It handles the database connection and initialization.
+
+#views.py is a blueprint for the views of the app. It handles the main pages of the app.
+
+#models.py is a blueprint for the models of the app. It handles the database models of the app.
+
+#The __init__.py file is a blueprint for the app itself. It handles the app creation and configuration.
+复制<br>
+<br>
+项目布局 应用工厂 
+
+<br>
+使用 <a data-href="SQLite" href="技术栈\sqlite.html" class="internal-link" target="_self" rel="noopener">SQLite</a> 数据库
+
+<br>
+使用PickleType存储键值对字典。
+
+<br>
+session g current_user 
+
+<br>
+一键导出目录下所有代码为一个文本喂给GPT
+
+]]></description><link>c++课程设计：3.1-注册登录.html</link><guid isPermaLink="false">C++课程设计：3.1-注册登录.md</guid><pubDate>Mon, 04 Sep 2023 00:23:59 GMT</pubDate></item><item><title><![CDATA[C++课程设计：3.2-所有项目]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br><br>
+<br>设计数据库结构，重构schema.sql与models.py 中的class Project 
+<br>时间数据直接使用Python字典,但实际存储为JSON字符串
+<br>实现新建项目(create.html)的POST接口，跳转，数据存储
+<br>完善所有项目(all.html)的前端html与css设计
+
+<br>新建项目移动到header右侧
+<br>设置CSS使得&lt;div class=data&gt;&lt;/div&gt;中的所有&lt;li&gt;&lt;/li&gt;数据排为一行
+
+
+<br>record按钮与/create_record路由
+
+<br>record(inactive) -- stop(active) 
+<br>(没有)调用到create_record
+<br>刷新页面
+
+
+<br>添加activate属性后的数据库初始化与原始数据的兼容性迁移
+
+<br>从头remake
+<br>flask db upgrade, flask db init SQL命令
+
+
+<br>实现所有项目(all.html)页面的projects数据根据project.all_time所转换的时间长度的值进行降序排列
+<br>status按照状态分区展示：纵列/横排（看板）
+
+<br>In Planning
+<br>In Process
+<br>Pause
+<br>Completed
+<br>Abandon 
+
+
+<br>more按钮与delete，rename,edit(status,note) 
+<br>完善profile
+
+<br>close_account 注销账号，删除账号密码及其所有相关数据
+<br>edit 修改账号密码，用户名
+<br>点击每个模块修改相应数据？？
+
+
+<br>课程设计实验报告
+<br>进阶（后续）
+
+<br>渲染成日历
+<br>使用邮箱/手机/二维码登录
+
+
+<br>传入的start_time,end_time为'2023-09-04 10:05:37.000000', '2023-09-04 10:05:39.000000'，而非'2023-09-04 10:05:37', '2023-09-04 10:05:39'，哪一步出了问题？如何解决？给出具体代码<br>已知
+def parse_datetime(datetime_str):
+    # 解析日期时间字符串并返回 datetime 对象
+    return datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+
+record = Record(
+    start_time=parse_datetime(start_time),
+    end_time=parse_datetime(end_time),
+    project_id=project_id
+  )
+修改
+def __init__(self, start_time, end_time, project_id):
+
+&nbsp; &nbsp; self.start_time = start_time &nbsp;# 初始化记录的开始时间
+
+&nbsp; &nbsp; self.end_time = end_time &nbsp;# 初始化记录的结束时间
+
+&nbsp; &nbsp; # 计算并设置记录的时长，timedelta类型转换为字符串
+
+&nbsp; &nbsp; self.duration = str(end_time - start_time)  #str(datetime.timedelta)
+
+&nbsp; &nbsp; self.project_id = project_id &nbsp;# 初始化记录所属项目ID
+
+&nbsp; &nbsp; #self.project.update_time_stats()
+中的
+self.duration = str(end_time - start_time)  #str(datetime.timedelta)
+是duration成为 HH:MM::SS格式的String
+
+
+···
+
+
+
+
+复制<br>&lt;div class="container"&gt;
+
+  {% for project in projects %}
+
+  &lt;div class="project-card"&gt;
+
+    &lt;ul&gt;
+
+      &lt;!--项目排名序号--&gt;
+
+      &lt;li class="project-rank"&gt;{{ loop.index }}&lt;/li&gt;
+
+      &lt;!--计时按钮，status='Pause'时文本显示为'开始计时'，status='In Process'文本显示为停止计时--&gt;
+
+      &lt;li class="project-timer"&gt;
+
+        &lt;button id="timer-btn" project-id="{{ project.id }}"&gt;Record&lt;/button&gt;
+
+      &lt;/li&gt;  
+
+      &lt;!--项目名称--&gt;
+
+      &lt;li class="project-name"&gt;{{ project.name }}&lt;/li&gt;
+
+      &lt;!--项目状态--&gt;
+
+      &lt;li class="project-status"&gt;{{ project.status }}&lt;/li&gt;
+
+      &lt;!--项目总计时间--&gt;
+
+      &lt;li class="project-total-time"&gt;{{ project.all_time }}&lt;/li&gt;
+
+      &lt;!--项目更多按钮--&gt;
+
+      &lt;li class="project-more"&gt;
+
+        &lt;button class="more" onclick=""&gt;更多&lt;/button&gt;
+
+      &lt;/li&gt;
+
+    &lt;/ul&gt;
+
+  &lt;/div&gt;
+
+  {% endfor %}
+
+&lt;/div&gt;
+复制<br>从以上代码可以发现，这里有若干个project组成的模块，每个模块里都有一个id="timer-btn"的按钮，其有一个参数为id="timer-btn",因project而异。<br>这是project中数据存储的格式  all_time = db.Column(db.String)<br>
+daily_time = db.Column(JSONEncodedDict, default={})<br>
+weekly_time = db.Column(JSONEncodedDict, default={})<br>
+monthly_time = db.Column(JSONEncodedDict, default={})<br>
+yearly_time = db.Column(JSONEncodedDict, default={})<br>
+他们都是基于文本的格式，而非时间。<br>
+当我进行update_time_stats(self,record)时，传入的record中包含的数据有：id = db.Column(db.Integer, primary_key=True,autoincrement=True) &nbsp;# 记录ID，整数类型，主键<br>&nbsp; project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False) &nbsp;# 项目ID，整数类型，外键，不能为空<br>&nbsp; start时间 = db.Column(db.DateTime, nullable=False) &nbsp;# 记录开始时间，日期时间类型，不能为空<br>&nbsp; end_time = db.Column(db.DateTime, nullable=False) &nbsp;# 记录结束时间，日期时间类型，不能为空<br>&nbsp; duration = db.Column(db.String, nullable=False, default='00:00:00') &nbsp;# 记录时长，字符串类型，不能为空<br>
+其中duration为文本类型数据，我需要一个函数来进行对文本存储的时长的计算，提取record中的duration为某一个标准类型，然后update_time_stats(self,record)调用该格式转换函数进行计算日期，更新project的数据参数。update_time_stats(self,record):定义如下，可进行修改，给出所有相关代码：  <br>&nbsp; def update_time_stats(self,record):<br>&nbsp; &nbsp; date = record.start_time.date()<br>&nbsp; &nbsp; day = date.strftime("%Y-%m-%d")<br>&nbsp; &nbsp; week = date.strftime("%Y-W%W")<br>&nbsp; &nbsp; month = date.strftime("%Y-%m")<br>&nbsp; &nbsp; year = date.strftime("%Y")<br>&nbsp; &nbsp; if date.isoformat() in self.daily_time:<br>&nbsp; &nbsp; &nbsp; self.daily_time[day] += record.duration<br>&nbsp; &nbsp; else:<br>&nbsp; &nbsp; &nbsp; self.daily_time[day] = record.duration<br>&nbsp; &nbsp; if week in self.weekly_time:<br>&nbsp; &nbsp; &nbsp; self.weekly_time[week] += record.duration<br>&nbsp; &nbsp; else:<br>&nbsp; &nbsp; &nbsp; self.weekly_time[week] = record.duration<br>&nbsp; &nbsp; if month in self.monthly_time:<br>&nbsp; &nbsp; &nbsp; self.monthly_time[month] += record.duration<br>&nbsp; &nbsp; else:<br>&nbsp; &nbsp; &nbsp; self.monthly_time[month] = record.duration<br>&nbsp; &nbsp; if year in self.yearly_time:<br>&nbsp; &nbsp; &nbsp; self.yearly_time[year] += record.duration<br>&nbsp; &nbsp; else:<br>&nbsp; &nbsp; &nbsp; self.yearly_time[year] = record.duration<br>&nbsp; &nbsp; self.calculate_time()<br>&nbsp; &nbsp; db.session.commit()<br>在all.html展示所有项目数据。以若干个卡片列表的形式。每一个卡片从左到右依次有开始计时/停止计时按钮，默认为开始计时,状态为暂停，按下按钮后状态切换为进行中，同时按钮文本切换为停止计时，记录下此时的DateTime作为本次Record的start_time，再次点击按钮（此时钮文本为停止计时），状态从进行中切换为暂停，按钮文本切换回开始计时，记录下此时的DateTime作为本次Record的end_time，完成一次Record,存入数据库中，计算duration=end_time=start_time. 在all_time上+=本次record的duration，在daily_time查询当天日期对应的JSON{date：YYYY-MM-DD,time:HH:MM:SS}，并使得time的值+=duration。若未查询到，则新建一个JSON数据，time默认初始化为0后+=duration。数据实时更新到all.html上，weekly，monthly，yearly以此类推。<br>默认文本显示为record,按钮状态为inactive，按下按钮后状态切换为active，同时按钮文本切换为stop，记录下此时的DateTime作为本次Record的start_time，再次点击按钮（此时钮文本为stop），状态从active切换为inactive，按钮文本切换回record，记录下此时的DateTime作为本次Record的end_time，完成一次record=Record(start_time,end_time),commit到数据库中，调用project.update_time_stats(record)在all_time上+=本次record的duration，在daily_time查询当天日期对应的JSON{date：YYYY-MM-DD,time:HH:MM:SS}，并使得time的值+=duration。若未查询到，则新建一个JSON数据，time默认初始化为0后+=duration。数据实时更新到all.html上，weekly，monthly，yearly以此类推。<br>编辑按钮的html和路由，给出具体完整的代码<br>
+<br>实现按钮文本随着按钮状态active/inactive的改变而改变
+<br>
+<br>stript.js schema.sql models.py views.py <br># /create  POST 
+
+current_user
+request{
+	name,
+	status,
+}
+
+project(
+	id = ，#生成
+	name = request.form['name'],
+	status = request.form['status'],
+	user_id = current_user.id,
+)
+
+###
+sqlalchemy.exc.StatementError: (builtins.TypeError) SQLite DateTime type only accepts Python datetime and date objects as input.
+[SQL: INSERT INTO projects (name, status, user_id, all_time, daily_time, weekly_time, monthly_time, yearly_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: [{'status': 'In Planning', 'user_id': 1, 'name': '1', 'monthly_time': None, 'daily_time': None, 'yearly_time': None, 'weekly_time': None}]]  
+###
+
+#创建一条record
+
+record = Record(
+  project_id=project.id,
+  start_time=datetime.now(),#第一次按钮，开始计时
+  end_time=datetime.now() #第二次按钮，结束计时
+)
+
+record.duration=0
+db.session.add(record)
+db.session.commit()
+
+project.update_time_stats(record)
+复制<br>针对project类，其schema.sql如下：<br>-- 创建 projects 表
+CREATE TABLE IF NOT EXISTS Project (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'In Planning', // 项目状态 InPlanning, InProgress, Completed, Abandoned, Paused
+  all_time DATETIME NOT NULL DEFAULT '00:00:00',
+  daily_time JSON, -- 日时间,TEXT类型存储JSON
+  weekly_time JSON,  
+  monthly_time JSON,
+  yearly_time JSON,
+  FOREIGN KEY (user_id) REFERENCES User (id)
+);
+复制<br>其中'monthly_time': None, 'daily_time': None, 'yearly_time': None, 'weekly_time': None} 默认为None，非JSON格式。当一个project被创建出来而还没有records的时候，如何将这些JSON数据指定一个默认值？<br>sqlalchemy.exc.StatementError: (builtins.TypeError) SQLite DateTime type only accepts Python datetime and date objects as input.
+[SQL: INSERT INTO projects (name, status, user_id, all_time, daily_time, weekly_time, monthly_time, yearly_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: [{'name': 'a', 'status': 'In Planning', 'user_id': 1}]]
+复制<br>  
+  
+
+@bp.route('/project/&lt;int:id&gt;/delete', methods=['DELETE'])
+
+def delete(id):
+
+&nbsp; project = Project.query.get(id)
+
+&nbsp; db.session.delete(project)
+
+&nbsp; db.session.commit()
+
+&nbsp; return jsonify(status='success')
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/edit', methods=['GET','POST'])
+
+def edit(id):
+
+&nbsp; project = Project.query.get(id)
+
+&nbsp; if request.method == 'POST':
+
+&nbsp; &nbsp; project.name = request.form['name']
+
+&nbsp; &nbsp; project.status = request.form['status']
+
+&nbsp; &nbsp; db.session.commit()
+
+&nbsp; &nbsp; return redirect(url_for('main.all'))
+
+&nbsp; return render_template('edit.html', project=project)
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/start', methods=['POST'])
+
+def start(id):
+
+&nbsp; project = Project.query.get(id)
+
+&nbsp; record = Record(project_id=project.id)
+
+&nbsp; db.session.add(record)
+
+&nbsp; db.session.commit()
+
+&nbsp; return jsonify(status='success')
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/stop', methods=['PUT'])
+
+def stop(id):
+
+&nbsp; record = Record.query.filter_by(project_id=id).order_by(Record.start_time.desc()).first()
+
+&nbsp; record.end_time = datetime.now()
+
+&nbsp; db.session.commit()
+
+&nbsp; return jsonify(status='success')
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/delete_record', methods=['DELETE'])
+
+def delete_record(id):
+
+&nbsp; record = Record.query.get(id)
+
+&nbsp; db.session.delete(record)
+
+&nbsp; db.session.commit()
+
+&nbsp; return jsonify(status='success')
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/update_record', methods=['PUT'])
+
+def update_record(id):
+
+&nbsp; record = Record.query.get(id)
+
+&nbsp; record.start_time = datetime.strptime(request.form['start_time'],'%Y-%m-%d %H:%M:%S')
+
+&nbsp; record.end_time = datetime.strptime(request.form['end_time'],'%Y-%m-%d %H:%M:%S')
+
+&nbsp; record.duration = record.end_time - record.start_time
+
+&nbsp; db.session.commit()
+
+&nbsp; return jsonify(status='success')
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/records')
+
+def get_records(id):
+
+&nbsp; records = Record.query.filter_by(project_id=id).order_by(Record.start_time.desc()).all()
+
+&nbsp; return jsonify(records=[record.serialize() for record in records])
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/records/&lt;int:page&gt;')
+
+def get_records_by_page(id,page):
+
+&nbsp; records = Record.query.filter_by(project_id=id).order_by(Record.start_time.desc()).paginate(page=page, per_page=10)
+
+&nbsp; return jsonify(records=[record.serialize() for record in records.items])
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/records/&lt;int:page&gt;/&lt;int:per_page&gt;')
+
+def get_records_by_page_and_per_page(id,page,per_page):
+
+&nbsp; records = Record.query.filter_by(project_id=id).order_by(Record.start_time.desc()).paginate(page=page, per_page=per_page)
+
+&nbsp; return jsonify(records=[record.serialize() for record in records.items])
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/records/&lt;string:start_time&gt;/&lt;string:end_time&gt;')
+
+def get_records_by_time(id,start_time,end_time):
+
+&nbsp; records = Record.query.filter_by(project_id=id).filter(Record.start_time.between(start_time,end_time)).order_by(Record.start_time.desc()).all()
+
+&nbsp; return jsonify(records=[record.serialize() for record in records])
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/records/&lt;string:start_time&gt;/&lt;string:end_time&gt;/&lt;int:page&gt;')
+
+def get_records_by_time_and_page(id,start_time,end_time,page):
+
+&nbsp; records = Record.query.filter_by(project_id=id).filter(Record.start_time.between(start_time,end_time)).order_by(Record.start_time.desc()).paginate(page=page, per_page=10)
+
+&nbsp; return jsonify(records=[record.serialize() for record in records.items])
+
+  
+
+@bp.route('/project/&lt;int:id&gt;/records/&lt;string:start_time&gt;/&lt;string:end_time&gt;/&lt;int:page&gt;/&lt;int:per_page&gt;')
+
+def get_records_by_time_and_page_and_per_page(id,start_time,end_time,page,per_page):
+
+&nbsp; records = Record.query.filter_by(project_id=id).filter(Record.start_time.between(start_time,end_time)).order_by(Record.start_time.desc()).paginate(page=page, per_page=per_page)
+
+&nbsp; return jsonify(records=[record.serialize() for record in records.items])
+
+  
+
+# 项目详情
+
+@bp.route('/project/&lt;int:id&gt;')
+
+def project(id):
+
+&nbsp; project = Project.query.get(id)
+
+&nbsp; return render_template('views/project.html', project=project)
+
+  
+
+# 项目详情
+
+@bp.route('/project/&lt;int:id&gt;/status', methods=['GET'])
+
+def get_project_status(id):
+
+&nbsp; project = Project.query.get(id)
+
+&nbsp; return jsonify(status=project.status)
+复制<br>&lt;div class="container"&gt;
+
+    {% for project in projects %}
+
+    &lt;ul&gt;
+
+      &lt;li&gt;&lt;/li&gt;&lt;!--添加一个排序的序号--&gt;
+
+      &lt;li&gt;&lt;button class="actions" onclick="toggleStatus({{project.id}})"&gt;按钮&lt;/button&gt;&lt;/li&gt;
+
+        &lt;!--`开始计时`/`停止计时`按钮，默认为`开始计时`,状态为`暂停`，按下按钮后状态切换为`进行中`，同时按钮文本切换为`停止计时`，记录下此时的DateTime作为本次`Record`的`start_time`，再次点击按钮（此时钮文本为`停止计时`），状态从`进行中`切换为`暂停`，按钮文本切换回`开始计时`，记录下此时的DateTime作为本次`Record`的`end_time`，完成一次`Record`,存入数据库中，计算duration=end_time=start_time. 在all_time上+=本次record的duration，在daily_time查询当天日期对应的JSON{date：YYYY-MM-DD,time:HH:MM:SS}，并使得time的值+=duration。若未查询到，则新建一个JSON数据，time默认初始化为0后+=duration。数据实时更新到all.html上，weekly，monthly，yearly以此类推。--&gt;
+
+      &lt;li class="details"&gt;{{ project.name }}&lt;/li&gt;
+
+      &lt;li class="details"&gt;{{ project.status }}&lt;/li&gt;
+
+      &lt;li class="details"&gt;{{ project.total_time }}&lt;/li&gt;
+
+      &lt;li&gt;&lt;button class="more" onclick=""&gt;more&lt;/button&gt;&lt;/li&gt; &lt;!--more按钮，点击可选择delete，rename等按钮--&gt;
+
+    &lt;/ul&gt;
+
+    {% endfor %}
+
+&lt;/div&gt;
+复制<br>Array.from(timerBtns).forEach(function(btn) {
+
+  btn.addEventListener('click', function() {
+
+    let projectId = btn.dataset.projectId;
+
+    if (projectId) {
+
+      if (btn.classList.contains('active')) {
+
+        // Stop timer
+
+        btn.classList.remove('active');
+
+        btn.innerText = 'Record';
+
+        let endTime = new Date();
+
+        let record = {
+
+          project_id: projectId,
+
+          start_time: formatDateTime(startTime),
+
+          end_time: formatDateTime(endTime)
+
+        };
+
+        createRecord(record);
+
+        startTime = null;
+
+      } else {
+
+        // Start timer
+
+        startTime = new Date();
+
+        btn.classList.add('active');
+
+        btn.innerText = 'Stop';
+
+      }
+
+    }
+
+  });
+
+});
+复制]]></description><link>c++课程设计：3.2-所有项目.html</link><guid isPermaLink="false">C++课程设计：3.2-所有项目.md</guid><pubDate>Mon, 04 Sep 2023 02:22:30 GMT</pubDate></item><item><title><![CDATA[C++课程设计：4.项目可安装化]]></title><description><![CDATA[ 
+ <br>
+<br>打包这个应用并且安装到其他电脑上 
+<br><a data-tooltip-position="top" aria-label="https://flask.net.cn/tutorial/install.html" rel="noopener" class="external-link" href="https://flask.net.cn/tutorial/install.html" target="_blank">项目可安装化</a> 
+<br><a data-tooltip-position="top" aria-label="https://packaging.python.org/en/latest/tutorials/packaging-projects/" rel="noopener" class="external-link" href="https://packaging.python.org/en/latest/tutorials/packaging-projects/" target="_blank">Packaging Python Projects — Python Packaging User Guide</a> 
+<br>pip&nbsp;install&nbsp;yourproject.whl
+$ pip install -e .
+
+# 在任何地方运行应用，而不仅仅 是在&nbsp;`flask-tutorial`&nbsp;目录下。
+
+复制<br><a data-href="`MINIFEST.in`" href="代码\`minifest.in`.html" class="internal-link" target="_self" rel="noopener">`MINIFEST.in`</a> ]]></description><link>c++课程设计：4.项目可安装化.html</link><guid isPermaLink="false">C++课程设计：4.项目可安装化.md</guid><pubDate>Fri, 25 Aug 2023 14:40:50 GMT</pubDate></item><item><title><![CDATA[C++课程设计：测试]]></title><description><![CDATA[ 
+ <br>
+<br>测试：应当覆盖每个函数和每个分支。
+]]></description><link>c++课程设计：测试.html</link><guid isPermaLink="false">C++课程设计：测试.md</guid><pubDate>Tue, 29 Aug 2023 07:37:23 GMT</pubDate></item><item><title><![CDATA[2023-08-12]]></title><description><![CDATA[ 
+ <br><br>├── ATimer<br>
+│&nbsp;&nbsp; ├── <a data-href="`__init__.py`" href="`__init__.py`" class="internal-link" target="_self" rel="noopener">`__init__.py`</a><br>
+│&nbsp;&nbsp; ├── <a data-href="`auth.py`" href="`auth.py`" class="internal-link" target="_self" rel="noopener">`auth.py`</a><br>
+│&nbsp;&nbsp; ├── db.py<br>
+│&nbsp;&nbsp; ├── views.py<br>
+│&nbsp;&nbsp; ├── models.py<br>
+│&nbsp;&nbsp; ├── schema.sql<br>
+│&nbsp;&nbsp; ├── static<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── css<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── style.css<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── js<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp;     └── script.js<br>
+│&nbsp;&nbsp; ├── templates<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── auth<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── login.html<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── profile.html<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── register.html<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <a data-href="base.html" href="代码\base.html.html" class="internal-link" target="_self" rel="noopener">base.html</a><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── create.html<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── index.html<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── project.html<br>
+│&nbsp;&nbsp; └── tests<br>
+├── MANIFEST.in<br>
+├── requirements.txt<br>
+├── .env<br>
+├── <a data-href="`.gitignore`" href="代码\`.gitignore`.html" class="internal-link" target="_self" rel="noopener">`.gitignore`</a><br>
+└── setup.py                   # python setup.py install]]></description><link>c++课程设计：代码.html</link><guid isPermaLink="false">C++课程设计：代码.md</guid><pubDate>Sat, 19 Aug 2023 07:09:38 GMT</pubDate></item><item><title><![CDATA[C++课程设计：进阶]]></title><description><![CDATA[ 
+ <br>
+<br>日期/周/月/年选择
+<br>日历
+<br>服务器
+<br>小程序
+<br>Android/IOS
+]]></description><link>c++课程设计：进阶.html</link><guid isPermaLink="false">C++课程设计：进阶.md</guid><pubDate>Tue, 29 Aug 2023 07:40:37 GMT</pubDate></item><item><title><![CDATA[ToDo]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br><br>
+<br>提交目标软件及其版本序列
+
+<br>软件包：从Github上git clone或download zip
+<br>版本序列
+
+<br>git版本控制
+<br>每一个版本进行单独保存为Released 并本地备份
+
+
+<br>产品文档中的更新日志
+
+
+<br>课程设计报告
+
+<br>① 采用各级“标题”样式，组织结构化的文档；
+<br>② 采用Visio之类的软件，绘制相关的设计图。
+<br>③ 采用<a data-tooltip-position="top" aria-label="http://codeinword.com/%E7%BB%84%E7%BB%87%E4%BB%A3%E7%A0%81%E3%80%82" rel="noopener" class="external-link" href="http://codeinword.com/%E7%BB%84%E7%BB%87%E4%BB%A3%E7%A0%81%E3%80%82" target="_blank">http://codeinword.com/组织代码。</a>
+<br>④ 报告末尾有“设计感想”。
+
+
+<br>优秀标准
+
+<br>① 类的包含关系
+<br>② 类的继承关系；
+<br>① 多态技术；
+<br>② 类模板技术；
+<br>③ 采用了可视化的编程语言，实现了窗口程序或网站程序。
+
+
+<br>时子延的特色
+
+<br>Github版本控制源代码，管理发布
+<br>Github release下载软件
+<br>有详细的软件文档和开发日志
+<br>Github.io 在线展示软件文档和开发日志
+<br>使用MarkDown文件作为数据载体，数据存储在本地，有效保障隐私。
+<br>使用Flask进行网页端访问
+<br>版权声明：自由转载-非商用-非衍生-保持署名（<a data-tooltip-position="top" aria-label="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" rel="noopener" class="external-link" href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank">创意共享3.0许可证</a>）
+<br>有后续移植为Obsidian插件，<a data-tooltip-position="top" aria-label="http://www.aiszy.life%E7%BD%91%E9%A1%B5%E7%AB%AF%E5%BA%94%E7%94%A8%EF%BC%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%BA%94%E7%94%A8%EF%BC%8C%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%9A%84%E9%87%8E%E5%BF%83%E5%92%8C%E6%8F%90%E5%89%8D%E8%AE%BE%E8%AE%A1%E5%B8%83%E5%B1%80%E5%87%86%E5%A4%87%E3%80%82" rel="noopener" class="external-link" href="http://www.aiszy.life%E7%BD%91%E9%A1%B5%E7%AB%AF%E5%BA%94%E7%94%A8%EF%BC%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%BA%94%E7%94%A8%EF%BC%8C%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%9A%84%E9%87%8E%E5%BF%83%E5%92%8C%E6%8F%90%E5%89%8D%E8%AE%BE%E8%AE%A1%E5%B8%83%E5%B1%80%E5%87%86%E5%A4%87%E3%80%82" target="_blank">www.aiszy.life网页端应用，客户端应用，微信小程序的野心和提前设计布局准备。</a>
+
+
+<br><br>以下为原文：<br>《面向对象程序设计》课程设计题<br>（2021年7月）<br>1 课程设计要求<br>1.1 每一位同学必须提交的材料<br>① 目标软件及其版本序列；<br>② 课程设计报告。<br>要求每位同学独立完成，提倡互相交流、帮助，但是严格拒绝抄袭。<br>1.2 目标软件的开发环境<br>① 建议采用C++编写，同时鼓励采用任何支持面向对象技术的语言；<br>② 程序形式可以是控制台程序，同时鼓励实现窗口程序或网站程序。<br>1.3 目标软件的编程风格<br>① 代码缩进；<br>② 合适的变量名；<br>③ 几乎不使用全局变量；<br>④ 每个函数的代码，不能超过20行。<br>1.4 在目标软件应满足的技术指标<br>① 类的数量&gt;=5个；<br>② 代码量&gt;=500行；<br>③ 拒绝没有数据成员的类（除非有特别的理由）；<br>④ 使用了数据文件，保存软件的运行前和运行后的数据。<br>1.5 在目标软件的开发中，采用迭代式开发方法<br>① 版本序列：保留至少3个递进的开发版本。<br>② 这将成为师生交流、评判成绩的重要材料。<br>1.6 课程设计报告的书写规范<br>① 采用各级“标题”样式，组织结构化的文档；<br>② 采用Visio之类的软件，绘制相关的设计图。<br>③ 采用<a data-tooltip-position="top" aria-label="http://codeinword.com/%E7%BB%84%E7%BB%87%E4%BB%A3%E7%A0%81%E3%80%82" rel="noopener" class="external-link" href="http://codeinword.com/%E7%BB%84%E7%BB%87%E4%BB%A3%E7%A0%81%E3%80%82" target="_blank">http://codeinword.com/组织代码。</a><br>④ 报告末尾有“设计感想”。<br>2 评分标准<br><br>欢迎大家在假期中，努力进步，常常在课程群中提问、讨论。<br>每位同学的成绩，都是在提交材料后，经过师生的交流，当面给出的。<br><br>在满足“课程设计要求”之后，必须至少使用了以下技术之一：<br>① 多态技术；<br>② 类模板技术；<br>③ 采用了可视化的编程语言，实现了窗口程序或网站程序。<br><br>在满足“课程设计要求”之后，必须至少使用了以下技术之一：<br>① 类的包含关系<br>② 类的继承关系；<br>3 课程设计的选题<br><br>数据文件：课程表、学生表、成绩表等。<br>模块：课程管理、学生管理、成绩管理等。<br>模块中的功能：打开、保存、查询、增加、删除、修改等。<br><br>数据文件：工作人员表、物品表、进货表、销售表等。<br>模块：工作人员管理、物品管理、进货管理、销售管理等。<br>模块中的功能：打开、保存、查询、增加、删除、修改等。<br><br>数据文件：学生表、图书表、借阅表、归还表等。<br>模块：学生管理、图书管理、借阅管理、归还管理等。<br>模块中的功能：打开、保存、查询、增加、删除、修改等。<br><br>自定义并完善字符串类KString，从而实现对字符串对象的方便定义，空间可伸缩、动态管理和便捷运算。<br>本系统的功能要求如下：<br>1、该类用于存储和处理字符串对象的相关信息<br>2、使用堆空间实现可变长字符串信息的动态存储，尽可能考虑全面<br>3、完成以下的操作：初始化字符串、获得字符串长度、在字符串中查找一个字符、在字符串中查找另一个字符串、字符串连接（‘+’运算符）、字符串比较（‘&gt;’‘&lt;’‘= =’等）、赋值（‘=’）等。<br>提示：<br>1、建立KString类和相关测试程序<br>2、字符串内部只使用ASCII字符编码<br>3、对象内部空间动态管理<br>4、方便字符串内容输出<br>5、程序须有必要的注释<br><br>数据文件：一元多项式的系数、指数文件。<br>功能：求值、加法、减法、乘法、除法等，支持连续运算。<br><br>数据文件：算式文件。<br>功能：加法、减法、乘法、除法等，支持连续运算。<br><br>功能1：用动态顺序表类，模拟内存管理；用成员函数mynew和mydelete，实现new和delete的功能。<br>功能2：建立链表类，检测空间的申请、释放效果，判断链表类的代码，是否存在内存泄漏的情形。<br><br>绘图模拟程序，用来在一个画板上，模拟绘制矢量图。要求实现以下功能：<br>
+<br>
+根据图形的类型实现相应的绘图操作（记录图形的位置，大小，形状，线条，颜色等特征，在屏幕上只显示绘制成功与否）
+
+<br>
+所有图形都绘制在一个画板上，画板的颜色大小可以设置。
+
+<br>
+存储画板上的图形（文件名可以输入）
+
+<br>
+根据图形文件名读入图形到画板中，并将它们显示在屏幕上（可以只显示图形属性数据）
+
+<br>
+&nbsp;扩展功能：以图形化的方式显示绘制的图形
+
+<br><br>小球游戏（弹射、接球等）；<br>贪吃蛇游戏；<br>汉诺塔游戏；<br>扫雷游戏；<br>纸牌游戏；<br>24点游戏等。<br>具体功能请自拟，然后与任课教师交流，得到认可后，再进行设计开发。]]></description><link>c++课程设计：课设要求.html</link><guid isPermaLink="false">C++课程设计：课设要求.md</guid><pubDate>Mon, 28 Aug 2023 02:52:42 GMT</pubDate></item><item><title><![CDATA[C++课程设计：目录结构]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br># 2023-08-12
+├── ATimer
+│&nbsp;&nbsp; ├── __init__.py
+│&nbsp;&nbsp; ├── db.py
+│&nbsp;&nbsp; ├── views.py              # 处理不同URL的逻辑,比如展示项目视图、添加项目、开始/结束执行等。渲染html模板展示数据。
+│&nbsp;&nbsp; ├── auth.py               # register &amp; login &amp; profile
+│&nbsp;&nbsp; ├── models.py             # 定义Project和 record 两个模型类,用于对数据库进行CRUD操作
+│&nbsp;&nbsp; ├── schema.sql    
+│&nbsp;&nbsp; ├── static
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── css
+│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── style.css
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── js
+│&nbsp;&nbsp; │&nbsp;&nbsp;     └── script.js
+│&nbsp;&nbsp; └── templates
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── auth
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── login.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── profile.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; └── register.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── views
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── all.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── day.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── week.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; ├── month.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; │&nbsp;&nbsp; └── year.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── create.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; ├── index.html
+│&nbsp;&nbsp;  &nbsp;&nbsp; └── base.html          # 使用Jinja2模板引擎来生成html页面。base.html作为基模板,其他页面继承它。
+├── MANIFEST.in
+├── requirements.txt
+├── .env
+├── .gitignore
+└── setup.py                   # python setup.py install
+复制<br>
+<br>
+使用Python的Flask框架来构建Web应用程序。Flask提供了路由、模板等功能可以方便地构建Web应用。
+
+<br>
+使用SQLite数据库来存储项目和执行事件的数据。可以定义Project和Execution两张表,Project表存储项目信息,Execution表存储每次执行事件的开始时间、结束时间等信息。
+
+<br>
+在models.py中定义Project和Execution两个模型类,用于对数据库进行CRUD操作。
+
+<br>
+在views.py中处理不同URL的逻辑,比如展示项目视图、添加项目、开始/结束执行等。渲染html模板展示数据。
+
+<br>
+使用Jinja2模板引擎来生成html页面。base.html作为基模板,其他页面继承它。
+
+<br>
+用Flask-SQLAlchemy package来简化数据库操作。
+
+<br>
+用Flask-WTF处理表单,如项目添加表单、登录表单等。
+
+<br>
+使用Flask-Login来处理用户认证系统。
+
+<br>
+用JavaScript/jQuery来实现页面交互效果,如计时器、统计信息实时更新等。
+
+<br>
+用Chart.js等库展示统计图表。
+
+<br>
+用Python的时间日期模块处理时间统计计算。
+
+<br>
+/ATimer
+├── 0.课设要求
+│   ├── 1《面向对象程序设计》课程设计题.doc
+│   └── 2 《面向对象程序设计》课程设计封面.doc
+├── 1.课程设计报告
+│   └── 时子延：《面向对象程序设计》课程设计.doc
+├── 2.历史版本
+│   └── README.md
+├── ATimer
+│   ├── bin-env
+│   │   ├── bin
+|	│   │   └── activate
+│   │   └── ...
+│   ├── env
+│   │   ├── Scripts
+|	│   │   └── activate
+│   │   └── ...
+│   ├── data
+│   │   ├── Done
+│   │   ├── In Planning
+│   │   ├── In Process
+│   │   └── Pause
+│   ├── requirements.txt
+│   ├── setup.py
+│   ├── static
+│   │   ├── css
+│   │   └── js
+│   └── templates
+│       ├── base.html
+│       ├── home.html
+│       ├── intro.html
+│       └── new_project.html
+└── README.md
+
+
+$ pip list
+Package      Version
+------------ -------
+blinker      1.6.2
+click        8.1.6
+Flask        2.3.2
+itsdangerous 2.1.2
+Jinja2       3.1.2
+MarkupSafe   2.1.3
+pip          22.0.2
+setuptools   59.6.0
+Werkzeug     2.3.6
+
+
+
+ATimer 
+|-- env                  # env/Scripts/activate (Windows)    (先 python -m venv env)
+|-- bin-env              # source bin-env/bin/activate (Linux or MacOS) (先 python -m venv bin-env)
+|-- app.py               # python app.py
+|-- requirements.txt     # pip install -r requirements.txt
+|-- templates            # HTML 模板
+	|-- base.html        # 存放项目数据的目
+	|-- home.html        # 首页模板,继承并扩展自base.html
+	|-- new_project.html # 新建项目页面的模板,也继承自base.html
+|-- static               # 存放静态资源如CSS、JS等的目录
+	|-- css              # CSS
+		|-- style.css    
+	|-- js               # JavaScript
+		|-- script.js    
+|-- data                 # 存放项目数据
+	|-- In Planning      # project的status
+	|-- In Process 
+		|-- C++课程设计.md # 以.md格式存储的项目数据，yaml部分是参数，content部分是时间日志
+	|-- Pause
+	|-- Done
+|-- api         ？
+|-- .old                 # 回收站
+
+
+
+
+
+class Project:
+&nbsp; &nbsp; def __init__(self, name, status,note,stats):
+&nbsp; &nbsp; &nbsp; &nbsp; """
+&nbsp; &nbsp; &nbsp; &nbsp; name: 项目名称
+&nbsp; &nbsp; &nbsp; &nbsp; status: 项目状态: In Planning, In Process, Done, Pause
+&nbsp; &nbsp; &nbsp; &nbsp; note: 项目描述
+&nbsp; &nbsp; &nbsp; &nbsp; stats[daily,weekly,monthly,yearly]: 项目统计信息
+&nbsp; &nbsp; &nbsp; &nbsp; """
+&nbsp; &nbsp; &nbsp; &nbsp; self.name = name
+&nbsp; &nbsp; &nbsp; &nbsp; self.status = status
+&nbsp; &nbsp; &nbsp; &nbsp; self.note = note
+&nbsp; &nbsp; &nbsp; &nbsp; self.stats = stats
+复制<br>
+<br><img src="https://i.imgur.com/xFw2Q9w.png" referrerpolicy="no-referrer">
+]]></description><link>c++课程设计：目录结构.html</link><guid isPermaLink="false">C++课程设计：目录结构.md</guid><pubDate>Sat, 26 Aug 2023 01:58:36 GMT</pubDate><enclosure url="https://i.imgur.com/xFw2Q9w.png" length="0" type="image/png"/><content:encoded>&lt;figure&gt;&lt;img src=&quot;https://i.imgur.com/xFw2Q9w.png&quot;&gt;&lt;/figure&gt;</content:encoded></item><item><title><![CDATA[C++课程设计：前端设计]]></title><description><![CDATA[ 
+ <br><br>index.html<br>
+<img src="https://i.imgur.com/vKBq8Pz.png" referrerpolicy="no-referrer"><br>auth/register.html<br>
+<img src="https://i.imgur.com/HssJhAX.png" referrerpolicy="no-referrer"><br>auth/login.html<br>
+<img src="https://i.imgur.com/SIJKCiT.png" referrerpolicy="no-referrer"><br>all.html<br>
+<img src="https://i.imgur.com/uGElPNF.png" referrerpolicy="no-referrer"><br>daily.html<br><img src="https://i.imgur.com/i1kyTS3.png" referrerpolicy="no-referrer"><br>profile.html 用户页<br>
+<img src="https://i.imgur.com/bRZMWzs.png" referrerpolicy="no-referrer"><br>create.html新建页<br>
+<img src="https://i.imgur.com/UNQOAUc.png" referrerpolicy="no-referrer">]]></description><link>c++课程设计：前端设计.html</link><guid isPermaLink="false">C++课程设计：前端设计.md</guid><pubDate>Mon, 04 Sep 2023 00:58:21 GMT</pubDate><enclosure url="https://i.imgur.com/vKBq8Pz.png" length="0" type="image/png"/><content:encoded>&lt;figure&gt;&lt;img src=&quot;https://i.imgur.com/vKBq8Pz.png&quot;&gt;&lt;/figure&gt;</content:encoded></item><item><title><![CDATA[C++课程设计：时子延]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>时子延 南京师范大学<br>
+我想开发一个有用的程序，而不仅仅是为了完成作业反复抄写前人的代码。
+<br><a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Github</a>]]></description><link>c++课程设计：时子延.html</link><guid isPermaLink="false">C++课程设计：时子延.md</guid><pubDate>Thu, 10 Aug 2023 06:23:05 GMT</pubDate></item><item><title><![CDATA[C++课程设计：数据库设计]]></title><description><![CDATA[ 
+ <br>User存储登录用户的信息，包括账号名，密码的hash。每个User对应多个Project。一个Project对应多个Record。每条Record都是start_time,end_time,duration三个参数。<br>
+每个Project不仅存储多条Record，而且还缓存了day/week/month/year/all的时长数据。例如，存有2023年和2022年所有数据，2023-08所有数据，2023-35W所有数据，2023-08-29所有数据，这个Project累计所有数据。每个数据都是一个HH:MM:SS的时长信息。<br>
+当一个record被记录完毕，其duration将被自动记录。例如2023-08-29 16:15:00,2023-08-29 16:30:07,0:15:07作为一个record被创建后存储在Record数据库中。同时这个record对应的project中，year存有的2023，，month存有的2023-08，week存有的2023-35W，day存有的2023-08-29，all存有的total_time五个数据全部更新参数，在原有时长的基础上+0:15:07<br>根据以上描述，重新设计数据库及其相关的代码<br>数据库使用SQLite，文件schema.sql中的内容如下：<br>--schema.sql
+
+  
+
+-- 创建 users 表
+
+CREATE TABLE IF NOT EXISTS User (
+
+  id INTEGER PRIMARY KEY,
+
+  username VARCHAR(64) NOT NULL UNIQUE,
+
+  password_hash VARCHAR(128) NOT NULL
+
+);
+
+  
+
+-- 创建 projects 表
+
+CREATE TABLE IF NOT EXISTS Project (
+
+  id INTEGER PRIMARY KEY,
+
+  user_id INTEGER NOT NULL,
+
+  name TEXT NOT NULL,
+
+  status TEXT NOT NULL DEFAULT 'In Planning', // 项目状态 InPlanning, InProgress, Completed, Abandoned, Paused
+
+  --all_time TIME DEFAULT '00:00:00',
+
+  all_time TEXT,
+
+  daily_time JSON, -- 日时间,TEXT类型存储JSON
+
+  weekly_time JSON,  
+
+  monthly_time JSON,
+
+  yearly_time JSON,
+
+  --active BOOLEAN NOT NULL DEFAULT FALSE,
+
+  FOREIGN KEY (user_id) REFERENCES User (id)
+
+);
+
+  
+
+-- 创建 records 表
+
+CREATE TABLE IF NOT EXISTS Record (
+
+  id INTEGER PRIMARY KEY,
+
+  project_id INTEGER NOT NULL,
+
+  start_time TIMESTAMP NOT NULL,
+
+  end_time TIMESTAMP NOT NULL,
+
+  duration INTERVAL NOT NULL,
+
+  FOREIGN KEY (project_id) REFERENCES Project (id)
+
+);
+
+复制<br>user表示用户数据，每个用户在登录后仅可以查看自己的数据。由id,username,password构成<br>
+<br>PickleType
+<br>BLOB
+]]></description><link>c++课程设计：数据库设计.html</link><guid isPermaLink="false">C++课程设计：数据库设计.md</guid><pubDate>Mon, 04 Sep 2023 00:39:16 GMT</pubDate></item><item><title><![CDATA[C++课程设计：与王琼老师沟通交流]]></title><description><![CDATA[ 
+ <br><a data-tooltip-position="top" aria-label="C++课程设计" data-href="C++课程设计" href="c++课程设计.html" class="internal-link" target="_self" rel="noopener">Home</a> <a data-tooltip-position="top" aria-label="C++课程设计：产品文档" data-href="C++课程设计：产品文档" href="c++课程设计：产品文档\c++课程设计：产品文档.html" class="internal-link" target="_self" rel="noopener">Doc</a> <a data-tooltip-position="top" aria-label="更新日志" data-href="更新日志" href="c++课程设计：产品文档\其他材料\更新日志.html" class="internal-link" target="_self" rel="noopener">Changelog</a> <a data-tooltip-position="top" aria-label="https://github.com/AWSzyAI/ATimer/tree/main" rel="noopener" class="external-link" href="https://github.com/AWSzyAI/ATimer/tree/main" target="_blank">Download</a> <a data-tooltip-position="top" aria-label="C++课程设计：时子延" data-href="C++课程设计：时子延" href="c++课程设计：时子延.html" class="internal-link" target="_self" rel="noopener">About</a> <br>
+<br>完成<a data-href="C++课程设计：3-最小可用产品" href="c++课程设计：3-最小可用产品.html" class="internal-link" target="_self" rel="noopener">C++课程设计：3-最小可用产品</a>，具备基本类，增删查改，无CSS简陋Web页面Demo后私信王琼老师交流相关内容。
+<br>
+]]></description><link>c++课程设计：与王琼老师沟通交流.html</link><guid isPermaLink="false">C++课程设计：与王琼老师沟通交流.md</guid><pubDate>Fri, 11 Aug 2023 02:04:21 GMT</pubDate></item><item><title><![CDATA[C++课程设计：MarkDown-yaml设计]]></title><description><![CDATA[ 
+ <br>]]></description><link>c++课程设计：markdown-yaml设计.html</link><guid isPermaLink="false">C++课程设计：MarkDown-yaml设计.md</guid><pubDate>Wed, 09 Aug 2023 03:15:13 GMT</pubDate></item></channel></rss>

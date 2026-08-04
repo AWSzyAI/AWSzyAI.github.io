@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录中 - 时子延的个人主页</title>
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <style>
+        body {
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 50%, #32CD32 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            color: white;
+        }
+
+        .auth-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', serif;
+        }
+
+        .auth-message {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ffcccc;
+        }
+
+        .success-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ccffcc;
+        }
+
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .github-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="github-icon">
+            <i class="fab fa-github"></i>
+        </div>
+        <h1 class="auth-title">GitHub 登录</h1>
+        <p class="auth-message" id="auth-message">正在处理登录...</p>
+
+        <div id="loading-state">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div id="error-state" style="display: none;">
+            <div class="error-message" id="error-message"></div>
+            <button class="retry-btn" onclick="window.location.href='/'">返回首页</button>
+        </div>
+
+        <div id="success-state" style="display: none;">
+            <div class="success-message">登录成功！正在跳转...</div>
+        </div>
+    </div>
+
+    <script src="github-oauth-config.js"></script>
+<script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            const loadingState = document.getElementById('loading-state');
+            const errorState = document.getElementById('error-state');
+            const successState = document.getElementById('success-state');
+            const authMessage = document.getElementById('auth-message');
+
+            try {
+                if (error) {
+                    throw new Error(`GitHub授权失败: ${error}`);
+                }
+
+                if (!code || !state) {
+                    throw new Error('缺少必要的授权参数');
+                }
+
+                authMessage.textContent = '正在验证身份信息...';
+
+                // 处理OAuth回调
+                const auth = new BlogAuth();
+                const user = await auth.handleOAuthCallback(code, state);
+
+                if (user) {
+                    // 登录成功
+                    loadingState.style.display = 'none';
+                    successState.style.display = 'block';
+
+                    setTimeout(() => {
+                        // 重定向到博客主页
+                        window.location.href = '/blog.html';
+                    }, 1500);
+                }
+
+            } catch (error) {
+                console.error('Auth error:', error);
+
+                loadingState.style.display = 'none';
+                errorState.style.display = 'block';
+
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.innerHTML = `
+                    <strong>登录失败</strong><br>
+                    ${error.message}<br>
+                    <small>请稍后重试或联系网站管理员</small>
+                `;
+            }
+        });
+
+        // 保存返回URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const referrer = document.referrer;
+            if (referrer && referrer !== window.location.href) {
+                sessionStorage.setItem('auth_return_url', referrer);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Archive | Ziyan Shi</title>
+    <meta name="description" content="Archived projects and historical materials from Ziyan Shi.">
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: "LXGWWenKai";
+            src: url("/font/LXGWWenKai-Regular.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "LXGWNeoZhiSong";
+            src: url("/font/LXGWNeoZhiSong.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "SimFang";
+            src: url("/font/simfang.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        :root {
+            --bg: #06110d;
+            --panel: rgba(10, 24, 18, 0.82);
+            --line: rgba(134, 215, 168, 0.16);
+            --text: #edf8f1;
+            --text-soft: rgba(237, 248, 241, 0.76);
+            --text-muted: rgba(186, 212, 196, 0.58);
+            --accent: #86d7a8;
+            --radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "IBM Plex Sans", "LXGWWenKai", "SimFang", "LXGWNeoZhiSong", "SimSun", sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(73, 185, 124, 0.14), transparent 26%),
+                linear-gradient(180deg, #08130e 0%, #040a07 100%);
+            padding: 28px 16px 48px;
+        }
+
+        .shell {
+            width: min(980px, 100%);
+            margin: 0 auto;
+        }
+
+        .hero,
+        .card {
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel);
+        }
+
+        .hero {
+            padding: 30px;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        h1 {
+            margin-top: 14px;
+            font-family: "Space Grotesk", "LXGWNeoZhiSong", "SimSun", serif;
+            font-size: clamp(2.2rem, 8vw, 4rem);
+            letter-spacing: -0.05em;
+        }
+
+        .hero p {
+            margin-top: 14px;
+            max-width: 56ch;
+            color: var(--text-soft);
+        }
+
+        .back {
+            display: inline-flex;
+            margin-top: 22px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--text);
+            text-decoration: none;
+            background: rgba(134, 215, 168, 0.05);
+        }
+
+        .grid {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            padding: 22px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(134, 215, 168, 0.3);
+        }
+
+        .type {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 0.76rem;
+        }
+
+        .card h2 {
+            margin-top: 12px;
+            font-size: 1.2rem;
+        }
+
+        .card p {
+            margin-top: 10px;
+            color: var(--text-soft);
+        }
+
+        @media (max-width: 860px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <div class="eyebrow">Archive</div>
+            <h1>Historical Material</h1>
+            <p>这些页面保留了较早阶段的项目、课程设计和阶段性材料。它们仍然可访问，但已经从首页主叙事中降级为归档入口。</p>
+            <a class="back" href="/">Back to Home</a>
+        </section>
+
+        <section class="grid" aria-label="Archive entries">
+            <a class="card" href="/Archive/2024Summer/2024Summer/index.html">
+                <div class="type">2024</div>
+                <h2>2024 Summer</h2>
+                <p>暑期学习计划、课程记录与阶段性知识整理。</p>
+            </a>
+            <a class="card" href="/Archive/C%2B%2B%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1/c%2B%2B%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1.html">
+                <div class="type">Course Project</div>
+                <h2>ATimer</h2>
+                <p>较完整的课程设计项目，含文档、说明和实现痕迹。</p>
+            </a>
+        </section>
+    </main>
+</body>
+</html>

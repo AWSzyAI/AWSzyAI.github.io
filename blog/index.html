@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Garden Placeholder | Ziyan Shi</title>
+    <meta name="description" content="Placeholder route reserved for the future Digital Garden deployment.">
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06110d;
+            --panel: rgba(10, 24, 18, 0.82);
+            --line: rgba(134, 215, 168, 0.16);
+            --text: #edf8f1;
+            --text-soft: rgba(237, 248, 241, 0.76);
+            --text-muted: rgba(186, 212, 196, 0.58);
+            --accent: #86d7a8;
+            --radius: 26px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "IBM Plex Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(73, 185, 124, 0.14), transparent 26%),
+                linear-gradient(180deg, #08130e 0%, #040a07 100%);
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+
+        .panel {
+            width: min(760px, 100%);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel);
+            padding: 30px;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        h1 {
+            margin-top: 14px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2.2rem, 8vw, 4rem);
+            letter-spacing: -0.05em;
+            line-height: 1;
+        }
+
+        p {
+            margin-top: 16px;
+            color: var(--text-soft);
+            line-height: 1.7;
+        }
+
+        .route {
+            margin-top: 18px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(134, 215, 168, 0.05);
+            border: 1px solid rgba(134, 215, 168, 0.1);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            color: var(--accent);
+        }
+
+        .actions {
+            margin-top: 22px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .actions a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(134, 215, 168, 0.06);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <main class="panel">
+        <div class="eyebrow">Reserved Route</div>
+        <h1>Future Digital Garden Entry</h1>
+        <p>这里预留给以后通过 Obsidian + Digital Garden 发布出来的正式写作站点。当前还没有接 Vercel 和自动化发布流程，所以先保留为稳定入口。</p>
+        <div class="route">/blog/</div>
+        <div class="actions">
+            <a href="/blog.html">Back to Writing Plan</a>
+            <a href="/obsidian/">Open Current Notes</a>
+            <a href="/">Back to Home</a>
+        </div>
+    </main>
+</body>
+</html>

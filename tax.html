@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="按年度记录综合所得、预缴个税与扣除项目，测算年度汇算退补税。">
+    <title>年度退税测算</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f4f5f6;
+            --panel: #ffffff;
+            --panel-soft: #f7f8fa;
+            --text: #20242a;
+            --muted: #68717d;
+            --line: #dfe3e8;
+            --accent: #2563eb;
+            --accent-soft: #e8f0ff;
+            --good: #168451;
+            --good-soft: #e4f6ed;
+            --warn: #a86408;
+            --warn-soft: #fff2d8;
+            --bad: #c64040;
+            --bad-soft: #fdeaea;
+            --shadow: 0 14px 40px rgba(34, 44, 62, 0.08);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button,
+        select,
+        input {
+            color: var(--text);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 64px;
+            padding: 10px max(20px, calc((100vw - 1480px) / 2));
+            border-bottom: 1px solid var(--line);
+            background: color-mix(in srgb, var(--bg) 90%, transparent);
+            backdrop-filter: blur(16px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: max-content;
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
+            color: white;
+            background: linear-gradient(135deg, #2563eb, #16a36d);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
+        }
+
+        .topbar-spacer {
+            flex: 1;
+        }
+
+        .year-control,
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn,
+        .year-select {
+            min-height: 36px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--panel);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 12px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            transition: border-color .15s, transform .15s, background .15s;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .btn.primary {
+            border-color: var(--accent);
+            color: #fff;
+            background: #2563eb;
+        }
+
+        .btn.danger {
+            color: var(--bad);
+        }
+
+        .btn.icon {
+            width: 36px;
+            padding: 0;
+        }
+
+        .year-select {
+            padding: 0 34px 0 12px;
+            font-weight: 800;
+        }
+
+        .page {
+            width: min(1480px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 34px 0 64px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 28px;
+            align-items: end;
+            margin-bottom: 22px;
+        }
+
+        .eyebrow {
+            margin-bottom: 8px;
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: clamp(30px, 4vw, 48px);
+            line-height: 1.05;
+            letter-spacing: -1.8px;
+        }
+
+        .hero p {
+            max-width: 760px;
+            margin-bottom: 0;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .save-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .save-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--good);
+            box-shadow: 0 0 0 4px var(--good-soft);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .summary-card,
+        .card {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .summary-card {
+            min-width: 0;
+            padding: 17px 14px;
+            border-radius: 15px;
+        }
+
+        .summary-card.result {
+            border-color: color-mix(in srgb, var(--good) 50%, var(--line));
+            background: linear-gradient(145deg, var(--good-soft), var(--panel));
+        }
+
+        .summary-card.result.is-due {
+            border-color: color-mix(in srgb, var(--bad) 50%, var(--line));
+            background: linear-gradient(145deg, var(--bad-soft), var(--panel));
+        }
+
+        .summary-label {
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            overflow: hidden;
+            font-size: clamp(20px, 1.85vw, 27px);
+            font-weight: 850;
+            letter-spacing: -.8px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .summary-card.result .summary-value {
+            color: var(--good);
+        }
+
+        .summary-card.result.is-due .summary-value {
+            color: var(--bad);
+        }
+
+        .summary-sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .cash-summary {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin: -10px 0 22px;
+        }
+
+        .cash-metric {
+            min-width: 220px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            color: var(--muted);
+            background: color-mix(in srgb, var(--panel) 78%, transparent);
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .cash-metric strong {
+            display: block;
+            margin-top: 2px;
+            color: var(--text);
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 15px;
+        }
+
+        .cash-metric.total strong {
+            color: var(--good);
+        }
+
+        .workspace-layout {
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .workspace-main {
+            min-width: 0;
+        }
+
+        .calculation-sidebar {
+            position: sticky;
+            top: 72px;
+            align-self: start;
+            max-height: calc(100vh - 84px);
+            overflow: hidden;
+        }
+
+        .calculation-sidebar .card-header {
+            padding: 12px 14px 10px;
+        }
+
+        .calculation-sidebar .card-header h2 {
+            font-size: 14px;
+        }
+
+        .calculation-sidebar .card-header p {
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .dashboard-grid > div {
+            min-width: 0;
+        }
+
+        .card {
+            min-width: 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .card + .card,
+        .section-gap {
+            margin-top: 18px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .card-header h2,
+        .card-header h3 {
+            margin-bottom: 4px;
+            font-size: 16px;
+        }
+
+        .card-header p {
+            margin-bottom: 0;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .income-table {
+            width: auto;
+            min-width: 0;
+            table-layout: fixed;
+        }
+
+        .income-table th,
+        .income-table td {
+            overflow: hidden;
+            padding: 5px 4px;
+        }
+
+        th,
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--line);
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            color: var(--muted);
+            background: var(--panel-soft);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .45px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .income-table th {
+            user-select: none;
+        }
+
+        .column-resizer {
+            position: absolute;
+            top: 0;
+            right: -4px;
+            z-index: 4;
+            width: 8px;
+            height: 100%;
+            cursor: col-resize;
+            touch-action: none;
+        }
+
+        .column-resizer::after {
+            content: "";
+            position: absolute;
+            top: 20%;
+            bottom: 20%;
+            left: 3px;
+            width: 1px;
+            background: transparent;
+        }
+
+        .income-table th:hover .column-resizer::after,
+        body.resizing-columns .column-resizer::after {
+            background: #aab0b8;
+        }
+
+        body.resizing-columns {
+            cursor: col-resize;
+            user-select: none;
+        }
+
+        th:first-child,
+        td:first-child {
+            width: 36px;
+            text-align: center;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2),
+        th:nth-child(9),
+        td:nth-child(9),
+        th:nth-child(10),
+        td:nth-child(10),
+        th:nth-child(11),
+        td:nth-child(11) {
+            text-align: left;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        tr.projected-row {
+            color: #949aa3;
+            background: #f1f2f4;
+        }
+
+        tr:not(.projected-row) {
+            color: #15181d;
+        }
+
+        .income-table tr .cell-input,
+        .income-table tr .cell-select {
+            color: inherit;
+        }
+
+        .status-toggle {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: #15181d;
+            cursor: pointer;
+        }
+
+        .cell-input,
+        .cell-select,
+        .deduction-input {
+            width: 100%;
+            min-height: 26px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            outline: 0;
+            background: transparent;
+            transition: border-color .15s, background .15s;
+        }
+
+        .cell-input {
+            min-width: 0;
+            padding: 3px 4px;
+        }
+
+        .cell-input.period {
+            min-width: 0;
+        }
+
+        .cell-input.source {
+            min-width: 0;
+        }
+
+        .cell-input.note {
+            min-width: 0;
+        }
+
+        .income-table .cell-input.number {
+            min-width: 0;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .income-table .cell-select {
+            min-width: 0;
+        }
+
+        .income-table .cell-input.period,
+        .income-table .cell-input.source,
+        .income-table .cell-input.note,
+        .income-table .cell-select {
+            font-size: 10.5px;
+            font-weight: 500;
+        }
+
+        .cell-input.number {
+            text-align: right;
+        }
+
+        .cell-select {
+            min-width: 0;
+            padding: 3px 20px 3px 4px;
+        }
+
+        .cell-input:focus,
+        .cell-select:focus,
+        .deduction-input:focus {
+            border-color: var(--accent);
+            background: var(--panel-soft);
+        }
+
+        .derived-number {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 12px;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .received-field {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .received-field .cell-input {
+            min-width: 0;
+        }
+
+        .received-field.is-manual .cell-input {
+            border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+            background: var(--accent-soft);
+        }
+
+        .received-reset {
+            display: none;
+            flex: 0 0 22px;
+            width: 22px;
+            height: 28px;
+            padding: 0;
+            border: 0;
+            border-radius: 7px;
+            color: var(--accent);
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .received-field.is-manual .received-reset {
+            display: inline-grid;
+            place-items: center;
+        }
+
+        .received-reset:hover {
+            background: var(--accent-soft);
+        }
+
+        .column-hint {
+            display: block;
+            margin-top: 2px;
+            font-size: 7px;
+            font-weight: 650;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .variance-positive {
+            color: #d63b3b;
+        }
+
+        .variance-negative {
+            color: #168451;
+        }
+
+        .variance-neutral {
+            color: var(--muted);
+        }
+
+        .row-delete {
+            width: 30px;
+            height: 30px;
+            border: 0;
+            border-radius: 8px;
+            color: var(--muted);
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .row-delete:hover {
+            color: var(--bad);
+            background: var(--bad-soft);
+        }
+
+        .table-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 12px 10px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .variance-legend {
+            text-align: right;
+            line-height: 1.5;
+        }
+
+        .variance-legend .overpaid {
+            color: #d63b3b;
+            font-weight: 750;
+        }
+
+        .variance-legend .underpaid {
+            color: #168451;
+            font-weight: 750;
+        }
+
+        .deduction-content {
+            display: grid;
+            grid-template-columns: minmax(220px, .75fr) minmax(480px, 1.5fr) minmax(220px, .75fr);
+            gap: 18px;
+            padding: 16px;
+        }
+
+        .deduction-toggle {
+            flex: 0 0 auto;
+            min-width: 82px;
+        }
+
+        .deduction-body[hidden] {
+            display: none;
+        }
+
+        .deduction-group + .deduction-group {
+            margin-top: 0;
+            padding: 0 0 0 18px;
+            border-top: 0;
+            border-left: 1px dashed var(--line);
+        }
+
+        .deduction-group-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .deduction-group-title span:last-child {
+            color: var(--muted);
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-weight: 600;
+        }
+
+        .deduction-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 9px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 9px;
+            font-weight: 750;
+        }
+
+        .deduction-input {
+            min-width: 0;
+            padding: 7px 8px;
+            border-color: var(--line);
+            background: var(--panel-soft);
+            text-align: right;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 11px;
+        }
+
+        .notice {
+            margin: 0 16px 16px;
+            padding: 12px 13px;
+            border: 1px solid color-mix(in srgb, var(--warn) 34%, var(--line));
+            border-radius: 12px;
+            color: var(--warn);
+            background: var(--warn-soft);
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .calculation-flow {
+            display: block;
+            background: var(--panel);
+        }
+
+        .calc-step {
+            position: relative;
+            display: grid;
+            grid-template-columns: 22px minmax(0, 1fr) auto;
+            column-gap: 6px;
+            align-items: center;
+            min-width: 0;
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--line);
+            background: var(--panel);
+        }
+
+        .calc-step:not(:last-child)::after {
+            content: none;
+        }
+
+        .calc-step:last-child {
+            border-bottom: 0;
+            background: linear-gradient(90deg, var(--panel), var(--good-soft));
+        }
+
+        .calc-step-index {
+            color: var(--accent);
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: .6px;
+        }
+
+        .calc-step-label {
+            margin: 0;
+            color: var(--muted);
+            font-size: 9px;
+            font-weight: 750;
+        }
+
+        .calc-step-formula {
+            grid-column: 2 / -1;
+            min-height: 0;
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 8px;
+            line-height: 1.25;
+        }
+
+        .calc-step-value {
+            grid-column: 3;
+            grid-row: 1;
+            overflow: hidden;
+            max-width: 98px;
+            font-size: 13px;
+            font-weight: 850;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .standards-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(360px, .85fr);
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .compact-content {
+            padding: 16px 20px 20px;
+        }
+
+        .rule-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .rule-item {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 14px;
+            align-items: start;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--line);
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        .rule-item:last-child {
+            padding-bottom: 0;
+            border-bottom: 0;
+        }
+
+        .rule-name {
+            font-weight: 800;
+        }
+
+        .rule-value {
+            color: var(--muted);
+        }
+
+        .rate-table th,
+        .rate-table td {
+            padding: 8px 10px;
+            font-size: 10px;
+        }
+
+        .rate-table tr.active-rate td {
+            color: var(--good);
+            background: var(--good-soft);
+            font-weight: 800;
+        }
+
+        .footer-note {
+            margin-top: 22px;
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            color: var(--muted);
+            background: var(--panel-soft);
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        .footer-note a {
+            color: var(--accent);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 1100px) {
+            .summary-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .dashboard-grid,
+            .standards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .deduction-content {
+                grid-template-columns: 1fr;
+            }
+
+            .deduction-group + .deduction-group {
+                margin-top: 18px;
+                padding: 17px 0 0;
+                border-top: 1px dashed var(--line);
+                border-left: 0;
+            }
+
+        }
+
+        @media (max-width: 720px) {
+            .topbar {
+                position: static;
+                flex-wrap: wrap;
+                padding: 10px 14px;
+            }
+
+            .topbar-spacer {
+                display: none;
+            }
+
+            .year-control {
+                margin-left: auto;
+            }
+
+            .topbar-actions {
+                width: 100%;
+            }
+
+            .topbar-actions .btn {
+                flex: 1;
+            }
+
+            .page {
+                width: min(100% - 24px, 1480px);
+                padding-top: 24px;
+            }
+
+            .workspace-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .calculation-sidebar {
+                position: static;
+                max-height: none;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .summary-card.result {
+                grid-column: 1 / -1;
+            }
+
+            .cash-summary {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .cash-metric {
+                min-width: 0;
+            }
+
+            .deduction-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .rule-item {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .brand-text {
+                display: none;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-card.result {
+                grid-column: auto;
+            }
+
+            .cash-summary {
+                grid-template-columns: 1fr;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/money.html" title="返回 Money Simulator">
+            <span class="brand-mark">税</span>
+            <span class="brand-text">年度退税测算</span>
+        </a>
+        <div class="topbar-spacer"></div>
+        <div class="year-control">
+            <select class="year-select" id="year-select" aria-label="选择纳税年度"></select>
+            <button class="btn icon" id="add-year" type="button" title="新建下一年度">＋</button>
+            <button class="btn icon danger" id="delete-year" type="button" title="删除当前年度">×</button>
+        </div>
+        <div class="topbar-actions">
+            <input class="hidden" id="import-file" type="file" accept=".json,application/json">
+            <button class="btn" id="import-button" type="button">导入</button>
+            <button class="btn" id="export-button" type="button">导出 JSON</button>
+            <a class="btn" href="/">首页</a>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <div>
+                <div class="eyebrow">Annual IIT Settlement Planner</div>
+                <h1><span id="hero-year">2026</span> 年度退税测算</h1>
+                <p>逐笔记录综合所得与已预缴税款，区分已发生和预计收入，并按年度汇算口径计算应退或应补税额。</p>
+            </div>
+            <div class="save-status"><span class="save-dot"></span><span id="save-status-text">模板模式</span></div>
+        </section>
+
+        <div class="workspace-layout">
+            <aside class="card calculation-sidebar" aria-label="年度计算链">
+                <header class="card-header">
+                    <div>
+                        <h2>年度计算链</h2>
+                        <p>随右侧数据实时更新；侧栏固定，不参与横向滚动。</p>
+                    </div>
+                </header>
+                <div class="calculation-flow">
+                    <div class="calc-step">
+                        <div class="calc-step-index">01</div>
+                        <div class="calc-step-label">申报收入合计</div>
+                        <div class="calc-step-formula" id="flow-gross-formula">逐笔申报收入求和</div>
+                        <div class="calc-step-value" id="flow-gross">¥0</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="calc-step-index">02</div>
+                        <div class="calc-step-label">综合所得收入额</div>
+                        <div class="calc-step-formula" id="flow-income-formula">01 按所得类型折算</div>
+                        <div class="calc-step-value" id="flow-income">¥0</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="calc-step-index">03</div>
+                        <div class="calc-step-label">减除项目合计</div>
+                        <div class="calc-step-formula" id="flow-deductions-formula">各项允许扣除金额求和</div>
+                        <div class="calc-step-value" id="flow-deductions">¥0</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="calc-step-index">04</div>
+                        <div class="calc-step-label">应纳税所得额</div>
+                        <div class="calc-step-formula" id="flow-taxable-formula">02 − 03</div>
+                        <div class="calc-step-value" id="flow-taxable">¥0</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="calc-step-index">05</div>
+                        <div class="calc-step-label">年度最终税额</div>
+                        <div class="calc-step-formula" id="flow-tax-formula">04 × 税率 − 速算扣除 − 减免</div>
+                        <div class="calc-step-value" id="flow-tax">¥0</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="calc-step-index">06</div>
+                        <div class="calc-step-label">预缴税额合计</div>
+                        <div class="calc-step-formula" id="flow-prepaid-formula">逐笔预缴税额求和</div>
+                        <div class="calc-step-value" id="flow-prepaid">¥0</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="calc-step-index">07</div>
+                        <div class="calc-step-label">退税 / 补税</div>
+                        <div class="calc-step-formula" id="flow-result-formula">06 − 05</div>
+                        <div class="calc-step-value" id="flow-result">¥0</div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="workspace-main">
+
+        <section class="summary-grid" aria-label="年度汇总">
+            <article class="summary-card">
+                <div class="summary-label">申报收入合计</div>
+                <div class="summary-value" id="sum-gross">¥0</div>
+                <div class="summary-sub" id="sum-gross-sub">已发生 ¥0 · 预计 ¥0</div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-label">综合所得收入额</div>
+                <div class="summary-value" id="sum-income-amount">¥0</div>
+                <div class="summary-sub" id="sum-income-amount-sub">按所得类型折算</div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-label">全年应纳税所得额</div>
+                <div class="summary-value" id="sum-taxable">¥0</div>
+                <div class="summary-sub" id="sum-taxable-sub">收入额 − 减除项目</div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-label">年度最终税额</div>
+                <div class="summary-value" id="sum-final-tax">¥0</div>
+                <div class="summary-sub" id="sum-final-tax-sub">应纳税所得额 × 税率</div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-label">预缴税额合计</div>
+                <div class="summary-value" id="sum-prepaid">¥0</div>
+                <div class="summary-sub" id="sum-prepaid-sub">已发生 ¥0 · 预计 ¥0</div>
+            </article>
+            <article class="summary-card result" id="result-card">
+                <div class="summary-label" id="result-label">预计退税</div>
+                <div class="summary-value" id="result-value">¥0</div>
+                <div class="summary-sub" id="result-sub">全年最终税额 ¥0</div>
+            </article>
+        </section>
+
+        <section class="cash-summary" aria-label="年度到账汇总">
+            <div class="cash-metric">
+                全年到手合计（不含退税）
+                <strong id="sum-received">¥0</strong>
+                <span id="sum-received-sub">已发生 ¥0 + 预计 ¥0</span>
+            </div>
+            <div class="cash-metric total">
+                汇算后总额
+                <strong id="sum-after-settlement">¥0</strong>
+                <span id="sum-after-settlement-sub">实际到手 + 预计退税</span>
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <div>
+                <article class="card">
+                    <header class="card-header">
+                        <div>
+                            <h2>收入与预缴明细</h2>
+                            <p>全年最终税额按每笔年度收入额的贡献占比分摊，再与该笔实际预缴比较；同月多笔记录相加即为月度结果。</p>
+                        </div>
+                        <button class="btn primary" id="add-income" type="button">＋ 添加收入</button>
+                    </header>
+                    <div class="table-wrap">
+                        <table class="income-table">
+                            <colgroup id="income-colgroup">
+                                <col data-column="status"><col data-column="period"><col data-column="gross"><col data-column="prepaid">
+                                <col data-column="received"><col data-column="incomeAmount"><col data-column="theoretical"><col data-column="variance">
+                                <col data-column="source"><col data-column="type"><col data-column="note"><col data-column="actions">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th data-column="status" title="勾选表示已发生">✓</th>
+                                    <th data-column="period">期间</th>
+                                    <th data-column="gross">申报收入</th>
+                                    <th data-column="prepaid">预缴税额</th>
+                                    <th data-column="received">实际到手<span class="column-hint">申报收入 − 预缴税额</span></th>
+                                    <th data-column="incomeAmount">年度收入额</th>
+                                    <th data-column="theoretical">分摊应缴<span class="column-hint">最终税额 × 收入额占比</span></th>
+                                    <th data-column="variance">分摊差额<span class="column-hint">预缴 − 分摊应缴</span></th>
+                                    <th data-column="source">来源</th>
+                                    <th data-column="type">所得类型</th>
+                                    <th data-column="note">备注</th>
+                                    <th data-column="actions"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="income-body"></tbody>
+                        </table>
+                    </div>
+                    <footer class="table-footer">
+                        <span id="income-count">0 笔收入</span>
+                        <span class="variance-legend">按年度最终税额和每笔收入额贡献占比分摊：<span class="overpaid">红色＝多缴</span>，<span class="underpaid">绿色＝少缴</span>；同月多笔相加即为该月差额。此项仅用于分析，并非法定月度税额。</span>
+                    </footer>
+                </article>
+            </div>
+
+            <aside class="card">
+                <header class="card-header">
+                    <div>
+                        <h2>年度扣除项目</h2>
+                        <p id="deduction-summary">当前按基础减除费用 ¥60,000.00 计算；需要补充其他扣除时展开填写。</p>
+                    </div>
+                    <button class="btn deduction-toggle" id="deduction-toggle" type="button" aria-expanded="false" aria-controls="deduction-body">展开填写</button>
+                </header>
+                <div class="deduction-body" id="deduction-body" hidden>
+                    <div class="deduction-content">
+                        <div class="deduction-group">
+                            <div class="deduction-group-title"><span>基础与专项扣除</span><span id="basic-group-total">¥0</span></div>
+                            <div class="deduction-grid">
+                                <div class="field"><label for="ded-basic">基本减除费用</label><input class="deduction-input" id="ded-basic" data-deduction="basic" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-special">三险一金等专项扣除</label><input class="deduction-input" id="ded-special" data-deduction="special" type="number" min="0" step="100"></div>
+                            </div>
+                        </div>
+                        <div class="deduction-group">
+                            <div class="deduction-group-title"><span>专项附加扣除</span><span id="additional-group-total">¥0</span></div>
+                            <div class="deduction-grid">
+                                <div class="field"><label for="ded-infant-care">3岁以下婴幼儿照护</label><input class="deduction-input" id="ded-infant-care" data-deduction="infantCare" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-children-education">子女教育</label><input class="deduction-input" id="ded-children-education" data-deduction="childrenEducation" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-continuing-education">继续教育</label><input class="deduction-input" id="ded-continuing-education" data-deduction="continuingEducation" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-medical">大病医疗</label><input class="deduction-input" id="ded-medical" data-deduction="medical" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-mortgage">住房贷款利息</label><input class="deduction-input" id="ded-mortgage" data-deduction="mortgage" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-rent">住房租金</label><input class="deduction-input" id="ded-rent" data-deduction="rent" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-elder-care">赡养老人</label><input class="deduction-input" id="ded-elder-care" data-deduction="elderCare" type="number" min="0" step="100"></div>
+                            </div>
+                        </div>
+                        <div class="deduction-group">
+                            <div class="deduction-group-title"><span>其他减项</span><span id="other-group-total">¥0</span></div>
+                            <div class="deduction-grid">
+                                <div class="field"><label for="ded-other">依法确定的其他扣除</label><input class="deduction-input" id="ded-other" data-deduction="other" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-donations">允许扣除的公益捐赠</label><input class="deduction-input" id="ded-donations" data-deduction="donations" type="number" min="0" step="100"></div>
+                                <div class="field"><label for="ded-tax-relief">减免税额</label><input class="deduction-input" id="ded-tax-relief" data-deduction="taxRelief" type="number" min="0" step="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notice" id="data-notice">已发生数据按个税 APP 校准：申报收入 ¥21,294.97，已申报税额 ¥2,259.36；7–12 月仍为预测，请在新记录出现后逐笔替换。</div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="standards-grid">
+            <article class="card">
+                <header class="card-header">
+                    <div>
+                        <h2>计算标准</h2>
+                        <p>本页当前采用的居民个人综合所得年度汇算口径。</p>
+                    </div>
+                </header>
+                <div class="compact-content rule-list">
+                    <div class="rule-item"><div class="rule-name">纳税年度</div><div class="rule-value">公历 1 月 1 日至 12 月 31 日；通常在次年 3 月 1 日至 6 月 30 日办理汇算。</div></div>
+                    <div class="rule-item"><div class="rule-name">综合所得范围</div><div class="rule-value">工资薪金、劳务报酬、稿酬、特许权使用费四项所得按年度合并计算。</div></div>
+                    <div class="rule-item"><div class="rule-name">年度收入额</div><div class="rule-value">工资薪金按 100%；劳务报酬和特许权使用费按收入 ×80%；稿酬按收入 ×80%×70%。</div></div>
+                    <div class="rule-item"><div class="rule-name">劳务预扣</div><div class="rule-value">单次不超过 4,000 元先减 800 元；超过 4,000 元先减 20%费用，再适用 20%–40%预扣率。实际预缴仍以扣缴申报为准。</div></div>
+                    <div class="rule-item"><div class="rule-name">年度公式</div><div class="rule-value">（综合所得收入额－60,000－专项扣除－专项附加扣除－其他扣除－允许扣除的捐赠）×税率－速算扣除数－减免税额－已预缴税额。</div></div>
+                </div>
+            </article>
+
+            <article class="card">
+                <header class="card-header">
+                    <div>
+                        <h2>综合所得年度税率表</h2>
+                        <p id="active-rate-note">当前测算落在第 1 档。</p>
+                    </div>
+                </header>
+                <div class="table-wrap">
+                    <table class="rate-table">
+                        <thead><tr><th>级数</th><th>全年应纳税所得额</th><th>税率</th><th>速算扣除数</th></tr></thead>
+                        <tbody id="rate-body"></tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <div class="footer-note">
+            <strong>用途说明：</strong>本页用于个人估算和数据整理，不替代个税 APP、税务机关审核或专业涉税意见。收入所属年度按实际取得时间确定，最终请核对个税 APP 中的收入、扣除和已缴税额。规则参考：
+            <a href="https://www.chinatax.gov.cn/n810219/n810744/n3752930/n3752974/c3970366/content.html" target="_blank" rel="noreferrer">《中华人民共和国个人所得税法》</a>、
+            <a href="https://fgk.chinatax.gov.cn/zcfgk/c100015/c5238556/content.html" target="_blank" rel="noreferrer">《个人所得税综合所得汇算清缴管理办法》</a>、
+            <a href="https://www.chinatax.gov.cn/n810219/n810744/n3752930/n3752974/c3960115/content.html" target="_blank" rel="noreferrer">预扣预缴规则</a>。
+        </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/cloud-config.js"></script>
+    <script src="/cloud-sync.js"></script>
+    <script>
+        const STORAGE_KEY = 'szy_tax_refund_planner_v2';
+        const COLUMN_WIDTHS_KEY = 'szy_tax_column_widths_v1';
+        const DEFAULT_COLUMN_WIDTHS = {
+            status: 36, period: 56, gross: 100, prepaid: 100, received: 120,
+            incomeAmount: 105, theoretical: 95, variance: 105,
+            source: 145, type: 120, note: 200, actions: 34
+        };
+        const MIN_COLUMN_WIDTHS = {
+            status: 28, period: 42, gross: 70, prepaid: 70, received: 90,
+            incomeAmount: 80, theoretical: 78, variance: 88,
+            source: 85, type: 85, note: 100, actions: 28
+        };
+        const ADDITIONAL_KEYS = ['infantCare', 'childrenEducation', 'continuingEducation', 'medical', 'mortgage', 'rent', 'elderCare'];
+        const DEDUCTION_KEYS = ['basic', 'special', ...ADDITIONAL_KEYS, 'other', 'donations', 'taxRelief'];
+        const TYPE_LABELS = {
+            salary: '工资薪金',
+            labor: '劳务报酬',
+            manuscript: '稿酬',
+            royalty: '特许权使用费'
+        };
+        const ANNUAL_RATES = [
+            { max: 36000, label: '不超过 36,000', rate: 0.03, quick: 0 },
+            { max: 144000, label: '36,000 – 144,000', rate: 0.10, quick: 2520 },
+            { max: 300000, label: '144,000 – 300,000', rate: 0.20, quick: 16920 },
+            { max: 420000, label: '300,000 – 420,000', rate: 0.25, quick: 31920 },
+            { max: 660000, label: '420,000 – 660,000', rate: 0.30, quick: 52920 },
+            { max: 960000, label: '660,000 – 960,000', rate: 0.35, quick: 85920 },
+            { max: Infinity, label: '超过 960,000', rate: 0.45, quick: 181920 }
+        ];
+
+        const defaultYear = {
+            year: 2026,
+            incomes: [
+                { id: 'sample-income-2026', status: 'projected', period: '01月', source: '示例收入', type: 'labor', gross: 5000, prepaid: 800, note: '模板示例，可修改或删除' }
+            ],
+            deductions: {
+                basic: 60000,
+                special: 0,
+                infantCare: 0,
+                childrenEducation: 0,
+                continuingEducation: 0,
+                medical: 0,
+                mortgage: 0,
+                rent: 0,
+                elderCare: 0,
+                other: 0,
+                donations: 0,
+                taxRelief: 0
+            }
+        };
+
+        const defaultBook = {
+            activeYear: '2026',
+            years: { '2026': defaultYear },
+            migrations: {}
+        };
+
+        let book = clone(defaultBook);
+        let columnWidths = loadColumnWidths();
+        let pendingDeleteYear = null;
+        let deleteResetTimer = null;
+
+        function clone(value) {
+            return JSON.parse(JSON.stringify(value));
+        }
+
+        function number(value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
+        }
+
+        function normalizeYear(data, year) {
+            const normalized = {
+                year: Number(year),
+                incomes: Array.isArray(data?.incomes) ? data.incomes : [],
+                deductions: { ...clone(defaultYear.deductions), ...(data?.deductions || {}) }
+            };
+            normalized.incomes = normalized.incomes.map((row, index) => ({
+                id: row.id || `${year}-${Date.now()}-${index}`,
+                status: row.status === 'confirmed' ? 'confirmed' : 'projected',
+                period: row.period || '',
+                source: row.source || '',
+                type: TYPE_LABELS[row.type] ? row.type : 'labor',
+                gross: number(row.gross),
+                prepaid: number(row.prepaid),
+                received: row.received === null || row.received === undefined || row.received === '' ? null : number(row.received),
+                note: row.note || ''
+            }));
+            DEDUCTION_KEYS.forEach(key => normalized.deductions[key] = number(normalized.deductions[key]));
+            return normalized;
+        }
+
+        function normalizeBook(saved) {
+            if (!saved || !saved.years || typeof saved.years !== 'object') return clone(defaultBook);
+            const years = {};
+            Object.keys(saved.years).forEach(year => years[String(year)] = normalizeYear(saved.years[year], year));
+            const yearKeys = Object.keys(years);
+            if (!yearKeys.length) return clone(defaultBook);
+            const activeYear = years[String(saved.activeYear)] ? String(saved.activeYear) : yearKeys.sort().reverse()[0];
+            return { activeYear, years, migrations: { ...(saved.migrations || {}) } };
+        }
+
+        function currentYearData() {
+            return book.years[book.activeYear];
+        }
+
+        function saveBook() {
+            window.SzyCloud.scheduleSave(book);
+            const status = document.getElementById('save-status-text');
+            status.textContent = window.SzyCloud.isSignedIn() ? '正在保存到云端' : '模板模式，登录后保存';
+        }
+
+        function formatMoney(value, digits = 2) {
+            return '¥' + number(value).toLocaleString('zh-CN', {
+                minimumFractionDigits: digits,
+                maximumFractionDigits: digits
+            });
+        }
+
+        function formatPlain(value) {
+            const parsed = Number(value);
+            const safeValue = Number.isFinite(parsed) ? parsed : 0;
+            return safeValue.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function inputAmount(value) {
+            return String(Math.round(number(value) * 100) / 100);
+        }
+
+        function automaticReceived(row) {
+            return Math.max(number(row.gross) - number(row.prepaid), 0);
+        }
+
+        function loadColumnWidths() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(COLUMN_WIDTHS_KEY));
+                return { ...DEFAULT_COLUMN_WIDTHS, ...(saved || {}) };
+            } catch (error) {
+                return { ...DEFAULT_COLUMN_WIDTHS };
+            }
+        }
+
+        function applyColumnWidths() {
+            let totalWidth = 0;
+            document.querySelectorAll('#income-colgroup col[data-column]').forEach(col => {
+                const key = col.dataset.column;
+                const fallback = DEFAULT_COLUMN_WIDTHS[key];
+                const savedWidth = Number(columnWidths[key]);
+                const width = Math.min(Math.max(Number.isFinite(savedWidth) ? savedWidth : fallback, MIN_COLUMN_WIDTHS[key]), 500);
+                columnWidths[key] = width;
+                col.style.width = `${width}px`;
+                totalWidth += width;
+            });
+            document.querySelector('.income-table').style.width = `${totalWidth}px`;
+        }
+
+        function saveColumnWidths() {
+            localStorage.setItem(COLUMN_WIDTHS_KEY, JSON.stringify(columnWidths));
+        }
+
+        function initColumnResizing() {
+            document.querySelectorAll('.income-table th[data-column]').forEach(th => {
+                const key = th.dataset.column;
+                const handle = document.createElement('span');
+                handle.className = 'column-resizer';
+                handle.title = '拖动调整列宽；双击恢复默认';
+                handle.addEventListener('dblclick', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    columnWidths[key] = DEFAULT_COLUMN_WIDTHS[key];
+                    applyColumnWidths();
+                    saveColumnWidths();
+                });
+                handle.addEventListener('pointerdown', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const startX = event.clientX;
+                    const startWidth = columnWidths[key];
+                    document.body.classList.add('resizing-columns');
+                    const move = moveEvent => {
+                        columnWidths[key] = Math.min(Math.max(startWidth + moveEvent.clientX - startX, MIN_COLUMN_WIDTHS[key]), 500);
+                        applyColumnWidths();
+                    };
+                    const stop = () => {
+                        document.body.classList.remove('resizing-columns');
+                        window.removeEventListener('pointermove', move);
+                        window.removeEventListener('pointerup', stop);
+                        window.removeEventListener('pointercancel', stop);
+                        saveColumnWidths();
+                    };
+                    window.addEventListener('pointermove', move);
+                    window.addEventListener('pointerup', stop);
+                    window.addEventListener('pointercancel', stop);
+                });
+                th.appendChild(handle);
+            });
+            applyColumnWidths();
+        }
+
+        function annualIncomeAmount(row) {
+            const gross = number(row.gross);
+            if (row.type === 'salary') return gross;
+            if (row.type === 'manuscript') return gross * 0.8 * 0.7;
+            return gross * 0.8;
+        }
+
+        function withholdingIncomeAmount(row) {
+            const gross = number(row.gross);
+            if (gross <= 0) return 0;
+            return gross <= 4000 ? Math.max(gross - 800, 0) : gross * 0.8;
+        }
+
+        function theoreticalWithholding(row) {
+            if (row.type === 'salary') return null;
+            const base = withholdingIncomeAmount(row);
+            if (row.type === 'manuscript') return base * 0.7 * 0.2;
+            if (row.type === 'royalty') return base * 0.2;
+            if (base <= 20000) return base * 0.2;
+            if (base <= 50000) return base * 0.3 - 2000;
+            return base * 0.4 - 7000;
+        }
+
+        function allocateAnnualTax(incomes, annualResult) {
+            const allocations = Object.fromEntries(incomes.map(row => [row.id, 0]));
+            if (annualResult.incomeAmount <= 0 || annualResult.finalTax <= 0) return allocations;
+            const targetCents = Math.round(annualResult.finalTax * 100);
+            const entries = incomes.map(row => {
+                const exactCents = targetCents * annualIncomeAmount(row) / annualResult.incomeAmount;
+                return { id: row.id, cents: Math.floor(exactCents), fraction: exactCents % 1 };
+            });
+            let remainder = targetCents - entries.reduce((sum, entry) => sum + entry.cents, 0);
+            [...entries].sort((a, b) => b.fraction - a.fraction).forEach(entry => {
+                if (remainder > 0) {
+                    entry.cents += 1;
+                    remainder -= 1;
+                }
+            });
+            entries.forEach(entry => allocations[entry.id] = entry.cents / 100);
+            return allocations;
+        }
+
+        function getAnnualRate(taxable) {
+            const index = ANNUAL_RATES.findIndex(item => taxable <= item.max);
+            return { ...ANNUAL_RATES[index], index };
+        }
+
+        function calculate() {
+            const data = currentYearData();
+            const totals = data.incomes.reduce((result, row) => {
+                const statusKey = row.status === 'confirmed' ? 'confirmed' : 'projected';
+                const received = row.received === null || row.received === undefined ? automaticReceived(row) : number(row.received);
+                result.gross += number(row.gross);
+                result.prepaid += number(row.prepaid);
+                result.received += received;
+                result.incomeAmount += annualIncomeAmount(row);
+                result[statusKey].gross += number(row.gross);
+                result[statusKey].prepaid += number(row.prepaid);
+                result[statusKey].received += received;
+                return result;
+            }, {
+                gross: 0,
+                prepaid: 0,
+                received: 0,
+                incomeAmount: 0,
+                confirmed: { gross: 0, prepaid: 0, received: 0 },
+                projected: { gross: 0, prepaid: 0, received: 0 }
+            });
+
+            const additional = ADDITIONAL_KEYS.reduce((sum, key) => sum + number(data.deductions[key]), 0);
+            const deductionBeforeTax = number(data.deductions.basic) + number(data.deductions.special) + additional + number(data.deductions.other) + number(data.deductions.donations);
+            const taxable = Math.max(totals.incomeAmount - deductionBeforeTax, 0);
+            const bracket = getAnnualRate(taxable);
+            const taxBeforeRelief = Math.max(taxable * bracket.rate - bracket.quick, 0);
+            const finalTax = Math.max(taxBeforeRelief - number(data.deductions.taxRelief), 0);
+            const settlement = finalTax - totals.prepaid;
+            const afterSettlement = totals.received - settlement;
+
+            return {
+                ...totals,
+                additional,
+                deductionBeforeTax,
+                taxable,
+                bracket,
+                taxBeforeRelief,
+                finalTax,
+                settlement,
+                afterSettlement,
+                refund: Math.max(-settlement, 0),
+                taxDue: Math.max(settlement, 0)
+            };
+        }
+
+        function option(value, label, selected) {
+            return `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`;
+        }
+
+        function renderYearSelect() {
+            const select = document.getElementById('year-select');
+            select.innerHTML = Object.keys(book.years)
+                .sort((a, b) => Number(b) - Number(a))
+                .map(year => option(year, `${year} 年`, book.activeYear))
+                .join('');
+            document.getElementById('hero-year').textContent = book.activeYear;
+            document.getElementById('delete-year').disabled = Object.keys(book.years).length <= 1;
+        }
+
+        function resetDeleteButton() {
+            const button = document.getElementById('delete-year');
+            button.textContent = '×';
+            button.title = '删除当前年度';
+            pendingDeleteYear = null;
+            if (deleteResetTimer) clearTimeout(deleteResetTimer);
+            deleteResetTimer = null;
+        }
+
+        function renderIncomes() {
+            const body = document.getElementById('income-body');
+            const annualResult = calculate();
+            const allocationMap = allocateAnnualTax(currentYearData().incomes, annualResult);
+            body.innerHTML = '';
+            currentYearData().incomes.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.dataset.id = row.id;
+                tr.className = row.status === 'projected' ? 'projected-row' : '';
+                tr.innerHTML = `
+                    <td class="status-cell"><input class="status-toggle" data-field="status" type="checkbox" aria-label="已发生" ${row.status === 'confirmed' ? 'checked' : ''}></td>
+                    <td><input class="cell-input period" data-field="period" value="${escapeAttribute(row.period)}"></td>
+                    <td><input class="cell-input number" data-field="gross" type="number" min="0" step="0.01" value="${row.gross}"></td>
+                    <td><input class="cell-input number" data-field="prepaid" type="number" min="0" step="0.01" value="${row.prepaid}"></td>
+                    <td><div class="received-field"><input class="cell-input number" data-field="received" type="number" min="0" step="0.01" aria-label="实际到手金额"><button class="received-reset" data-action="reset-received" type="button" title="恢复按申报收入减预缴税额自动计算">↺</button></div></td>
+                    <td class="derived-number" data-derived="incomeAmount"></td>
+                    <td class="derived-number" data-derived="theoretical"></td>
+                    <td class="derived-number" data-derived="variance"></td>
+                    <td><input class="cell-input source" data-field="source" value="${escapeAttribute(row.source)}"></td>
+                    <td><select class="cell-select" data-field="type">${Object.entries(TYPE_LABELS).map(([value, label]) => option(value, label, row.type)).join('')}</select></td>
+                    <td><input class="cell-input note" data-field="note" value="${escapeAttribute(row.note)}"></td>
+                    <td><button class="row-delete" type="button" data-action="delete" title="删除此项">×</button></td>`;
+                body.appendChild(tr);
+                updateDerivedRow(tr, row, annualResult, allocationMap);
+            });
+            document.getElementById('income-count').textContent = `${currentYearData().incomes.length} 笔收入`;
+        }
+
+        function escapeAttribute(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('"', '&quot;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;');
+        }
+
+        function updateDerivedRow(tr, row, annualResult = calculate(), allocationMap = allocateAnnualTax(currentYearData().incomes, annualResult)) {
+            const rowIncomeAmount = annualIncomeAmount(row);
+            const contribution = annualResult.incomeAmount > 0 ? rowIncomeAmount / annualResult.incomeAmount : 0;
+            const allocatedTax = allocationMap[row.id] || 0;
+            const variance = number(row.prepaid) - allocatedTax;
+            const receivedField = tr.querySelector('.received-field');
+            const receivedInput = tr.querySelector('[data-field="received"]');
+            const statusToggle = tr.querySelector('[data-field="status"]');
+            const isReceivedManual = row.received !== null && row.received !== undefined;
+            statusToggle.checked = row.status === 'confirmed';
+            statusToggle.setAttribute('aria-label', row.status === 'confirmed' ? '已发生，取消勾选改为预计' : '预计，勾选改为已发生');
+            receivedInput.value = inputAmount(isReceivedManual ? row.received : automaticReceived(row));
+            receivedInput.title = isReceivedManual ? '已按银行卡到账金额手动校准' : '自动计算：申报收入－预缴税额';
+            receivedField.classList.toggle('is-manual', isReceivedManual);
+            tr.querySelector('[data-derived="incomeAmount"]').textContent = formatPlain(annualIncomeAmount(row));
+            const allocatedCell = tr.querySelector('[data-derived="theoretical"]');
+            allocatedCell.textContent = formatPlain(allocatedTax);
+            allocatedCell.title = `年度最终税额 ${formatPlain(annualResult.finalTax)} × 本笔收入额贡献 ${(contribution * 100).toFixed(2)}%`;
+            const varianceCell = tr.querySelector('[data-derived="variance"]');
+            varianceCell.className = 'derived-number';
+            if (variance > 0.009) {
+                varianceCell.textContent = `多缴 ${formatPlain(variance)}`;
+                varianceCell.title = `本笔实际预缴比年度最终税额分摊值多 ${formatPlain(variance)} 元`;
+                varianceCell.classList.add('variance-positive');
+            } else if (variance < -0.009) {
+                varianceCell.textContent = `少缴 ${formatPlain(Math.abs(variance))}`;
+                varianceCell.title = `本笔实际预缴比年度最终税额分摊值少 ${formatPlain(Math.abs(variance))} 元`;
+                varianceCell.classList.add('variance-negative');
+            } else {
+                varianceCell.textContent = '持平 0.00';
+                varianceCell.title = '本笔实际预缴与年度最终税额分摊值一致';
+                varianceCell.classList.add('variance-neutral');
+            }
+            tr.classList.toggle('projected-row', row.status === 'projected');
+        }
+
+        function updateAllDerivedRows() {
+            const annualResult = calculate();
+            const allocationMap = allocateAnnualTax(currentYearData().incomes, annualResult);
+            document.querySelectorAll('#income-body tr[data-id]').forEach(tr => {
+                const row = currentYearData().incomes.find(item => item.id === tr.dataset.id);
+                if (row) updateDerivedRow(tr, row, annualResult, allocationMap);
+            });
+        }
+
+        function renderDeductions() {
+            const deductions = currentYearData().deductions;
+            document.querySelectorAll('[data-deduction]').forEach(input => {
+                input.value = deductions[input.dataset.deduction] ?? 0;
+            });
+        }
+
+        function renderRateTable(activeIndex) {
+            document.getElementById('rate-body').innerHTML = ANNUAL_RATES.map((row, index) => `
+                <tr class="${index === activeIndex ? 'active-rate' : ''}">
+                    <td>${index + 1}</td><td>${row.label}</td><td>${Math.round(row.rate * 100)}%</td><td>${formatPlain(row.quick)}</td>
+                </tr>`).join('');
+        }
+
+        function incomeAmountFormula(incomes) {
+            const totals = incomes.reduce((result, row) => {
+                result[row.type] = (result[row.type] || 0) + number(row.gross);
+                return result;
+            }, {});
+            const formulas = [];
+            if (totals.salary) formulas.push(`工资 ${formatMoney(totals.salary)} × 100%`);
+            if (totals.labor) formulas.push(`劳务 ${formatMoney(totals.labor)} × 80%`);
+            if (totals.manuscript) formulas.push(`稿酬 ${formatMoney(totals.manuscript)} × 80% × 70%`);
+            if (totals.royalty) formulas.push(`特许权 ${formatMoney(totals.royalty)} × 80%`);
+            return formulas.length ? formulas.join(' + ') : '暂无申报收入';
+        }
+
+        function renderSummary() {
+            const result = calculate();
+            const deductions = currentYearData().deductions;
+            const incomeFormula = incomeAmountFormula(currentYearData().incomes);
+            const basicAndSpecial = number(deductions.basic) + number(deductions.special);
+            const otherDeductions = number(deductions.other) + number(deductions.donations);
+            const finalTaxFormula = `${formatMoney(result.taxable)} × ${Math.round(result.bracket.rate * 100)}% − ${formatMoney(result.bracket.quick)} − 减免 ${formatMoney(number(deductions.taxRelief))}`;
+            const settlementFormula = isNaN(result.settlement) ? '' : (result.settlement > 0
+                ? `最终税额 ${formatMoney(result.finalTax)} − 预缴 ${formatMoney(result.prepaid)}`
+                : `预缴 ${formatMoney(result.prepaid)} − 最终税额 ${formatMoney(result.finalTax)}`);
+            document.getElementById('sum-gross').textContent = formatMoney(result.gross);
+            document.getElementById('sum-gross-sub').textContent = `已发生 ${formatMoney(result.confirmed.gross)} + 预计 ${formatMoney(result.projected.gross)}`;
+            document.getElementById('sum-income-amount').textContent = formatMoney(result.incomeAmount);
+            document.getElementById('sum-income-amount-sub').textContent = incomeFormula;
+            document.getElementById('sum-taxable').textContent = formatMoney(result.taxable);
+            document.getElementById('sum-taxable-sub').textContent = `${formatMoney(result.incomeAmount)} − 减除 ${formatMoney(result.deductionBeforeTax)}`;
+            document.getElementById('sum-final-tax').textContent = formatMoney(result.finalTax);
+            document.getElementById('sum-final-tax-sub').textContent = finalTaxFormula;
+            document.getElementById('sum-prepaid').textContent = formatMoney(result.prepaid);
+            document.getElementById('sum-prepaid-sub').textContent = `已发生 ${formatMoney(result.confirmed.prepaid)} + 预计 ${formatMoney(result.projected.prepaid)}`;
+
+            const resultCard = document.getElementById('result-card');
+            const isDue = result.settlement > 0;
+            resultCard.classList.toggle('is-due', isDue);
+            document.getElementById('result-label').textContent = isDue ? '预计补税' : '预计退税';
+            document.getElementById('result-value').textContent = formatMoney(isDue ? result.taxDue : result.refund);
+            document.getElementById('result-sub').textContent = settlementFormula;
+            document.getElementById('sum-received').textContent = formatMoney(result.received);
+            document.getElementById('sum-received-sub').textContent = `已发生 ${formatMoney(result.confirmed.received)} + 预计 ${formatMoney(result.projected.received)}`;
+            document.getElementById('sum-after-settlement').textContent = formatMoney(result.afterSettlement);
+            document.getElementById('sum-after-settlement-sub').textContent = isDue
+                ? `${formatMoney(result.received)} − 补税 ${formatMoney(result.taxDue)}`
+                : `${formatMoney(result.received)} + 退税 ${formatMoney(result.refund)}`;
+
+            document.getElementById('flow-gross').textContent = formatMoney(result.gross);
+            document.getElementById('flow-gross-formula').textContent = `${formatMoney(result.confirmed.gross)} + ${formatMoney(result.projected.gross)}`;
+            document.getElementById('flow-income').textContent = formatMoney(result.incomeAmount);
+            document.getElementById('flow-income-formula').textContent = incomeFormula;
+            document.getElementById('flow-deductions').textContent = formatMoney(result.deductionBeforeTax);
+            document.getElementById('flow-deductions-formula').textContent = `基础/专项 ${formatMoney(basicAndSpecial)} + 附加 ${formatMoney(result.additional)} + 其他/捐赠 ${formatMoney(otherDeductions)}`;
+            document.getElementById('flow-taxable').textContent = formatMoney(result.taxable);
+            document.getElementById('flow-taxable-formula').textContent = `${formatMoney(result.incomeAmount)} − ${formatMoney(result.deductionBeforeTax)}`;
+            document.getElementById('flow-tax').textContent = formatMoney(result.finalTax);
+            document.getElementById('flow-tax-formula').textContent = finalTaxFormula;
+            document.getElementById('flow-prepaid').textContent = formatMoney(result.prepaid);
+            document.getElementById('flow-prepaid-formula').textContent = `${formatMoney(result.confirmed.prepaid)} + ${formatMoney(result.projected.prepaid)}`;
+            document.getElementById('flow-result-formula').textContent = settlementFormula;
+            document.getElementById('flow-result').textContent = `${isDue ? '补 ' : '退 '}${formatMoney(isDue ? result.taxDue : result.refund)}`;
+
+            document.getElementById('basic-group-total').textContent = formatMoney(number(deductions.basic) + number(deductions.special));
+            document.getElementById('additional-group-total').textContent = formatMoney(result.additional);
+            document.getElementById('other-group-total').textContent = formatMoney(number(deductions.other) + number(deductions.donations) + number(deductions.taxRelief));
+            document.getElementById('deduction-summary').textContent = number(deductions.taxRelief) > 0
+                ? `当前减除项目 ${formatMoney(result.deductionBeforeTax)}，另有减免税额 ${formatMoney(number(deductions.taxRelief))}；需要调整时展开填写。`
+                : `当前减除项目 ${formatMoney(result.deductionBeforeTax)}；需要调整时展开填写。`;
+            document.getElementById('active-rate-note').textContent = `当前应纳税所得额 ${formatMoney(result.taxable)}，落在第 ${result.bracket.index + 1} 档，税率 ${Math.round(result.bracket.rate * 100)}%。`;
+            renderRateTable(result.bracket.index);
+        }
+
+        function renderAll() {
+            renderYearSelect();
+            renderIncomes();
+            renderDeductions();
+            renderSummary();
+        }
+
+        document.getElementById('income-body').addEventListener('input', event => {
+            const field = event.target.dataset.field;
+            if (!field) return;
+            const tr = event.target.closest('tr');
+            const row = currentYearData().incomes.find(item => item.id === tr.dataset.id);
+            if (!row) return;
+            if (field === 'status') {
+                row.status = event.target.checked ? 'confirmed' : 'projected';
+            } else if (field === 'received') {
+                row.received = event.target.value === '' ? null : number(event.target.value);
+            } else {
+                row[field] = ['gross', 'prepaid'].includes(field) ? number(event.target.value) : event.target.value;
+            }
+            updateAllDerivedRows();
+            saveBook();
+            renderSummary();
+        });
+
+        document.getElementById('income-body').addEventListener('change', event => {
+            if (!event.target.dataset.field || event.target.tagName !== 'SELECT') return;
+            event.target.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        document.getElementById('income-body').addEventListener('click', event => {
+            const tr = event.target.closest('tr');
+            const action = event.target.dataset.action;
+            if (!tr || !action) return;
+            if (action === 'reset-received') {
+                const row = currentYearData().incomes.find(item => item.id === tr.dataset.id);
+                if (!row) return;
+                row.received = null;
+                updateAllDerivedRows();
+                saveBook();
+                renderSummary();
+                return;
+            }
+            if (action !== 'delete') return;
+            currentYearData().incomes = currentYearData().incomes.filter(item => item.id !== tr.dataset.id);
+            saveBook();
+            renderIncomes();
+            renderSummary();
+        });
+
+        document.getElementById('add-income').addEventListener('click', () => {
+            currentYearData().incomes.push({
+                id: `${book.activeYear}-${Date.now()}`,
+                status: 'projected',
+                period: '',
+                source: '新收入来源',
+                type: 'labor',
+                gross: 0,
+                prepaid: 0,
+                received: null,
+                note: ''
+            });
+            saveBook();
+            renderIncomes();
+            renderSummary();
+        });
+
+        document.querySelector('.deduction-content').addEventListener('input', event => {
+            const key = event.target.dataset.deduction;
+            if (!key) return;
+            currentYearData().deductions[key] = number(event.target.value);
+            saveBook();
+            updateAllDerivedRows();
+            renderSummary();
+        });
+
+        document.getElementById('deduction-toggle').addEventListener('click', event => {
+            const body = document.getElementById('deduction-body');
+            const willExpand = body.hidden;
+            body.hidden = !willExpand;
+            event.currentTarget.setAttribute('aria-expanded', String(willExpand));
+            event.currentTarget.textContent = willExpand ? '收起' : '展开填写';
+        });
+
+        document.getElementById('year-select').addEventListener('change', event => {
+            book.activeYear = event.target.value;
+            resetDeleteButton();
+            saveBook();
+            renderAll();
+        });
+
+        document.getElementById('add-year').addEventListener('click', () => {
+            const nextYear = String(Math.max(...Object.keys(book.years).map(Number)) + 1);
+            book.years[nextYear] = normalizeYear({ incomes: [], deductions: clone(defaultYear.deductions) }, nextYear);
+            book.activeYear = nextYear;
+            resetDeleteButton();
+            saveBook();
+            renderAll();
+        });
+
+        document.getElementById('delete-year').addEventListener('click', event => {
+            if (Object.keys(book.years).length <= 1) return;
+            if (pendingDeleteYear !== book.activeYear) {
+                pendingDeleteYear = book.activeYear;
+                event.currentTarget.textContent = '确认';
+                event.currentTarget.title = `再次点击，删除 ${book.activeYear} 年的全部本地记录`;
+                if (deleteResetTimer) clearTimeout(deleteResetTimer);
+                deleteResetTimer = setTimeout(resetDeleteButton, 30000);
+                return;
+            }
+            delete book.years[book.activeYear];
+            book.activeYear = Object.keys(book.years).sort((a, b) => Number(b) - Number(a))[0];
+            resetDeleteButton();
+            saveBook();
+            renderAll();
+        });
+
+        document.getElementById('export-button').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(book, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tax-refund-planner-${book.activeYear}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('import-button').addEventListener('click', () => document.getElementById('import-file').click());
+        document.getElementById('import-file').addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const imported = JSON.parse(reader.result);
+                    if (!imported?.years || typeof imported.years !== 'object') throw new Error('Invalid data');
+                    const years = {};
+                    Object.keys(imported.years).forEach(year => years[String(year)] = normalizeYear(imported.years[year], year));
+                    if (!Object.keys(years).length) throw new Error('No year data');
+                    book = {
+                        activeYear: years[String(imported.activeYear)] ? String(imported.activeYear) : Object.keys(years)[0],
+                        years,
+                        migrations: { ...(imported.migrations || {}), completed2027v1: Boolean(years['2027']) }
+                    };
+                    saveBook();
+                    renderAll();
+                } catch (error) {
+                    document.getElementById('save-status-text').textContent = '导入失败：文件格式无效';
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        });
+
+        function applyTaxData(data) {
+            book = normalizeBook(data);
+            resetDeleteButton();
+            renderAll();
+            document.getElementById('save-status-text').textContent = window.SzyCloud.isSignedIn() ? '已载入云端数据' : '模板模式';
+        }
+
+        initColumnResizing();
+        renderAll();
+        window.SzyCloud.init({
+            documentType: 'tax',
+            legacyStorageKey: STORAGE_KEY,
+            template: defaultBook,
+            getData: () => book,
+            applyData: applyTaxData
+        });
+    </script>
+</body>
+
+</html>

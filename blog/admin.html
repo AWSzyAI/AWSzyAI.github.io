@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>博客管理 - 时子延的个人主页</title>
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="github-oauth-config.js"></script>
+<script src="auth.js"></script>
+    <style>
+        /* 字体声明 - 兼容移动端 Safari */
+        @font-face {
+            font-family: 'SimSun';
+            src: url('/font/SimSun.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+3300-33FF, U+FE30-FE4A, U+F2000-F2A1, U+2E80-2EFF, U+2F00-2FDF, U+3100-312F, U+31A0-31BF, U+FF00-FFEF, U+3040-309F, U+30A0-30FF, U+AC00-D7AF, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
+        }
+
+        @font-face {
+            font-family: 'LXGWWenKai';
+            src: url('/font/LXGWWenKai-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+3300-33FF, U+FE30-FE4A, U+F2000-F2A1, U+2E80-2EFF, U+2F00-2FDF, U+3100-312F, U+31A0-31BF, U+FF00-FFEF, U+3040-309F, U+30A0-30FF, U+AC00-D7AF, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
+        }
+
+        /* 移动端 Safari 兼容的字体回退 */
+        @font-face {
+            font-family: 'SimSun';
+            src: local('SimSun'), local('宋体');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'LXGWWenKai';
+            src: local('LXGWWenKai-Regular'), local('霞鹜文楷');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* CSS 变量 */
+        :root {
+            --primary-green: #2E7D32;
+            --accent-green: #66BB6A;
+            --light-green: #A5D6A7;
+            --dark-green: #1B5E20;
+
+            --primary-orange: #FF6F00;
+            --accent-orange: #FFA726;
+            --light-orange: #FFD54F;
+
+            --primary-blue: #1565C0;
+            --accent-blue: #42A5F5;
+            --light-blue: #90CAF9;
+
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.9);
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --bg-primary: rgba(255, 255, 255, 0.12);
+            --bg-secondary: rgba(255, 255, 255, 0.18);
+            --bg-tertiary: rgba(255, 255, 255, 0.25);
+            --border-color: rgba(255, 255, 255, 0.25);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--primary-green);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .admin-header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .blog-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .blog-item {
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .blog-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .blog-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .blog-item-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            margin: 0;
+            flex: 1;
+        }
+
+        .blog-item-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .blog-item-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .blog-item-excerpt {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .blog-item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        .icon-only {
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .back-to-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home:hover {
+            color: var(--primary-blue);
+            transform: translateX(5px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .admin-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 0 15px 30px;
+            }
+
+            .admin-controls {
+                flex-direction: column;
+            }
+
+            .blog-item-header {
+                flex-direction: column;
+            }
+
+            .blog-item-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .navbar-brand:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .navbar-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-green);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover .navbar-logo {
+            border-color: var(--text-primary);
+            transform: rotate(5deg);
+        }
+
+        .navbar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            color: var(--text-primary);
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .navbar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .navbar-item i {
+            font-size: 0.9rem;
+        }
+
+        .navbar-item.active {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Adjust admin-header for fixed navbar */
+        .admin-header {
+            margin-top: 60px;
+        }
+
+        /* Responsive Navigation */
+        @media (max-width: 768px) {
+            .navbar-container {
+                padding: 0 15px;
+            }
+
+            .navbar-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(15px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                flex-direction: column;
+                gap: 0;
+                padding: 10px 0;
+            }
+
+            .navbar-menu.active {
+                display: flex;
+            }
+
+            .navbar-item {
+                width: 100%;
+                padding: 12px 20px;
+                border-radius: 0;
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .navbar-item:last-child {
+                border-bottom: none;
+            }
+
+            .navbar-toggle {
+                display: block;
+            }
+
+            .navbar-brand {
+                padding: 8px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/szy.ico" alt="时子延" class="navbar-logo">
+                <span class="navbar-title">时子延的个人主页</span>
+            </a>
+
+            <div class="navbar-menu" id="navbar-menu">
+                <a href="/" class="navbar-item" data-page="home">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+                <a href="/blog.html" class="navbar-item active" data-page="blog">
+                    <i class="fas fa-blog"></i>
+                    <span>博客</span>
+                </a>
+                <a href="/obsidian/" class="navbar-item" data-page="obsidian">
+                    <i class="fas fa-brain"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="/MkDocs/site/" class="navbar-item" data-page="docs">
+                    <i class="fas fa-book"></i>
+                    <span>文档</span>
+                </a>
+            </div>
+
+            <button class="navbar-toggle" id="navbar-toggle" onclick="toggleNavbar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="admin-header">
+        <div class="container">
+            <h1><i class="fas fa-user-shield"></i> 博客管理后台</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="/" class="back-to-home">
+            <i class="fas fa-arrow-left"></i>
+            <span>返回首页</span>
+        </a>
+
+        <div class="admin-controls">
+            <button class="btn btn-primary" onclick="createNewPost()">
+                <i class="fas fa-plus"></i>
+                <span>新建文章</span>
+            </button>
+            <button class="btn btn-secondary" onclick="viewBlog()">
+                <i class="fas fa-eye"></i>
+                <span>查看博客</span>
+            </button>
+            <button class="btn btn-secondary" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>退出登录</span>
+            </button>
+        </div>
+
+        <div class="blog-list" id="blog-list">
+            <!-- 博客文章列表将通过 JavaScript 动态加载 -->
+        </div>
+    </div>
+
+    <script>
+        // 博客管理类
+        class BlogAdmin {
+            constructor() {
+                this.posts = this.loadPosts();
+                // Create a Map for O(1) lookup by ID
+                this.postsMap = new Map(this.posts.map(post => [post.id, post]));
+                // Don't check auth here, wait for proper initialization
+            }
+
+            checkAuth() {
+                // 检查是否有有效的GitHub登录且为作者
+                console.log('检查管理员权限...');
+                console.log('blogAuth存在:', !!blogAuth);
+
+                if (blogAuth) {
+                    console.log('当前用户:', blogAuth.currentUser);
+                    console.log('是否为作者:', blogAuth.isAuthor());
+                }
+
+                if (!blogAuth || !blogAuth.isAuthor()) {
+                    console.log('权限检查失败，重定向到首页');
+                    alert('您没有访问此页面的权限，需要作者身份登录。');
+                    window.location.href = '/?error=unauthorized';
+                } else {
+                    console.log('权限检查通过，允许访问管理页面');
+                }
+            }
+
+            loadPosts() {
+                const stored = localStorage.getItem('blog_posts');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            savePosts() {
+                localStorage.setItem('blog_posts', JSON.stringify(this.posts));
+            }
+
+            displayPosts() {
+                const container = document.getElementById('blog-list');
+
+                if (this.posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="blog-item">
+                            <h3>暂无博客文章</h3>
+                            <p>点击"新建文章"开始写作你的第一篇博客吧！</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.posts.map(post => `
+                    <div class="blog-item">
+                        <div class="blog-item-header">
+                            <h3 class="blog-item-title">${post.title}</h3>
+                            <div class="blog-item-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editPost(${post.id})" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-small" onclick="viewPost(${post.id})" title="查看">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-danger btn-small icon-only" onclick="deletePost(${post.id})" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="blog-item-meta">
+                            <span><i class="fas fa-calendar"></i> ${post.date}</span>
+                            <span><i class="fas fa-user"></i> ${post.author}</span>
+                        </div>
+                        <div class="blog-item-excerpt">
+                            <p>${post.excerpt}</p>
+                        </div>
+                        <div class="blog-item-tags">
+                            ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            createNewPost() {
+                const newPost = {
+                    title: "新文章标题",
+                    excerpt: "文章摘要...",
+                    content: "# 新文章\n\n开始写作你的文章内容...\n\n## 小标题\n\n这里是一些内容。",
+                    author: "时子延",
+                    tags: ["新文章"],
+                    featured: false
+                };
+
+                this.addPost(newPost);
+                this.editPost(this.posts[0].id);
+            }
+
+            addPost(post) {
+                post.id = Date.now();
+                post.date = new Date().toISOString().split('T')[0];
+                this.posts.unshift(post);
+                this.postsMap.set(post.id, post); // Add to Map
+                this.savePosts();
+            }
+
+            updatePost(id, updatedPost) {
+                // Use Map for faster lookup
+                const existingPost = this.postsMap.get(parseInt(id));
+                if (existingPost) {
+                    const index = this.posts.findIndex(post => post.id === parseInt(id));
+                    this.posts[index] = { ...this.posts[index], ...updatedPost };
+                    this.postsMap.set(parseInt(id), this.posts[index]); // Update Map
+                    this.savePosts();
+                }
+            }
+
+            deletePost(id) {
+                if (confirm('确定要删除这篇文章吗？此操作不可撤销。')) {
+                    this.posts = this.posts.filter(post => post.id !== id);
+                    this.postsMap.delete(parseInt(id)); // Remove from Map
+                    this.savePosts();
+                    this.displayPosts();
+                }
+            }
+
+            editPost(id) {
+                console.log('编辑文章，ID:', id);
+                console.log('当前用户权限:', blogAuth ? blogAuth.isAuthor() : '未登录');
+
+                // 再次检查权限
+                if (!blogAuth || !blogAuth.isAuthor()) {
+                    alert('您没有编辑文章的权限');
+                    return;
+                }
+
+                // 保存当前编辑状态，防止页面刷新时丢失
+                sessionStorage.setItem('editing_post_id', id);
+
+                window.location.href = `edit.html?id=${id}`;
+            }
+
+            viewPost(id) {
+                window.location.href = `post.html?id=${id}`;
+            }
+
+            viewBlog() {
+                window.location.href = '/';
+            }
+
+            logout() {
+                if (blogAuth) {
+                    blogAuth.logout();
+                } else {
+                    window.location.href = '/';
+                }
+            }
+        }
+
+        // 全局管理器
+        const admin = new BlogAdmin();
+
+        // 全局函数
+        function createNewPost() {
+            admin.createNewPost();
+        }
+
+        function editPost(id) {
+            admin.editPost(id);
+        }
+
+        function viewPost(id) {
+            admin.viewPost(id);
+        }
+
+        function deletePost(id) {
+            admin.deletePost(id);
+        }
+
+        function viewBlog() {
+            admin.viewBlog();
+        }
+
+        function logout() {
+            admin.logout();
+        }
+
+        // Toggle mobile navigation menu
+        function toggleNavbar() {
+            const menu = document.getElementById('navbar-menu');
+            const toggle = document.getElementById('navbar-toggle');
+
+            if (menu) {
+                menu.classList.toggle('active');
+
+                // Toggle icon
+                const icon = toggle.querySelector('i');
+                if (menu.classList.contains('active')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            }
+        }
+
+        // Set active navigation item based on current page
+        function setActiveNavItem() {
+            const currentPage = window.location.pathname;
+            const navItems = document.querySelectorAll('.navbar-item');
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                const itemPage = item.getAttribute('data-page');
+
+                if (
+                    (itemPage === 'home' && (currentPage === '/' || currentPage === '/index.html')) ||
+                    (itemPage === 'blog' && currentPage.includes('blog')) ||
+                    (itemPage === 'obsidian' && currentPage.includes('obsidian')) ||
+                    (itemPage === 'docs' && currentPage.includes('MkDocs'))
+                ) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.querySelector('.navbar');
+            const menu = document.getElementById('navbar-menu');
+            const toggle = document.getElementById('navbar-toggle');
+
+            if (navbar && !navbar.contains(event.target) && menu && menu.classList.contains('active')) {
+                menu.classList.remove('active');
+                const icon = toggle.querySelector('i');
+                icon.className = 'fas fa-bars';
+            }
+        });
+
+        // 页面加载时初始化认证和显示文章列表
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Set active navigation item
+            setActiveNavItem();
+            console.log('管理页面开始加载...');
+
+            // 等待所有脚本完全加载
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            console.log('检查BlogAuth类:', typeof BlogAuth);
+            console.log('检查全局blogAuth实例:', typeof blogAuth);
+
+            // 使用已存在的全局实例或创建新实例
+            if (typeof blogAuth !== 'undefined' && blogAuth) {
+                console.log('使用现有的blogAuth实例');
+                window.blogAuth = blogAuth;
+            } else if (typeof BlogAuth !== 'undefined') {
+                console.log('创建新的BlogAuth实例');
+                try {
+                    window.blogAuth = new BlogAuth();
+                    console.log('认证系统初始化完成');
+                } catch (error) {
+                    console.error('创建BlogAuth实例失败:', error);
+                    alert('认证系统初始化失败: ' + error.message);
+                    return;
+                }
+            } else {
+                console.error('BlogAuth类未定义，尝试重新加载认证脚本...');
+                // 尝试重新加载认证脚本
+                try {
+                    // 移除现有的认证脚本
+                    const existingScripts = document.querySelectorAll('script[src*="auth.js"]');
+                    existingScripts.forEach(script => script.remove());
+
+                    // 重新加载认证脚本
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = '/blog/auth.js';
+                        script.onload = () => {
+                            setTimeout(resolve, 500); // 等待脚本完全执行
+                        };
+                        script.onerror = () => reject(new Error('无法加载认证脚本'));
+                        document.head.appendChild(script);
+                    });
+
+                    console.log('重新加载后检查BlogAuth类:', typeof BlogAuth);
+                    if (typeof BlogAuth !== 'undefined') {
+                        window.blogAuth = new BlogAuth();
+                        console.log('重新创建认证系统成功');
+                    } else {
+                        throw new Error('重新加载后BlogAuth类仍未定义');
+                    }
+                } catch (error) {
+                    console.error('重新加载认证脚本失败:', error);
+                    alert('认证系统加载失败，请检查网络连接或清除缓存后刷新页面。');
+                    return;
+                }
+            }
+
+            // 检查权限
+            try {
+                console.log('开始权限检查，当前用户:', blogAuth?.currentUser);
+                admin.checkAuth();
+                // 显示文章列表
+                admin.displayPosts();
+            } catch (error) {
+                console.error('权限检查或显示文章失败:', error);
+                alert('页面初始化失败: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

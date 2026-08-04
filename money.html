@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Simulator</title>
+    <style>
+        :root {
+            --bg-body: #ffffff;
+            --bg-panel: #f7f7f7;
+            --border-color: #e0e0e0;
+            --text-main: #333;
+            --text-sub: #666;
+            --color-usd: #2196f3;
+            --color-del: #ff5252;
+            --color-add: #4caf50;
+            --color-drag-over: #e3f2fd;
+            /* Tooltip */
+            --tooltip-bg: rgba(0, 0, 0, 0.85);
+            --tooltip-text: #fff;
+            --radius-bar: 6px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #1e1e1e;
+                --bg-panel: #2d2d2d;
+                --border-color: #444;
+                --text-main: #ddd;
+                --text-sub: #aaa;
+                --tooltip-bg: rgba(255, 255, 255, 0.9);
+                --tooltip-text: #000;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 整页不滚动，只让内部容器控制滚动 */
+        }
+
+        #szy-tooltip {
+            position: fixed;
+            z-index: 9999;
+            background: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            left: 0;
+            top: 0;
+        }
+
+        #szy-tooltip.visible {
+            opacity: 1;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: 100%;
+            overflow: hidden;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        .app-container.editor-collapsed {
+            grid-template-columns: 0 1fr;
+        }
+
+        .app-container.editor-collapsed .editor-panel {
+            padding: 0;
+            border: none;
+            overflow: hidden;
+        }
+
+        .app-container.editor-collapsed .preview-panel {
+            padding: 0;
+        }
+
+        .app-container.editor-collapsed .chart-wrapper {
+            max-width: none;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            padding: 40px;
+        }
+
+        /* Desktop edit mode: tighten card spacing and keep it even */
+        @media (min-width: 901px) {
+            .app-container:not(.editor-collapsed) .preview-panel {
+                padding: 4px 8px;
+                justify-content: center;
+                min-height: 100%;
+                gap: 8px;
+            }
+
+            .app-container:not(.editor-collapsed) .chart-wrapper {
+                padding: 14px 16px 18px 16px;
+                margin: 0 auto;
+                max-width: 1040px;
+            }
+        }
+
+        .preview-panel {
+            padding: 20px;
+        }
+
+        .chart-wrapper {
+            padding: 20px;
+            padding-top: 50px;
+        }
+
+        input[type="number"] {
+            min-width: 80px;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+                height: auto;
+                position: relative;
+            }
+
+            .app-container.editor-collapsed {
+                display: flex;
+            }
+
+            .preview-panel {
+                order: -1;
+                padding: 0;
+                margin-bottom: 80px;
+            }
+
+            .editor-panel {
+                order: 1;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 66vh;
+                z-index: 1000;
+                background: var(--bg-panel);
+                border-radius: 20px 20px 0 0;
+                box-shadow: none;
+                transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+                transform: translateY(100%);
+                padding: 24px;
+                border: none;
+            }
+
+            .editor-panel.visible {
+                transform: translateY(0);
+                box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+            }
+
+            .chart-wrapper {
+                width: 100%;
+                max-width: none;
+                padding: 16px 8px 24px 8px;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .szy-row {
+                flex-direction: column;
+                align-items: flex-start;
+                height: auto !important;
+                margin-bottom: 20px !important;
+                padding-top: 10px;
+                position: relative;
+            }
+
+            .szy-row-label {
+                width: 100% !important;
+                text-align: left !important;
+                padding: 0 !important;
+                margin: 0 0 8px 0 !important;
+                font-size: 12px;
+                opacity: 0.9;
+                position: static !important;
+                transform: none !important;
+                left: 0 !important;
+            }
+
+            .szy-row.marker-chart-row {
+                margin-bottom: 38px !important;
+            }
+
+            .szy-row.marker-chart-row .szy-row-label {
+                margin-bottom: 24px !important;
+            }
+
+            .szy-track,
+            .szy-track-inner {
+                width: 100%;
+                height: 32px !important;
+                position: relative;
+                min-height: 32px;
+            }
+
+            .szy-bar,
+            .szy-sim-base,
+            .szy-sim-future,
+            .szy-delta-bar,
+            .szy-delta-neg {
+                height: 100% !important;
+            }
+
+            .szy-total-tag {
+                font-size: 10px;
+                top: 0;
+                right: 4px;
+                height: 100%;
+                display: flex;
+                align-items: center;
+            }
+
+            .szy-legend-grid {
+                margin-top: 32px;
+                margin-bottom: 10px;
+                padding-bottom: 0;
+            }
+
+            .editor-content {
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+                height: 100%;
+                overflow-y: auto;
+            }
+
+            #mobile-toggle-editor {
+                display: flex !important;
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1100;
+                width: auto;
+                padding: 12px 24px;
+                background: var(--bg-body);
+                border: 1px solid var(--border-color);
+                border-radius: 30px;
+                font-weight: 600;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                color: var(--text-main);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            }
+
+            #mobile-toggle-editor:hover {
+                background: var(--bg-panel);
+            }
+
+            #mobile-toggle-editor::after {
+                content: "Show Editor";
+            }
+
+            #mobile-toggle-editor.active::after {
+                content: "Hide Editor";
+            }
+
+            #mobile-toggle-editor svg {
+                transition: transform 0.3s;
+            }
+
+            #mobile-toggle-editor.active svg {
+                transform: rotate(180deg);
+            }
+        }
+
+        #mobile-toggle-editor {
+            display: none;
+            cursor: pointer;
+        }
+
+        #desktop-toggle-btn {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 100;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        #desktop-toggle-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 900px) {
+            #desktop-toggle-btn {
+                display: none;
+            }
+        }
+
+        .editor-panel {
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto; /* 左侧支持滚动 */
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--text-sub);
+        }
+
+        .drag-list {
+            min-height: 40px;
+            padding-bottom: 10px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            transition: background 0.1s;
+        }
+
+        .drag-list.drag-active {
+            background: rgba(33, 150, 243, 0.05);
+            border-color: var(--color-usd);
+            border-style: dashed;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+            background: var(--bg-body);
+            padding: 10px;
+            border-radius: 6px;
+            transition: box-shadow 0.2s;
+            border: 1px solid transparent;
+            cursor: default;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-row:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 2;
+        }
+
+        .input-row.special-row {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+        }
+
+        .input-row.budget-row {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+        }
+
+        .input-row.loan-editor-row {
+            flex-wrap: wrap;
+            border-color: rgba(225, 87, 89, 0.35);
+        }
+
+        .loan-editor-fields {
+            flex: 0 0 calc(100% - 28px);
+            margin-left: 28px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 7px;
+        }
+
+        .loan-editor-field {
+            min-width: 0;
+        }
+
+        .loan-editor-field label {
+            display: block;
+            margin-bottom: 3px;
+            color: var(--text-sub);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .loan-editor-field input {
+            width: 100%;
+            min-width: 0;
+            border-color: var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-body);
+            font-size: 11px;
+        }
+
+        .loan-editor-summary {
+            flex: 0 0 calc(100% - 28px);
+            margin: 0 0 0 28px;
+            color: var(--text-sub);
+            font-family: monospace;
+            font-size: 10px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .input-row.special-row {
+                background: #1e2a38;
+                border-color: #2c4a68;
+            }
+
+            .input-row.budget-row {
+                background: #3e2723;
+                border-color: #4e342e;
+            }
+
+            .input-row.loan-editor-row {
+                border-color: rgba(225, 87, 89, 0.55);
+            }
+        }
+
+        .input-row.dragging {
+            opacity: 0.6;
+            background: var(--bg-panel);
+            box-shadow: none;
+            border: 1px dashed var(--border-color);
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: var(--text-sub);
+            opacity: 0.4;
+            display: flex;
+            align-items: center;
+            padding: 4px 2px;
+        }
+
+        .drag-handle:hover {
+            opacity: 1;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        input {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        input:focus {
+            outline: none;
+            border-bottom: 1px solid var(--color-usd);
+        }
+
+        .inp-name {
+            flex: 1;
+            min-width: 0;
+            font-weight: 500;
+        }
+
+        .inp-amount {
+            width: 90px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-currency {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-sub);
+            width: 24px;
+            height: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-currency.is-usd {
+            background: var(--color-usd);
+            color: white;
+            border-color: var(--color-usd);
+        }
+
+        .btn-del {
+            color: var(--text-sub);
+            opacity: 0.5;
+        }
+
+        .btn-del:hover {
+            color: var(--color-del);
+            opacity: 1;
+            background: rgba(255, 82, 82, 0.1);
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 8px;
+            background: dashed 1px var(--border-color);
+            border: 1px dashed var(--border-color);
+            color: var(--text-sub);
+            font-size: 12px;
+        }
+
+        .btn-add:hover {
+            border-color: var(--color-add);
+            color: var(--color-add);
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .config-bar {
+            background: var(--bg-body);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-save {
+            background: var(--text-main);
+            color: var(--bg-body);
+            padding: 0 16px;
+            height: 32px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-left: auto;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+
+        /* --- Preview Panel --- */
+        .preview-panel {
+            padding: 40px;
+            overflow-y: hidden; /* 右侧不滚动 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            width: 100%;
+            max-width: 950px;
+            background: var(--bg-body);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .szy-summary {
+            display: flex;
+            gap: 40px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .szy-item-box label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .szy-item-box span {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .szy-tax-link {
+            align-self: center;
+            margin-left: auto;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            background: var(--bg-panel);
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: border-color .2s, transform .2s;
+        }
+
+        .szy-tax-link:hover {
+            border-color: var(--color-add);
+            transform: translateY(-1px);
+        }
+
+        /* --- Chart CSS --- */
+        .szy-chart-area {
+            margin-top: 10px;
+        }
+
+        .szy-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+            height: 36px;
+        }
+
+        .szy-row.loan-chart-row {
+            height: 62px;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .szy-row.loan-chart-row .szy-row-label {
+            padding-top: 10px;
+        }
+
+        .szy-row.loan-chart-row .szy-track {
+            height: 36px;
+        }
+
+        .szy-row.loan-chart-row .szy-budget-tag.tag-current {
+            top: calc(100% + 9px);
+            bottom: auto;
+        }
+
+        .szy-row-label {
+            width: 130px;
+            flex-shrink: 0;
+            text-align: right;
+            padding-right: 16px;
+            font-size: 13px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .szy-row-label.loan-label {
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .szy-track {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        .szy-track-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-bar);
+            overflow: hidden;
+            background: rgba(128, 128, 128, 0.08);
+            z-index: 0;
+        }
+
+        .szy-bar,
+        .szy-delta-bar,
+        .szy-delta-neg,
+        .szy-sim-base,
+        .szy-sim-future {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            transition: width 0.4s, left 0.4s;
+            z-index: 1;
+            cursor: help;
+        }
+
+        .szy-bar:hover,
+        .szy-delta-bar:hover,
+        .szy-delta-neg:hover {
+            z-index: 10;
+            filter: brightness(1.15) contrast(1.1);
+        }
+
+        .szy-solid {
+            opacity: 1;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .szy-striped {
+            background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+            background-size: 12px 12px;
+            opacity: 0.85;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .szy-sim-base {
+            background: var(--text-main);
+            opacity: 0.1;
+        }
+
+        .szy-sim-future {
+            background: var(--text-main);
+            opacity: 0.05;
+            background-image: linear-gradient(45deg, var(--text-sub) 25%, transparent 25%, transparent 50%, var(--text-sub) 50%, var(--text-sub) 75%, transparent 75%, transparent);
+            background-size: 8px 8px;
+        }
+
+        .szy-delta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .szy-delta-neg {
+            border: 1px dashed #e57373;
+            background: rgba(229, 30, 30, 0.05);
+            color: #d32f2f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .szy-total-tag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-size: 12px;
+            font-family: monospace;
+            font-weight: 700;
+            z-index: 100;
+            pointer-events: none;
+            padding-left: 8px;
+            color: var(--text-main);
+            text-shadow: 0 0 2px var(--bg-body), 0 0 5px var(--bg-body), 0 0 10px var(--bg-body);
+        }
+
+        .szy-overlay-text {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-main);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0.6;
+            text-shadow: 0 0 4px var(--bg-body);
+            z-index: 3;
+        }
+
+        .szy-marker-line {
+            position: absolute;
+            top: -6px;
+            bottom: -6px;
+            width: 2px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .szy-marker-line.current {
+            background: var(--text-main);
+            opacity: 0.4;
+            border-radius: 2px;
+        }
+
+        .szy-marker-line.forecast {
+            border-left: 2px dashed var(--text-main);
+            opacity: 0.4;
+        }
+
+        .szy-marker-line.loan-current {
+            border-left: 2px dashed #42a5f5;
+            opacity: 0.9;
+        }
+
+        .szy-marker-line.loan-forecast {
+            border-left: 2px dashed #66bb6a;
+            opacity: 0.9;
+        }
+
+        .szy-loan-remaining {
+            background-color: #e15759;
+            background-image: repeating-linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.18) 0,
+                    rgba(255, 255, 255, 0.18) 6px,
+                    transparent 6px,
+                    transparent 12px);
+        }
+
+        .szy-loan-period-progress {
+            position: absolute;
+            top: calc(100% + 3px);
+            left: 0;
+            width: 100%;
+            height: 4px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.18);
+            z-index: 65;
+        }
+
+        .szy-loan-period-progress-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: #42a5f5;
+            transition: width 0.4s;
+        }
+
+        .szy-loan-period-progress-label {
+            position: absolute;
+            top: calc(100% + 9px);
+            right: 0;
+            color: var(--text-sub);
+            font-family: monospace;
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .szy-budget-tag {
+            position: absolute;
+            top: -18px;
+            font-size: 10px;
+            font-family: monospace;
+            font-weight: 800;
+            z-index: 60;
+            white-space: nowrap;
+            padding: 2px 4px;
+            border-radius: 3px;
+            background: var(--bg-body);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            opacity: 0.9;
+            pointer-events: none;
+            transform: translateX(-50%);
+        }
+
+        .szy-budget-tag.tag-current {
+            top: unset;
+            bottom: -20px;
+        }
+
+        .szy-budget-tag.tag-forecast {
+            top: -20px;
+        }
+
+        .szy-legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px 24px;
+            margin: 30px 0 40px 0;
+            background: var(--bg-panel);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .szy-legend-divider {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: none;
+            margin: 10px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .szy-lg-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .szy-lg-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .szy-lg-val {
+            margin-left: auto;
+            font-weight: 600;
+            color: var(--text-main);
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="szy-tooltip"></div>
+
+    <div class="app-container editor-collapsed" id="app-container">
+        <button id="mobile-toggle-editor" onclick="toggleEditor()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 15l-6-6-6 6" />
+            </svg>
+        </button>
+        <div class="editor-panel">
+
+            <div class="editor-content" id="editor-content">
+                <div class="config-bar">
+                    <div>
+                        <div style="font-size:10px; color:var(--text-sub); text-transform:uppercase;">Exchange Rate
+                        </div>
+                        <div style="font-weight:bold; font-size:13px;">USD/CNY</div>
+                    </div>
+                    <input type="number" id="input-rate" value="6.50"
+                        style="width:60px; text-align:right; font-weight:bold; border:1px solid var(--border-color); background:var(--bg-body);"
+                        step="0.01">
+
+                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                        <input type="file" id="import-file" accept=".json" style="display: none;"
+                            onchange="handleImport(this)">
+                        <button class="btn-save"
+                            style="background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border-color);"
+                            onclick="document.getElementById('import-file').click()">📂 Load</button>
+                        <button id="btn-save-action" class="btn-save" onclick="saveState()">☁ Sync</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-header"><span class="section-title">Current Assets</span><span
+                            style="font-size:12px; color:var(--text-sub)" id="count-current">0</span></div>
+                    <div id="list-current" class="drag-list" data-accept="asset" ondragover="handleContainerOver(event)"
+                        ondragleave="handleContainerLeave(event)" ondrop="handleContainerDrop(event)"></div>
+                    <button class="btn-add" onclick="addItem('current')">+ Add Asset</button>
+                </div>
+
+                <div>
+                    <div class="section-header"><span class="section-title">Future Income</span><span
+                            style="font-size:12px; color:var(--text-sub)" id="count-future">0</span></div>
+                    <div id="list-future" class="drag-list" data-accept="asset" ondragover="handleContainerOver(event)"
+                        ondragleave="handleContainerLeave(event)" ondrop="handleContainerDrop(event)"></div>
+                    <button class="btn-add" onclick="addItem('future')">+ Add Income</button>
+                </div>
+
+                <div>
+                    <div class="section-header"><span class="section-title">Budget Plan</span><span
+                            style="font-size:12px; color:var(--text-sub)" id="count-budget">0</span></div>
+                    <div id="list-budget" class="drag-list" data-accept="budget" ondragover="handleContainerOver(event)"
+                        ondragleave="handleContainerLeave(event)" ondrop="handleContainerDrop(event)"></div>
+                    <button class="btn-add" onclick="addItem('budget')">+ Add Expense</button>
+                </div>
+
+                <div>
+                    <div class="section-header"><span class="section-title">Chart Layout</span><span
+                            style="font-size:12px; color:var(--text-sub)">Order Rows</span></div>
+                    <div id="list-rows" class="drag-list" data-accept="row" ondragover="handleContainerOver(event)"
+                        ondragleave="handleContainerLeave(event)" ondrop="handleContainerDrop(event)"></div>
+                    <button class="btn-add" onclick="addItem('scenario')">+ Add Scenario</button>
+                    <button class="btn-add" onclick="addItem('loan')">+ Add Loan</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-panel">
+            <button id="desktop-toggle-btn" onclick="toggleDesktopEditor()" title="Toggle Editor">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <div class="chart-wrapper">
+                <div class="szy-summary">
+                    <div class="szy-item-box"><label>Current Total</label><span id="disp-current">0</span></div>
+                    <div class="szy-item-box"><label>Base Forecast</label><span id="disp-total"
+                            style="color: var(--color-add)">0</span></div>
+                    <a class="szy-tax-link" href="/tax.html">年度退税测算 →</a>
+                </div>
+                <div id="chart-canvas"></div>
+            </div>
+        </div>
+    </div>
+
+    <svg style="display:none">
+        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </symbol>
+        <symbol id="icon-drag" viewBox="0 0 24 24" fill="currentColor">
+            <path
+                d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z">
+            </path>
+        </symbol>
+    </svg>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/cloud-config.js"></script>
+    <script src="/cloud-sync.js"></script>
+    <script>
+        const tooltipEl = document.getElementById('szy-tooltip');
+        function setupTooltips() {
+            const container = document.getElementById('chart-canvas');
+            container.addEventListener('mouseover', (e) => {
+                const target = e.target.closest('[data-value]');
+                if (target) { tooltipEl.innerText = target.getAttribute('data-value'); tooltipEl.classList.add('visible'); }
+            });
+            container.addEventListener('mousemove', (e) => {
+                if (tooltipEl.classList.contains('visible')) { tooltipEl.style.transform = `translate(${e.clientX + 10}px, ${e.clientY + 10}px)`; }
+            });
+            container.addEventListener('mouseout', () => { tooltipEl.classList.remove('visible'); });
+        }
+
+        // ✅ 脱敏后的默认初始数据（项目名与数值都已改）
+        const defaultState = {
+            rate: 6.50,
+            current: [
+                { id: 1, name: "Checking Account", amount: 8200, isUsd: false },
+                { id: 2, name: "Savings Account", amount: 13400, isUsd: false },
+                { id: 3, name: "Cash on Hand", amount: 2600, isUsd: false },
+                { id: 4, name: "Foreign Currency ($80)", amount: 80, isUsd: true },
+            ],
+            future: [
+                { id: 101, name: "Planned Income #1", amount: 3200, isUsd: false },
+                { id: 102, name: "Planned Income #2", amount: 1900, isUsd: false },
+                { id: 103, name: "Planned Income #3", amount: 4500, isUsd: false },
+            ],
+            budget: [
+                { id: 301, name: "Budget Category #1", amount: 2100 },
+                { id: 302, name: "Budget Category #2", amount: 1650 },
+                { id: 303, name: "Budget Category #3", amount: 980 },
+            ],
+            rows: [
+                { id: 'comp-main', type: 'composition', name: 'Asset Composition', delta: 0 },
+                { id: 'budget-main', type: 'budget', name: 'Budget Plan', delta: 0 },
+                { id: 201, type: 'scenario', name: "Scenario +15k", delta: 15000, color: "#59A14F" },
+                { id: 202, type: 'scenario', name: "Scenario +8k", delta: 8000, color: "#8CD17D" },
+                { id: 204, type: 'scenario', name: "Scenario 0", delta: 0, color: "#BAB0AC" },
+                { id: 205, type: 'scenario', name: "Scenario -4k", delta: -4000, color: "#F28E2B" },
+                { id: 207, type: 'loan', name: "Car Loan", totalAmount: 120000, totalPeriods: 60, paidPeriods: 12, color: "#E15759" },
+                { id: 206, type: 'scenario', name: "Scenario -15k", delta: -15000, color: "#E15759" },
+            ]
+        };
+
+        let appState = null;
+        // 用新的 Storage Key 避免加载旧的敏感存档
+        const STORAGE_KEY = 'szy_finance_demo_v2_sanitized';
+
+        function getLoanMetrics(item) {
+            const totalAmount = Math.max(Number(item.totalAmount) || 0, 0);
+            const totalPeriods = Math.max(Math.round(Number(item.totalPeriods) || 0), 0);
+            const enteredPaidPeriods = Math.max(Math.round(Number(item.paidPeriods) || 0), 0);
+            const paidPeriods = Math.min(enteredPaidPeriods, totalPeriods);
+            const remainingPeriods = Math.max(totalPeriods - paidPeriods, 0);
+            const monthlyPayment = totalPeriods > 0 ? totalAmount / totalPeriods : 0;
+            const paidAmount = monthlyPayment * paidPeriods;
+            const remainingAmount = monthlyPayment * remainingPeriods;
+            return { totalAmount, totalPeriods, paidPeriods, remainingPeriods, monthlyPayment, paidAmount, remainingAmount };
+        }
+
+        function migrateLegacyLoanRow(row) {
+            if (row.type === 'loan') return row;
+            const legacyDelta = Number(row.delta);
+            if (row.type !== 'scenario' || !Number.isFinite(legacyDelta) || legacyDelta >= 0 || !/(车贷|car\s*loan)/i.test(row.name || '')) return row;
+
+            const periodMatch = (row.name || '').match(/\((\d+)\s*\/\s*(\d+)\)\s*$/);
+            if (!periodMatch) return row;
+
+            const remainingPeriods = Number(periodMatch[1]);
+            const totalPeriods = Number(periodMatch[2]);
+            if (!totalPeriods || remainingPeriods > totalPeriods || !remainingPeriods) return row;
+
+            const monthlyPayment = Math.abs(legacyDelta) / remainingPeriods;
+            const rawName = row.name.slice(0, periodMatch.index);
+            const name = rawName.replace(/[\s¥￥\d,.]+$/g, '').trim() || 'Car Loan';
+            return {
+                id: row.id,
+                type: 'loan',
+                name,
+                totalAmount: monthlyPayment * totalPeriods,
+                totalPeriods,
+                paidPeriods: totalPeriods - remainingPeriods,
+                color: row.color || '#E15759'
+            };
+        }
+
+        function normalizeRows(state) {
+            state.rows = (state.rows || []).map(migrateLegacyLoanRow);
+            return state;
+        }
+
+        function loadState() {
+            appState = JSON.parse(JSON.stringify(defaultState));
+            normalizeRows(appState);
+        }
+
+        async function saveState() {
+            const btn = document.getElementById('btn-save-action');
+            const synced = await window.SzyCloud.saveNow(appState);
+            if (btn) {
+                const originalText = "☁ Sync";
+                const originalBg = "";
+                btn.innerText = synced ? "Synced!" : "Login first";
+                btn.style.background = synced ? "#4caf50" : "#c28a18";
+                btn.style.color = "#fff";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = originalBg;
+                    btn.style.color = "";
+                }, 1500);
+            }
+        }
+
+        function autoSave() {
+            window.SzyCloud.scheduleSave(appState);
+        }
+
+        function handleImport(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if (!json.current || !json.future || !json.rows) {
+                        alert("Error: Invalid file format.");
+                        return;
+                    }
+                    appState = json;
+                    if (!appState.budget) appState.budget = [];
+                    normalizeRows(appState);
+
+                    autoSave();
+                    renderEditor();
+                    renderChart();
+
+                    const btn = document.querySelector('button[onclick*="import-file"]');
+                    if (btn) {
+                        const originalText = btn.innerText;
+                        btn.innerText = "Loaded!";
+                        setTimeout(() => { btn.innerText = originalText; }, 1500);
+                    }
+                } catch (err) { alert("Import failed: Cannot parse JSON."); }
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        const assetPalette = ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'];
+        const budgetPalette = ['#882E72', '#B178A6', '#D6C1DE', '#1965B0', '#5289C7', '#7BAFDE', '#4EB265', '#90C987', '#CAE0AB', '#F7F056'];
+
+        function renderEditor() {
+            document.getElementById('input-rate').value = appState.rate;
+            const createRow = (item, typeCategory) => {
+                const div = document.createElement('div'); div.className = 'input-row';
+                if (item.type === 'composition') div.classList.add('special-row');
+                if (typeCategory === 'budget' || item.type === 'budget') div.classList.add('budget-row');
+                if (item.type === 'loan') div.classList.add('loan-editor-row');
+                div.draggable = true; div.dataset.id = item.id; div.dataset.dragType = typeCategory;
+                div.innerHTML = `<div class="drag-handle"><svg width="18" height="18"><use href="#icon-drag"></use></svg></div>`;
+                div.addEventListener('dragstart', handleDragStart); div.addEventListener('dragover', handleDragOver);
+                div.addEventListener('dragenter', handleDragEnter); div.addEventListener('dragend', handleDragEnd);
+
+                if (item.type === 'composition') { div.innerHTML += `<div style="font-weight:bold; font-size:12px; color:var(--color-usd); flex:1">★ Asset Composition</div>`; return div; }
+                if (item.type === 'budget') { div.innerHTML += `<div style="font-weight:bold; font-size:12px; color:#ef6c00; flex:1">★ Budget Bar</div>`; return div; }
+
+                if (item.type === 'scenario' || item.type === 'loan') {
+                    const colorDot = document.createElement('div');
+                    Object.assign(colorDot.style, { width: '14px', height: '14px', borderRadius: '4px', background: item.color, marginRight: '8px' });
+                    div.appendChild(colorDot);
+                }
+
+                const nameInp = document.createElement('input'); nameInp.className = 'inp-name'; nameInp.value = item.name;
+                nameInp.oninput = (e) => updateItem(item.id, 'name', e.target.value); div.appendChild(nameInp);
+
+                if (item.type === 'loan') {
+                    const delBtn = document.createElement('button'); delBtn.className = 'btn-del';
+                    delBtn.innerHTML = '<svg width="14" height="14"><use href="#icon-trash"></use></svg>';
+                    delBtn.onclick = () => deleteItem(item.id); div.appendChild(delBtn);
+
+                    const fields = document.createElement('div'); fields.className = 'loan-editor-fields';
+                    const summary = document.createElement('div'); summary.className = 'loan-editor-summary';
+                    const refreshSummary = () => {
+                        const loan = getLoanMetrics(item);
+                        summary.innerText = `Monthly ¥${fmtNum(loan.monthlyPayment)} · Remaining ${loan.remainingPeriods} terms / ¥${fmtNum(loan.remainingAmount)}`;
+                    };
+                    const addLoanField = (label, field, step) => {
+                        const wrapper = document.createElement('div'); wrapper.className = 'loan-editor-field';
+                        const fieldLabel = document.createElement('label'); fieldLabel.innerText = label; wrapper.appendChild(fieldLabel);
+                        const input = document.createElement('input'); input.type = 'number'; input.min = '0'; input.step = String(step); input.value = item[field] ?? 0;
+                        input.oninput = (e) => {
+                            updateItem(item.id, field, Math.max(parseFloat(e.target.value) || 0, 0));
+                            refreshSummary();
+                        };
+                        wrapper.appendChild(input); fields.appendChild(wrapper);
+                    };
+                    addLoanField('Total', 'totalAmount', 100);
+                    addLoanField('Terms', 'totalPeriods', 1);
+                    addLoanField('Paid', 'paidPeriods', 1);
+                    div.appendChild(fields);
+                    refreshSummary();
+                    div.appendChild(summary);
+                    return div;
+                }
+
+                const amtInp = document.createElement('input'); amtInp.className = 'inp-amount'; amtInp.type = 'number';
+                amtInp.value = typeCategory === 'row' ? item.delta : item.amount;
+                amtInp.oninput = (e) => updateItem(item.id, typeCategory === 'row' ? 'delta' : 'amount', parseFloat(e.target.value) || 0);
+                div.appendChild(amtInp);
+
+                if (typeCategory === 'asset') {
+                    const curBtn = document.createElement('button'); curBtn.className = `btn-currency ${item.isUsd ? 'is-usd' : ''}`; curBtn.innerText = '$';
+                    curBtn.onclick = () => updateItem(item.id, 'isUsd', !item.isUsd); div.appendChild(curBtn);
+                }
+
+                if (item.type !== 'composition' && item.type !== 'budget') {
+                    const delBtn = document.createElement('button'); delBtn.className = 'btn-del';
+                    delBtn.innerHTML = '<svg width="14" height="14"><use href="#icon-trash"></use></svg>';
+                    delBtn.onclick = () => deleteItem(item.id); div.appendChild(delBtn);
+                }
+                return div;
+            };
+
+            const fillList = (id, arr, dragType) => { const el = document.getElementById(id); el.innerHTML = ''; arr.forEach(item => el.appendChild(createRow(item, dragType))); };
+            fillList('list-current', appState.current, 'asset'); fillList('list-future', appState.future, 'asset');
+            fillList('list-budget', appState.budget, 'budget'); fillList('list-rows', appState.rows, 'row');
+            document.getElementById('count-current').innerText = appState.current.length;
+            document.getElementById('count-future').innerText = appState.future.length;
+            document.getElementById('count-budget').innerText = appState.budget.length;
+        }
+
+        let dragSrcEl = null;
+        function handleDragStart(e) { dragSrcEl = this; this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', this.dataset.id); }
+        function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
+        function handleDragEnter(e) {
+            if (this === dragSrcEl || this.dataset.dragType !== dragSrcEl.dataset.dragType) return;
+            const container = this.parentNode; const allItems = [...container.children];
+            const srcIndex = allItems.indexOf(dragSrcEl); const targetIndex = allItems.indexOf(this);
+            if (dragSrcEl.parentNode !== container) container.insertBefore(dragSrcEl, this);
+            else { if (srcIndex < targetIndex) container.insertBefore(dragSrcEl, this.nextSibling); else container.insertBefore(dragSrcEl, this); }
+        }
+        function handleContainerOver(e) { e.preventDefault(); const container = e.currentTarget; if (dragSrcEl && dragSrcEl.dataset.dragType === container.dataset.accept) container.classList.add('drag-active'); }
+        function handleContainerLeave(e) { e.currentTarget.classList.remove('drag-active'); }
+        function handleContainerDrop(e) { e.stopPropagation(); const container = e.currentTarget; container.classList.remove('drag-active'); if (dragSrcEl && dragSrcEl.parentNode !== container && dragSrcEl.dataset.dragType === container.dataset.accept) container.appendChild(dragSrcEl); }
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.drag-list').forEach(el => el.classList.remove('drag-active'));
+            saveAllLists();
+            autoSave();
+            renderEditor();
+            renderChart();
+        }
+        function saveAllLists() {
+            const getItems = (id, sources) => { const container = document.getElementById(id); const ids = [...container.children].map(el => el.dataset.id); const allItems = sources.flat(); return ids.map(id => allItems.find(x => x.id == id)).filter(x => x); };
+            const allAssets = [...appState.current, ...appState.future];
+            appState.current = getItems('list-current', [allAssets]); appState.future = getItems('list-future', [allAssets]);
+            appState.budget = getItems('list-budget', [appState.budget]); appState.rows = getItems('list-rows', [appState.rows]);
+        }
+        function updateItem(id, field, value) {
+            const find = (arr) => arr.find(x => x.id == id);
+            const item = find(appState.current) || find(appState.future) || find(appState.budget) || find(appState.rows);
+            if (item) {
+                item[field] = value;
+                autoSave();
+                if (field === 'isUsd') renderEditor();
+                renderChart();
+            }
+        }
+        function deleteItem(id) {
+            appState.current = appState.current.filter(x => x.id != id); appState.future = appState.future.filter(x => x.id != id);
+            appState.budget = appState.budget.filter(x => x.id != id); appState.rows = appState.rows.filter(x => x.id != id);
+            renderEditor(); renderChart();
+        }
+        function addItem(type) {
+            const newId = Date.now();
+            if (type === 'current') appState.current.push({ id: newId, name: "New Asset", amount: 0, isUsd: false });
+            else if (type === 'future') appState.future.push({ id: newId, name: "New Income", amount: 0, isUsd: false });
+            else if (type === 'budget') appState.budget.push({ id: newId, name: "New Expense", amount: 0 });
+            else if (type === 'scenario') appState.rows.push({ id: newId, type: 'scenario', name: "New Scenario", delta: 0, color: '#999' });
+            else if (type === 'loan') appState.rows.push({ id: newId, type: 'loan', name: "Car Loan", totalAmount: 0, totalPeriods: 60, paidPeriods: 0, color: '#E15759' });
+            renderEditor(); renderChart();
+        }
+        document.getElementById('input-rate').addEventListener('input', (e) => { appState.rate = parseFloat(e.target.value) || 0; renderChart(); });
+
+        const fmtNum = (num) => num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        const fmtCurrency = (num) => "¥" + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        function getDynamicColor(value) {
+            const isPositive = value >= 0;
+            const hue = isPositive ? 120 : 350;
+            const sat = 75;
+            const maxRef = 25000;
+            const ratio = Math.min(Math.abs(value) / maxRef, 1);
+            const lightness = 90 - (ratio * 55);
+            return `hsl(${hue}, ${sat}%, ${lightness}%)`;
+        }
+
+        function renderChart() {
+            const container = document.getElementById('chart-canvas'); container.innerHTML = '';
+            const calcVal = (item) => item.isUsd ? item.amount * appState.rate : item.amount;
+
+            const currentData = appState.current.map(item => ({ ...item, realVal: calcVal(item) }));
+            const futureData = appState.future.map(item => ({ ...item, realVal: calcVal(item) }));
+            const budgetData = appState.budget.map(item => ({ ...item, realVal: calcVal(item) }));
+
+            const sumCurrent = currentData.reduce((a, b) => a + b.realVal, 0);
+            const sumFuture = futureData.reduce((a, b) => a + b.realVal, 0);
+            const baseTotal = sumCurrent + sumFuture;
+            const sumBudget = budgetData.reduce((a, b) => a + b.realVal, 0);
+
+            document.getElementById('disp-current').innerText = fmtNum(sumCurrent);
+            document.getElementById('disp-total').innerText = fmtNum(baseTotal);
+
+            let maxDelta = 0; appState.rows.forEach(r => { if (r.type === 'scenario') maxDelta = Math.max(maxDelta, r.delta); });
+            const maxLoanScale = appState.rows.reduce((maxValue, row) => {
+                if (row.type !== 'loan') return maxValue;
+                const loan = getLoanMetrics(row);
+                return Math.max(maxValue, loan.remainingAmount);
+            }, 0);
+            const scaleBase = Math.max(baseTotal + (maxDelta > 0 ? maxDelta : 10000), sumBudget, maxLoanScale);
+            const globalMax = scaleBase * 1.05;
+            const getPctNum = (val) => (val <= 0) ? 0 : (val / globalMax * 100);
+
+            const el = (tag, cls, parent) => { const d = document.createElement(tag); if (cls) d.className = cls; if (parent) parent.appendChild(d); return d; };
+            const chartArea = el('div', 'szy-chart-area', container);
+            const splitPointNum = getPctNum(sumCurrent);
+
+            appState.rows.forEach(rowItem => {
+                const row = el('div', 'szy-row', chartArea);
+                if (rowItem.type === 'budget' || rowItem.type === 'loan') row.classList.add('marker-chart-row');
+                if (rowItem.type === 'loan') row.classList.add('loan-chart-row');
+                const rowLabel = el('div', 'szy-row-label', row);
+                rowLabel.innerText = rowItem.name;
+                const track = el('div', 'szy-track', row);
+                const innerTrack = el('div', 'szy-track-inner', track);
+
+                if (rowItem.type === 'composition') {
+                    let currentLeft = 0;
+                    currentData.forEach((item, i) => {
+                        const width = getPctNum(item.realVal);
+                        const bar = el('div', 'szy-bar szy-solid', innerTrack);
+                        bar.style.left = currentLeft + '%'; bar.style.width = width + '%';
+                        bar.style.backgroundColor = assetPalette[i % assetPalette.length];
+                        bar.setAttribute('data-value', `${item.name}: ${fmtCurrency(item.realVal)}`);
+                        currentLeft += width;
+                    });
+                    currentLeft = splitPointNum;
+                    futureData.forEach((item, i) => {
+                        const width = getPctNum(item.realVal);
+                        const bar = el('div', 'szy-bar szy-striped', innerTrack);
+                        bar.style.left = currentLeft + '%'; bar.style.width = width + '%';
+                        bar.style.backgroundColor = assetPalette[(i + currentData.length) % assetPalette.length];
+                        bar.setAttribute('data-value', `${item.name}: ${fmtCurrency(item.realVal)}`);
+                        currentLeft += width;
+                    });
+                    el('div', 'szy-total-tag', track).innerText = `¥${fmtNum(baseTotal)}`;
+                }
+
+                else if (rowItem.type === 'budget') {
+                    let currentLeft = 0;
+                    budgetData.forEach((item, i) => {
+                        const width = getPctNum(item.realVal);
+                        const bar = el('div', 'szy-bar szy-solid', innerTrack);
+                        bar.style.left = currentLeft + '%'; bar.style.width = width + '%';
+                        bar.style.backgroundColor = budgetPalette[i % budgetPalette.length];
+                        bar.setAttribute('data-value', `${item.name}: ${fmtCurrency(item.realVal)}`);
+                        currentLeft += width;
+                    });
+
+                    const mkCurrent = el('div', 'szy-marker-line current', track);
+                    mkCurrent.style.left = splitPointNum + '%';
+
+                    const mkForecast = el('div', 'szy-marker-line forecast', track);
+                    mkForecast.style.left = getPctNum(baseTotal) + '%';
+
+                    const diffCurrent = sumCurrent - sumBudget;
+                    const tagCurrent = el('div', 'szy-budget-tag tag-current', track);
+                    tagCurrent.style.left = splitPointNum + '%';
+                    tagCurrent.style.color = getDynamicColor(diffCurrent);
+                    tagCurrent.innerText = (diffCurrent >= 0 ? "Rem " : "Over ") + fmtNum(Math.abs(diffCurrent));
+
+                    const diffForecast = baseTotal - sumBudget;
+                    const tagForecast = el('div', 'szy-budget-tag tag-forecast', track);
+                    tagForecast.style.left = getPctNum(baseTotal) + '%';
+                    tagForecast.style.color = getDynamicColor(diffForecast);
+                    tagForecast.innerText = (diffForecast >= 0 ? "Rem " : "Over ") + fmtNum(Math.abs(diffForecast));
+
+                    el('div', 'szy-total-tag', track).innerText = `¥${fmtNum(sumBudget)}`;
+                }
+
+                else if (rowItem.type === 'loan') {
+                    const loan = getLoanMetrics(rowItem);
+                    const currentBalance = sumCurrent - loan.remainingAmount;
+                    const forecastBalance = baseTotal - loan.remainingAmount;
+                    const paidPercent = loan.totalPeriods > 0 ? loan.paidPeriods / loan.totalPeriods * 100 : 0;
+
+                    rowLabel.classList.add('loan-label');
+                    rowLabel.innerText = `${rowItem.name} ${fmtNum(loan.monthlyPayment)} (${loan.remainingPeriods}/${loan.totalPeriods})`;
+
+                    const remainingBar = el('div', 'szy-bar szy-loan-remaining', innerTrack);
+                    remainingBar.style.left = '0%';
+                    remainingBar.style.width = getPctNum(loan.remainingAmount) + '%';
+                    remainingBar.setAttribute('data-value', `Remaining ${loan.remainingPeriods}/${loan.totalPeriods}: ${fmtCurrency(loan.remainingAmount)}`);
+
+                    const periodProgress = el('div', 'szy-loan-period-progress', track);
+                    periodProgress.setAttribute('data-value', `Paid ${loan.paidPeriods}/${loan.totalPeriods}: ${paidPercent.toFixed(1)}%`);
+                    const periodProgressFill = el('div', 'szy-loan-period-progress-fill', periodProgress);
+                    periodProgressFill.style.width = paidPercent + '%';
+                    if (paidPercent > 0) periodProgressFill.style.minWidth = '3px';
+                    const periodProgressLabel = el('div', 'szy-loan-period-progress-label', track);
+                    periodProgressLabel.innerText = `已还 ${loan.paidPeriods}/${loan.totalPeriods} · ${paidPercent.toFixed(1)}%`;
+
+                    const mkCurrent = el('div', 'szy-marker-line loan-current', track);
+                    mkCurrent.style.left = splitPointNum + '%';
+                    const mkForecast = el('div', 'szy-marker-line loan-forecast', track);
+                    mkForecast.style.left = getPctNum(baseTotal) + '%';
+
+                    const tagCurrent = el('div', 'szy-budget-tag tag-current', track);
+                    tagCurrent.style.left = splitPointNum + '%';
+                    tagCurrent.style.color = currentBalance >= 0 ? '#43a047' : '#ef5350';
+                    tagCurrent.innerText = `Current ${currentBalance >= 0 ? '+' : ''}${fmtNum(currentBalance)}`;
+
+                    const tagForecast = el('div', 'szy-budget-tag tag-forecast', track);
+                    tagForecast.style.left = getPctNum(baseTotal) + '%';
+                    tagForecast.style.color = forecastBalance >= 0 ? '#43a047' : '#ef5350';
+                    tagForecast.innerText = `Forecast ${forecastBalance >= 0 ? '+' : ''}${fmtNum(forecastBalance)}`;
+
+                    el('div', 'szy-total-tag', track).innerText = `¥${fmtNum(loan.remainingAmount)}`;
+                }
+
+                else if (rowItem.type === 'scenario') {
+                    const base = el('div', 'szy-sim-base', innerTrack);
+                    base.style.left = '0%'; base.style.width = splitPointNum + '%';
+                    const futureWidthRaw = sumFuture + (rowItem.delta < 0 ? rowItem.delta : 0);
+                    const futureWidthNum = getPctNum(futureWidthRaw);
+                    const futureBar = el('div', 'szy-sim-future', innerTrack);
+                    futureBar.style.left = splitPointNum + '%'; futureBar.style.width = futureWidthNum + '%';
+
+                    if (rowItem.delta === 0) {
+                        const txt1 = el('div', 'szy-overlay-text', innerTrack);
+                        txt1.innerText = `Current ${fmtCurrency(sumCurrent)}`; txt1.style.left = '0%'; txt1.style.width = splitPointNum + '%';
+                        const txt2 = el('div', 'szy-overlay-text', innerTrack);
+                        txt2.innerText = `Wait ${fmtCurrency(sumFuture)}`; txt2.style.left = splitPointNum + '%'; txt2.style.width = futureWidthNum + '%';
+                    }
+
+                    if (rowItem.delta > 0) {
+                        const startPos = getPctNum(sumCurrent + sumFuture);
+                        const width = getPctNum(rowItem.delta);
+                        const addBar = el('div', 'szy-delta-bar', innerTrack);
+                        addBar.innerText = `+${fmtNum(rowItem.delta)}`;
+                        addBar.style.left = startPos + '%'; addBar.style.width = width + '%';
+                        addBar.style.backgroundColor = rowItem.color;
+                        addBar.setAttribute('data-value', `${rowItem.name}: ${fmtCurrency(rowItem.delta)}`);
+                    } else if (rowItem.delta < 0) {
+                        const startPos = getPctNum(sumCurrent + futureWidthRaw);
+                        const width = getPctNum(Math.abs(rowItem.delta));
+                        const negBar = el('div', 'szy-delta-neg', innerTrack);
+                        negBar.innerText = fmtNum(rowItem.delta);
+                        negBar.style.left = startPos + '%'; negBar.style.width = width + '%';
+                        negBar.setAttribute('data-value', `${rowItem.name}: ${fmtCurrency(rowItem.delta)}`);
+                    }
+                    el('div', 'szy-total-tag', track).innerText = `¥${fmtNum(baseTotal + (rowItem.delta || 0))}`;
+                }
+            });
+
+            const legend = el('div', 'szy-legend-grid', container);
+            [...currentData, ...futureData].forEach((item, i) => {
+                if (i === currentData.length && currentData.length > 0 && futureData.length > 0) {
+                    el('div', 'szy-legend-divider', legend);
+                }
+                const lgItem = el('div', 'szy-lg-item', legend);
+                const dot = el('div', 'szy-lg-dot', lgItem);
+                dot.style.backgroundColor = assetPalette[i % assetPalette.length];
+                if (i >= currentData.length) { dot.style.opacity = '0.6'; dot.style.border = '1px dashed var(--text-sub)'; }
+                el('span', '', lgItem).innerText = item.name;
+                el('span', 'szy-lg-val', lgItem).innerText = fmtNum(item.realVal);
+            });
+            el('div', 'szy-legend-divider', legend);
+            budgetData.forEach((item, i) => {
+                const lgItem = el('div', 'szy-lg-item', legend);
+                const dot = el('div', 'szy-lg-dot', lgItem);
+                dot.style.backgroundColor = budgetPalette[i % budgetPalette.length];
+                el('span', '', lgItem).innerText = item.name;
+                el('span', 'szy-lg-val', lgItem).innerText = fmtNum(item.realVal);
+            });
+        }
+
+        function toggleEditor() {
+            const panel = document.querySelector('.editor-panel');
+            const btn = document.getElementById('mobile-toggle-editor');
+            panel.classList.toggle('visible');
+            btn.classList.toggle('active');
+        }
+
+        function toggleDesktopEditor() {
+            const container = document.getElementById('app-container');
+            container.classList.toggle('editor-collapsed');
+            const btn = document.querySelector('#desktop-toggle-btn svg');
+            if (container.classList.contains('editor-collapsed')) {
+                btn.innerHTML = '<path d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+            } else {
+                btn.innerHTML = '<path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.querySelector('#desktop-toggle-btn svg');
+            if (btn) btn.innerHTML = '<path d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+        });
+
+        function applyMoneyData(data) {
+            const next = data && typeof data === 'object' ? JSON.parse(JSON.stringify(data)) : JSON.parse(JSON.stringify(defaultState));
+            next.rate = Number(next.rate) || defaultState.rate;
+            next.current = Array.isArray(next.current) ? next.current : [];
+            next.future = Array.isArray(next.future) ? next.future : [];
+            next.budget = Array.isArray(next.budget) ? next.budget : [];
+            next.rows = Array.isArray(next.rows) ? next.rows : JSON.parse(JSON.stringify(defaultState.rows));
+            if (!next.rows.some(row => row.type === 'budget')) next.rows.splice(1, 0, { id: 'budget-main', type: 'budget', name: 'Budget Plan', delta: 0 });
+            appState = normalizeRows(next);
+            renderEditor();
+            renderChart();
+        }
+
+        setupTooltips();
+        loadState();
+        renderEditor();
+        renderChart();
+        window.SzyCloud.init({
+            documentType: 'money',
+            legacyStorageKey: STORAGE_KEY,
+            template: defaultState,
+            getData: () => appState,
+            applyData: applyMoneyData
+        });
+    </script>
+</body>
+
+</html>

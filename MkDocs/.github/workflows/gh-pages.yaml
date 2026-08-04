@@ -1,0 +1,34 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: 3.x
+
+jobs:
+  docs:
+    name: Deploy Documentation to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          key: ${{ github.ref }}
+          path: .cache
+      - name: Install Dependencies
+        run: pip install --requirement=requirements.txt
+      - name: Deploy Documentation to GitHub Pages
+        run: mkdocs gh-deploy --force --no-history

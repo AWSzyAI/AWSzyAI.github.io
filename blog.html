@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Writing | Ziyan Shi</title>
+    <meta name="description" content="Ziyan Shi is rebuilding the writing system around Obsidian, Digital Garden and a future Vercel deployment flow.">
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: "LXGWWenKai";
+            src: url("/font/LXGWWenKai-Regular.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "LXGWNeoZhiSong";
+            src: url("/font/LXGWNeoZhiSong.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "SimFang";
+            src: url("/font/simfang.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        :root {
+            --bg: #06110d;
+            --panel: rgba(10, 24, 18, 0.8);
+            --panel-strong: rgba(12, 31, 23, 0.94);
+            --line: rgba(134, 215, 168, 0.16);
+            --line-strong: rgba(134, 215, 168, 0.28);
+            --text: #edf8f1;
+            --text-soft: rgba(237, 248, 241, 0.76);
+            --text-muted: rgba(186, 212, 196, 0.58);
+            --accent: #86d7a8;
+            --accent-alt: #9ae6b4;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "IBM Plex Sans", "LXGWWenKai", "SimFang", "LXGWNeoZhiSong", "SimSun", sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(73, 185, 124, 0.17), transparent 28%),
+                radial-gradient(circle at 86% 10%, rgba(154, 230, 180, 0.08), transparent 22%),
+                linear-gradient(180deg, #08130e 0%, #06110d 28%, #040a07 100%);
+            line-height: 1.65;
+            padding: 28px 16px 48px;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(134, 215, 168, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(134, 215, 168, 0.04) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 88%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .shell {
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .crumb,
+        .ghost-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(134, 215, 168, 0.05);
+            color: var(--text-soft);
+        }
+
+        .hero,
+        .section {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            background:
+                linear-gradient(180deg, rgba(12, 31, 23, 0.72), rgba(7, 18, 13, 0.88)),
+                rgba(7, 18, 13, 0.88);
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            padding: 34px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(134, 215, 168, 0.08), transparent 34%, transparent 70%, rgba(154, 230, 180, 0.04));
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: "Space Grotesk", "LXGWNeoZhiSong", "IBM Plex Sans", "SimSun", serif;
+            letter-spacing: -0.04em;
+        }
+
+        h1 {
+            margin-top: 18px;
+            font-size: clamp(2.6rem, 8vw, 5rem);
+            line-height: 0.98;
+            max-width: 12ch;
+        }
+
+        .hero p {
+            margin-top: 18px;
+            max-width: 62ch;
+            color: var(--text-soft);
+            font-size: 1.05rem;
+        }
+
+        .status-row,
+        .cta-row,
+        .entry-grid,
+        .plan-grid,
+        .reserve-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .status-row {
+            margin-top: 22px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .status-pill {
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: rgba(134, 215, 168, 0.05);
+        }
+
+        .status-pill span {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-bottom: 6px;
+        }
+
+        .cta-row {
+            margin-top: 26px;
+            grid-template-columns: repeat(3, minmax(0, auto));
+            justify-content: start;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            padding: 0 18px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(134, 215, 168, 0.06);
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, rgba(73, 185, 124, 0.26), rgba(154, 230, 180, 0.12));
+            border-color: rgba(134, 215, 168, 0.24);
+        }
+
+        .section {
+            margin-top: 20px;
+            padding: 28px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 22px;
+        }
+
+        .section-head h2 {
+            font-size: clamp(1.7rem, 4vw, 2.4rem);
+        }
+
+        .section-head p {
+            max-width: 58ch;
+            color: var(--text-soft);
+        }
+
+        .entry-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .plan-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .reserve-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+            gap: 16px;
+        }
+
+        .card {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            background: rgba(10, 24, 18, 0.72);
+            padding: 22px;
+        }
+
+        .card small {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        .card h3 {
+            margin-top: 10px;
+            font-size: 1.28rem;
+        }
+
+        .card p {
+            margin-top: 10px;
+            color: var(--text-soft);
+        }
+
+        .feature-card {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top right, rgba(73, 185, 124, 0.14), transparent 34%),
+                rgba(10, 24, 18, 0.76);
+        }
+
+        .feature-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(134, 215, 168, 0.08), transparent 40%);
+        }
+
+        .feature-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mini-note {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .list {
+            margin-top: 14px;
+            display: grid;
+            gap: 10px;
+            color: var(--text-soft);
+        }
+
+        .list div {
+            padding-left: 14px;
+            position: relative;
+        }
+
+        .list div::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            position: absolute;
+            left: 0;
+            top: 0.7em;
+            transform: translateY(-50%);
+        }
+
+        .route {
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(134, 215, 168, 0.05);
+            border: 1px solid rgba(134, 215, 168, 0.1);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.92rem;
+            color: var(--accent-alt);
+        }
+
+        footer {
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        @media (max-width: 960px) {
+            .status-row,
+            .entry-grid,
+            .plan-grid,
+            .reserve-grid,
+            .featured-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-head,
+            footer {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero,
+            .section {
+                padding: 22px;
+            }
+
+            .topbar,
+            .cta-row {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .topbar {
+                justify-content: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <div class="topbar">
+            <a class="crumb" href="/">Back to Home</a>
+            <a class="ghost-link" href="/obsidian/">Open Obsidian Notes</a>
+        </div>
+
+        <section class="hero">
+            <div class="eyebrow">Writing Rebuild</div>
+            <h1>Rebuilding the blog around Obsidian, not around a browser editor.</h1>
+            <p>旧 blog 系统基于浏览器端编辑、`localStorage` 和一套前端管理逻辑，已经不符合现在的写作方式。新的方向会改成：在 Obsidian 写文章，通过 Digital Garden 插件发布，再由 Vercel 承接部署，必要时用 GitHub Actions 串联自动化流程。</p>
+            <div class="status-row">
+                <div class="status-pill">
+                    <span>Current Status</span>
+                    Blog system is being rebuilt from scratch.
+                </div>
+                <div class="status-pill">
+                    <span>Writing Source</span>
+                    Obsidian will be the single writing surface.
+                </div>
+                <div class="status-pill">
+                    <span>Publish Target</span>
+                    Digital Garden + Vercel deployment flow.
+                </div>
+            </div>
+            <div class="cta-row">
+                <a class="button primary" href="/blog/">Future Garden Entry</a>
+                <a class="button" href="/obsidian/">Browse Current Notes</a>
+                <a class="button" href="https://github.com/AWSzyAI">Open GitHub</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <div class="eyebrow">Current Featured Piece</div>
+                    <h2>The one real blog post to foreground right now</h2>
+                </div>
+                <p>如果现在真正意义上的 blog 只有一篇，那就不应该把它藏在系统说明后面，而应该直接成为写作入口的主角。</p>
+            </div>
+            <div class="featured-grid">
+                <article class="card feature-card">
+                    <small>Featured Essay</small>
+                    <h3>University</h3>
+                    <p>当前最值得直接阅读的一篇文章。它比“未来怎么搭博客系统”更能代表你现在真实已经写出来、可被阅读的内容。</p>
+                    <div class="list">
+                        <div>作为当前写作入口的主锚点</div>
+                        <div>比空的 blog 列表更真实，也更有记忆点</div>
+                        <div>后面即使接入 Digital Garden，这篇也依然可以保留为 featured piece</div>
+                    </div>
+                    <div class="feature-actions">
+                        <a class="button primary" href="/obsidian/Blog/University.html">Read University</a>
+                        <a class="button" href="/obsidian/">Open Obsidian Source</a>
+                    </div>
+                </article>
+                <article class="card">
+                    <small>Route</small>
+                    <h3>Current canonical path</h3>
+                    <div class="route">/obsidian/Blog/University.html</div>
+                    <p class="mini-note">在正式接入新的写作发布流之前，这篇文章就先作为当前 blog 的真实入口。</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <div class="eyebrow">Why Rebuild</div>
+                    <h2>The old experience was fighting the workflow</h2>
+                </div>
+                <p>我希望写作发生在知识系统内部，而不是在一个单独维护、交互负担很重、状态也不稳定的网页编辑器里。</p>
+            </div>
+            <div class="entry-grid">
+                <article class="card">
+                    <small>Old Problem</small>
+                    <h3>Writing and publishing were split apart</h3>
+                    <p>内容不在 Obsidian 主工作流里，写作、整理、发布是断开的，长期维护成本很高。</p>
+                </article>
+                <article class="card">
+                    <small>Old Problem</small>
+                    <h3>The browser became the CMS</h3>
+                    <p>旧方案把浏览器当后台系统，依赖 `localStorage`、前端状态和页面脚本，体验和可靠性都不理想。</p>
+                </article>
+                <article class="card">
+                    <small>New Direction</small>
+                    <h3>Obsidian becomes the source of truth</h3>
+                    <p>以后文章直接在 Obsidian 里完成，再通过 Digital Garden 发到网页，写作和知识管理回到同一处。</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <div class="eyebrow">Planned Flow</div>
+                    <h2>Desired Publishing Pipeline</h2>
+                </div>
+                <p>现在先把架构和入口定下来，后面再接具体配置、部署和自动化。</p>
+            </div>
+            <div class="plan-grid">
+                <article class="card">
+                    <small>Authoring</small>
+                    <h3>Write in Obsidian</h3>
+                    <p>文章、随笔、研究日志都从 Obsidian 出发，不再单独进网页后台写。</p>
+                    <div class="list">
+                        <div>一处写作，一处归档，一处链接知识网络</div>
+                        <div>延续现有笔记系统，不重新造一套输入界面</div>
+                    </div>
+                </article>
+                <article class="card">
+                    <small>Publishing</small>
+                    <h3>Publish through Digital Garden</h3>
+                    <p>利用 Digital Garden 插件把已选内容同步到公开站点，后面再决定公开范围、URL 组织和模板。</p>
+                    <div class="list">
+                        <div>未来部署目标：Vercel</div>
+                        <div>可选自动化：GitHub Actions</div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <div class="eyebrow">Reserved Entry</div>
+                    <h2>Routes Reserved For The New Writing System</h2>
+                </div>
+                <p>现在先占住入口，后面接真正的内容源和部署链路时，不用再改首页导航和用户记忆。</p>
+            </div>
+            <div class="reserve-grid">
+                <article class="card">
+                    <small>Entry 01</small>
+                    <h3>Writing Landing</h3>
+                    <p>当前这个页面，负责解释新的写作架构和发布方向。</p>
+                    <div class="route">/blog.html</div>
+                </article>
+                <article class="card">
+                    <small>Entry 02</small>
+                    <h3>Future Garden Root</h3>
+                    <p>预留给 Digital Garden / Vercel 的正式公开入口。</p>
+                    <div class="route">/blog/</div>
+                </article>
+                <article class="card">
+                    <small>Entry 03</small>
+                    <h3>Current Source Context</h3>
+                    <p>在新系统上线前，仍可从这里看到当前的 Obsidian 内容源。</p>
+                    <div class="route">/obsidian/</div>
+                </article>
+            </div>
+        </section>
+
+        <footer>
+            <span>This page is intentionally a transition layer, not the final blog UI.</span>
+            <span>Next step: connect Obsidian, Digital Garden and Vercel.</span>
+        </footer>
+    </main>
+</body>
+</html>

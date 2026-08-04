@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>编辑文章 - 时子延的个人主页</title>
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/default.min.css">
+    <style>
+        /* 字体声明 - 兼容移动端 Safari */
+        @font-face {
+            font-family: 'SimSun';
+            src: url('/font/SimSun.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+3300-33FF, U+FE30-FE4A, U+F2000-F2A1, U+2E80-2EFF, U+2F00-2FDF, U+3100-312F, U+31A0-31BF, U+FF00-FFEF, U+3040-309F, U+30A0-30FF, U+AC00-D7AF, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
+        }
+
+        @font-face {
+            font-family: 'LXGWWenKai';
+            src: url('/font/LXGWWenKai-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+3300-33FF, U+FE30-FE4A, U+F2000-F2A1, U+2E80-2EFF, U+2F00-2FDF, U+3100-312F, U+31A0-31BF, U+FF00-FFEF, U+3040-309F, U+30A0-30FF, U+AC00-D7AF, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
+        }
+
+        /* 移动端 Safari 兼容的字体回退 */
+        @font-face {
+            font-family: 'SimSun';
+            src: local('SimSun'), local('宋体');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'LXGWWenKai';
+            src: local('LXGWWenKai-Regular'), local('霞鹜文楷');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* CSS 变量 */
+        :root {
+            --primary-green: #2E7D32;
+            --accent-green: #66BB6A;
+            --light-green: #A5D6A7;
+            --dark-green: #1B5E20;
+
+            --primary-orange: #FF6F00;
+            --accent-orange: #FFA726;
+            --light-orange: #FFD54F;
+
+            --primary-blue: #1565C0;
+            --accent-blue: #42A5F5;
+            --light-blue: #90CAF9;
+
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.9);
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --bg-primary: rgba(255, 255, 255, 0.12);
+            --bg-secondary: rgba(255, 255, 255, 0.18);
+            --bg-tertiary: rgba(255, 255, 255, 0.25);
+            --border-color: rgba(255, 255, 255, 0.25);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--primary-green);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .editor-header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .editor-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .toolbar-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Obsidian Callout Styles */
+        .obsidian-callout {
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .callout-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            font-weight: 600;
+        }
+
+        .callout-header:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .callout-header i:first-child {
+            color: var(--accent-green);
+        }
+
+        .callout-toggle {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .callout-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .callout-content {
+            padding: 0 20px;
+            max-height: 200px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .callout-content.collapsed {
+            max-height: 0;
+            padding: 0 20px;
+        }
+
+        .callout-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .callout-item:last-child {
+            border-bottom: none;
+        }
+
+        .callout-item code {
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .callout-item span {
+            color: var(--text-secondary);
+            font-family: 'LXGWWenKai', sans-serif;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* 设置面板样式 */
+        .editor-preview-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 120px);
+            min-height: 600px;
+        }
+
+        .editor-panel, .preview-panel {
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-content {
+            height: 100%;
+            overflow: hidden;
+            border-radius: var(--radius);
+        }
+
+        .meta-form {
+            display: grid;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: var(--text-primary);
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            min-height: 40px;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: text;
+        }
+
+        .tag {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        .tag-input {
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        .CodeMirror {
+            height: 100%;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 15px;
+            background: #ffffff !important;
+            color: #24292e !important;
+            line-height: 1.6;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+        }
+
+        .CodeMirror-gutters {
+            background: #f6f8fa !important;
+            border-right: 1px solid #e1e4e8;
+            color: #586069;
+        }
+
+        .CodeMirror-linenumber {
+            color: #586069 !important;
+            padding: 0 10px 0 15px !important;
+        }
+
+        .CodeMirror-selected {
+            background: #cce7ff !important;
+        }
+
+        .CodeMirror-cursor {
+            border-left: 2px solid #0366d6 !important;
+        }
+
+        .CodeMirror-focused .CodeMirror-selected {
+            background: #b3d4fc !important;
+        }
+
+        /* Markdown语法高亮 - GitHub Light风格 */
+        .cm-header {
+            color: #24292e !important;
+            font-weight: 600;
+        }
+
+        .cm-header-1 {
+            color: #24292e !important;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .cm-header-2 {
+            color: #24292e !important;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .cm-header-3 {
+            color: #24292e !important;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .cm-strong {
+            color: #032f62 !important;
+            font-weight: 600;
+        }
+
+        .cm-em {
+            color: #6f42c1 !important;
+            font-style: italic;
+        }
+
+        .cm-link {
+            color: #0366d6 !important;
+            text-decoration: underline;
+        }
+
+        .cm-code {
+            color: #032f62 !important;
+            background: #f6f8fa !important;
+            border: 1px solid #e1e4e8;
+            border-radius: 3px;
+            padding: 1px 3px;
+        }
+
+        .cm-quote {
+            color: #22863a !important;
+            font-style: italic;
+            border-left: 3px solid #0366d6;
+            padding-left: 10px;
+        }
+
+        .cm-keyword {
+            color: #d73a49 !important;
+        }
+
+        .cm-string {
+            color: #032f62 !important;
+        }
+
+        .cm-number {
+            color: #e36209 !important;
+        }
+
+        .cm-atom {
+            color: #e36209 !important;
+        }
+
+        .cm-variable {
+            color: #24292e !important;
+        }
+
+        .cm-variable-2 {
+            color: #6f42c1 !important;
+        }
+
+        .cm-variable-3 {
+            color: #e36209 !important;
+        }
+
+        .cm-property {
+            color: #005cc5 !important;
+        }
+
+        .cm-operator {
+            color: #d73a49 !important;
+        }
+
+        .cm-comment {
+            color: #6a737d !important;
+            font-style: italic;
+        }
+
+        .cm-tag {
+            color: #22863a !important;
+        }
+
+        .cm-attribute {
+            color: #e36209 !important;
+        }
+
+        .cm-bracket {
+            color: #586069 !important;
+        }
+
+        /* 列表样式 */
+        .cm-formatting-list {
+            color: #0366d6 !important;
+            font-weight: 600;
+        }
+
+        .cm-formatting-list-ul {
+            color: #0366d6 !important;
+        }
+
+        .cm-formatting-list-ol {
+            color: #0366d6 !important;
+        }
+
+        .preview-content {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Obsidian风格标题 */
+        .preview-content h1, .preview-content h2, .preview-content h3,
+        .preview-content h4, .preview-content h5, .preview-content h6 {
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', serif;
+            margin: 24px 0 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .preview-content h1 {
+            font-size: 2em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .preview-content h2 {
+            font-size: 1.5em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .preview-content h3 {
+            font-size: 1.25em;
+        }
+
+        .preview-content h4 {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+        }
+
+        .preview-content p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Obsidian风格的代码 */
+        .preview-content code {
+            background: rgba(110, 110, 110, 0.2);
+            color: #e06c75;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .preview-content pre {
+            background: #1a1a1a;
+            color: #abb2bf;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid #3a3f4b;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .preview-content pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+
+        /* Obsidian风格的引用 */
+        .preview-content blockquote {
+            border-left: 4px solid #61afef;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: var(--text-muted);
+            font-style: italic;
+            background: rgba(97, 175, 239, 0.1);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Obsidian风格的列表 */
+        .preview-content ul, .preview-content ol {
+            margin: 16px 0;
+            padding-left: 32px;
+            color: var(--text-secondary);
+        }
+
+        .preview-content li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .preview-content li::marker {
+            color: #61afef;
+            font-weight: 600;
+        }
+
+        /* Obsidian风格的链接 */
+        .preview-content a {
+            color: #61afef;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .preview-content a:hover {
+            border-bottom-color: #61afef;
+            color: #528bff;
+        }
+
+        /* Obsidian风格的强调文本 */
+        .preview-content strong {
+            color: #d19a66;
+            font-weight: 600;
+        }
+
+        .preview-content em {
+            color: #c678dd;
+            font-style: italic;
+        }
+
+        /* Obsidian风格的分割线 */
+        .preview-content hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 32px 0;
+            height: 1px;
+        }
+
+        
+        .back-to-admin {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-admin:hover {
+            color: var(--primary-blue);
+            transform: translateX(5px);
+        }
+
+        .featured-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-blue);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .editor-preview-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .editor-panel, .preview-panel {
+                min-height: 400px;
+            }
+
+            .obsidian-callout {
+                margin: 15px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .editor-header h1 {
+                font-size: 1.2rem;
+            }
+
+            .container {
+                padding: 0 15px 30px;
+            }
+
+            .editor-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar-buttons {
+                margin-top: 10px;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .callout-header {
+                padding: 12px 15px;
+            }
+
+            .callout-content {
+                padding: 0 15px 15px;
+            }
+
+            .callout-item {
+                padding: 8px 0;
+                font-size: 0.9rem;
+            }
+
+            .callout-item code {
+                font-size: 0.85rem;
+            }
+        }
+
+        
+        /* 保存提示通知样式 */
+        .save-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-green);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            font-family: 'LXGWWenKai', 'PingFang SC', sans-serif;
+            font-weight: 500;
+        }
+
+        .save-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .save-notification i {
+            font-size: 1.1rem;
+        }
+
+        .save-notification.success {
+            background: var(--primary-green);
+        }
+
+        .save-notification.error {
+            background: #e74c3c;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .navbar-brand:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .navbar-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-green);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover .navbar-logo {
+            border-color: var(--text-primary);
+            transform: rotate(5deg);
+        }
+
+        .navbar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
+            color: var(--text-primary);
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .navbar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .navbar-item i {
+            font-size: 0.9rem;
+        }
+
+        .navbar-item.active {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Adjust editor-toolbar for fixed navbar */
+        .editor-toolbar {
+            margin-top: 60px;
+        }
+
+        /* Responsive Navigation */
+        @media (max-width: 1024px) {
+            .editor-preview-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .navbar-container {
+                padding: 0 15px;
+            }
+
+            .navbar-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(15px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                flex-direction: column;
+                gap: 0;
+                padding: 10px 0;
+            }
+
+            .navbar-menu.active {
+                display: flex;
+            }
+
+            .navbar-item {
+                width: 100%;
+                padding: 12px 20px;
+                border-radius: 0;
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .navbar-item:last-child {
+                border-bottom: none;
+            }
+
+            .navbar-toggle {
+                display: block;
+            }
+
+            .navbar-brand {
+                padding: 8px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/szy.ico" alt="时子延" class="navbar-logo">
+                <span class="navbar-title">时子延的个人主页</span>
+            </a>
+
+            <div class="navbar-menu" id="navbar-menu">
+                <a href="/" class="navbar-item" data-page="home">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+                <a href="/blog.html" class="navbar-item active" data-page="blog">
+                    <i class="fas fa-blog"></i>
+                    <span>博客</span>
+                </a>
+                <a href="/obsidian/" class="navbar-item" data-page="obsidian">
+                    <i class="fas fa-brain"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="/MkDocs/site/" class="navbar-item" data-page="docs">
+                    <i class="fas fa-book"></i>
+                    <span>文档</span>
+                </a>
+            </div>
+
+            <button class="navbar-toggle" id="navbar-toggle" onclick="toggleNavbar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="editor-header">
+        <div class="container">
+            <h1><i class="fas fa-edit"></i> 编辑文章</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="admin.html" class="back-to-admin">
+            <i class="fas fa-arrow-left"></i>
+            <span>返回管理后台</span>
+        </a>
+
+        <div class="editor-toolbar">
+            <div style="flex: 1;"></div>
+            <div class="toolbar-buttons">
+                <button class="btn btn-success" onclick="savePost()" title="快捷键: Ctrl+S 或 Cmd+S">
+                    <i class="fas fa-save"></i>
+                    <span>保存文章</span>
+                </button>
+                <button class="btn btn-secondary" onclick="previewPost()">
+                    <i class="fas fa-eye"></i>
+                    <span>预览文章</span>
+                </button>
+                <button class="btn btn-danger" onclick="cancelEdit()">
+                    <i class="fas fa-times"></i>
+                    <span>取消编辑</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Obsidian 提示 Callout -->
+        <div class="obsidian-callout">
+            <div class="callout-header" onclick="toggleCallout()">
+                <i class="fas fa-lightbulb"></i>
+                <span>Obsidian 兼容提示</span>
+                <i class="fas fa-chevron-down callout-toggle" id="callout-toggle"></i>
+            </div>
+            <div class="callout-content" id="callout-content">
+                <div class="callout-item">
+                    <code>[[页面名称]]</code>
+                    <span>创建内部链接</span>
+                </div>
+                <div class="callout-item">
+                    <code>#标签</code>
+                    <span>创建标签</span>
+                </div>
+                <div class="callout-item">
+                    <code>![alt text|300](image.png)</code>
+                    <span>设置图片尺寸</span>
+                </div>
+                <div class="callout-item">
+                    <code>$E=mc^2$</code>
+                    <span>MathJax 数学公式</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑器和预览容器 -->
+        <div class="editor-preview-container">
+            <div class="editor-panel">
+                <div class="panel-content">
+                    <textarea id="markdown-editor" placeholder="---&#10;title: 文章标题&#10;author: 作者名称&#10;excerpt: 文章摘要&#10;tags: [标签1, 标签2]&#10;featured: false&#10;---&#10;&#10;# 开始写作&#10;&#10;在这里输入你的 Markdown 内容..."></textarea>
+                </div>
+            </div>
+
+            <div class="preview-panel">
+                <div class="panel-content">
+                    <div class="preview-content" id="preview-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">
+                            在左侧编辑器中输入 Markdown 内容，这里将实时显示预览效果...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script>
+        // 博客编辑管理类
+        class BlogEditor {
+            constructor() {
+                this.posts = [];
+                this.currentPost = null;
+                this.tags = [];
+                this.isFeatured = false;
+                this.editor = null;
+                this.authChecked = false;
+                // Don't initialize immediately, wait for proper auth
+            }
+
+            async init() {
+                console.log('编辑器初始化开始...');
+
+                try {
+                    // 加载文章数据
+                    this.posts = this.loadPosts();
+                    console.log('加载的文章数据:', this.posts);
+
+                    // 延迟检查权限，等待认证系统完全加载
+                    setTimeout(() => {
+                        this.checkAuth();
+                    }, 100);
+
+                    // 初始化编辑器
+                    this.initEditor();
+
+                    // 加载当前文章
+                    this.loadCurrentPost();
+
+                    // 设置事件监听器
+                    this.setupEventListeners();
+
+                    console.log('编辑器初始化完成');
+                } catch (error) {
+                    console.error('编辑器初始化过程中出错:', error);
+                    // 不阻止初始化，允许部分功能可用
+                }
+            }
+
+            checkAuth() {
+                console.log('编辑页面权限检查...');
+                this.authChecked = true;
+
+                // 检查是否有有效的GitHub登录且为作者
+                if (typeof blogAuth !== 'undefined' && blogAuth) {
+                    console.log('当前用户:', blogAuth.currentUser);
+                    console.log('是否为作者:', blogAuth.isAuthor());
+
+                    if (!blogAuth.isAuthor()) {
+                        console.log('编辑页面权限检查失败，显示警告');
+                        // 显示警告但不立即重定向，允许用户继续使用某些功能
+                        this.showMessage('您没有编辑文章的权限，某些功能可能受限', 'warning');
+                        return;
+                    }
+                } else {
+                    console.log('未找到认证系统，显示警告');
+                    this.showMessage('认证系统未加载，某些功能可能受限', 'warning');
+                    return;
+                }
+
+                console.log('编辑页面权限检查通过');
+            }
+
+            loadPosts() {
+                const stored = localStorage.getItem('blog_posts');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            savePosts() {
+                localStorage.setItem('blog_posts', JSON.stringify(this.posts));
+            }
+
+            initEditor() {
+                this.editor = CodeMirror.fromTextArea(document.getElementById('markdown-editor'), {
+                    mode: 'markdown',
+                    theme: 'default', // 使用默认主题，我们将自定义CSS
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    autoCloseBrackets: true,
+                    matchBrackets: true,
+                    indentUnit: 2,
+                    tabSize: 2,
+                    indentWithTabs: false,
+                    extraKeys: {
+                        "Enter": "newlineAndIndentContinueMarkdownList",
+                        "Cmd-B": "bold",
+                        "Ctrl-B": "bold",
+                        "Cmd-I": "italic",
+                        "Ctrl-I": "italic"
+                    }
+                });
+
+                // 实时预览
+                this.editor.on('change', () => {
+                    this.updatePreview();
+                });
+            }
+
+            loadCurrentPost() {
+                console.log('开始加载当前文章...');
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = parseInt(urlParams.get('id'));
+                console.log('URL参数 - 文章ID:', postId);
+
+                if (postId) {
+                    // 编辑现有文章
+                    console.log('查找文章，当前文章列表:', this.posts);
+                    this.currentPost = this.posts.find(post => post.id === postId);
+                    console.log('找到的文章:', this.currentPost);
+
+                    if (this.currentPost) {
+                        document.getElementById('post-title').value = this.currentPost.title;
+                        document.getElementById('post-excerpt').value = this.currentPost.excerpt;
+                        document.getElementById('post-author').value = this.currentPost.author;
+                        this.editor.setValue(this.currentPost.content);
+                        this.tags = [...this.currentPost.tags];
+                        this.isFeatured = this.currentPost.featured || false;
+                        this.renderTags();
+                        this.updateFeaturedToggle();
+                        this.updatePreview();
+                    }
+                } else {
+                    // 新建文章
+                    document.getElementById('post-author').value = '时子延';
+                    this.editor.setValue(`# 新文章
+
+## 小标题
+
+这里是一些内容。
+
+- 列表项 1
+- 列表项 2
+- 列表项 3
+
+## 代码示例
+
+\`\`\`javascript
+function hello() {
+    console.log("Hello, World!");
+}
+\`\`\`
+
+## 数学公式
+
+行内公式：$E = mc^2$
+
+块级公式：
+$$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$`);
+                    this.updatePreview();
+                }
+            }
+
+            setupEventListeners() {
+                // 自动保存
+                let saveTimeout;
+                this.editor.on('change', () => {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(() => {
+                        this.autoSave();
+                    }, 2000);
+                });
+            }
+
+            updatePreview() {
+                const content = this.editor.getValue();
+                const preview = document.getElementById('preview-content');
+
+                if (content.trim()) {
+                    // 配置 marked 选项
+                    marked.setOptions({
+                        breaks: true,
+                        gfm: true,
+                        sanitize: false,
+                        highlight: function(code, lang) {
+                            return code; // 这里可以集成语法高亮
+                        }
+                    });
+
+                    // 处理 Obsidian 语法
+                    let processedContent = this.processObsidianSyntax(content);
+                    preview.innerHTML = marked.parse(processedContent);
+                } else {
+                    preview.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 40px;">
+                        在左侧编辑器中输入 Markdown 内容，这里将实时显示预览效果...
+                    </p>`;
+                }
+            }
+
+            processObsidianSyntax(content) {
+                // 处理内部链接 [[页面名称]]
+                content = content.replace(/\[\[([^\]]+)\]\]/g, '<a href="#" class="internal-link">📄 $1</a>');
+
+                // 处理标签 #标签
+                content = content.replace(/(?<!\w)#(\w+)/g, '<span class="tag">#$1</span>');
+
+                // 处理图片尺寸 ![alt|300](image.png)
+                content = content.replace(/!\[([^\]]*)\|(\d+)\]\(([^)]+)\)/g,
+                    '<img src="$3" alt="$1" style="width: ${parseInt($2) > 800 ? 800 : $2}px; max-width: 100%; height: auto;">');
+
+                return content;
+            }
+
+            renderTags() {
+                const container = document.getElementById('tags-container');
+                const input = document.getElementById('tag-input');
+
+                // 清除现有标签
+                container.querySelectorAll('.tag').forEach(tag => tag.remove());
+
+                // 添加标签
+                this.tags.forEach((tag, index) => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `
+                        ${tag}
+                        <span class="tag-remove" onclick="removeTag(${index})">×</span>
+                    `;
+                    container.insertBefore(tagElement, input);
+                });
+            }
+
+            addTag(tag) {
+                if (tag && !this.tags.includes(tag)) {
+                    this.tags.push(tag);
+                    this.renderTags();
+                }
+            }
+
+            removeTag(index) {
+                this.tags.splice(index, 1);
+                this.renderTags();
+            }
+
+            toggleFeatured() {
+                this.isFeatured = !this.isFeatured;
+                this.updateFeaturedToggle();
+            }
+
+            updateFeaturedToggle() {
+                const toggle = document.getElementById('featured-toggle');
+                if (this.isFeatured) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+
+            savePost() {
+                console.log('Editor savePost() called');
+                // 检查权限
+                if (!this.authChecked) {
+                    this.checkAuth();
+                }
+
+                if (typeof blogAuth !== 'undefined' && blogAuth && !blogAuth.isAuthor()) {
+                    console.log('Permission denied - not author');
+                    this.showMessage('您没有保存文章的权限', 'error');
+                    return;
+                }
+
+                console.log('Permission check passed');
+
+                console.log('Getting form values...');
+                const titleElement = document.getElementById('post-title');
+                const excerptElement = document.getElementById('post-excerpt');
+                const authorElement = document.getElementById('post-author');
+
+                console.log('Form elements:', {
+                    title: !!titleElement,
+                    excerpt: !!excerptElement,
+                    author: !!authorElement,
+                    editor: !!this.editor
+                });
+
+                if (!titleElement || !excerptElement || !authorElement) {
+                    console.error('Form elements not found');
+                    this.showMessage('页面元素未正确加载，请刷新页面重试', 'error');
+                    return;
+                }
+
+                const title = titleElement.value.trim();
+                const excerpt = excerptElement.value.trim();
+                const author = authorElement.value.trim();
+                const content = this.editor ? this.editor.getValue() : '';
+
+                console.log('Form values:', { title: !!title, excerpt: !!excerpt, content: !!content });
+
+                if (!title) {
+                    console.log('Title validation failed');
+                    this.showMessage('请输入文章标题', 'error');
+                    return;
+                }
+
+                if (!excerpt) {
+                    this.showMessage('请输入文章摘要', 'error');
+                    return;
+                }
+
+                if (!content) {
+                    this.showMessage('请输入文章内容', 'error');
+                    return;
+                }
+
+                const postData = {
+                    title,
+                    excerpt,
+                    content,
+                    author: author || '时子延',
+                    tags: this.tags.length > 0 ? this.tags : ['未分类'],
+                    featured: this.isFeatured
+                };
+
+                if (this.currentPost) {
+                    // 更新现有文章
+                    const index = this.posts.findIndex(post => post.id === this.currentPost.id);
+                    if (index !== -1) {
+                        this.posts[index] = { ...this.posts[index], ...postData };
+                    }
+                } else {
+                    // 创建新文章
+                    postData.id = Date.now();
+                    postData.date = new Date().toISOString().split('T')[0];
+                    this.posts.unshift(postData);
+                }
+
+                this.savePosts();
+                this.showMessage('文章保存成功！', 'success');
+
+                // 延迟跳转到管理页面
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1500);
+            }
+
+            // 保存文章但不跳转页面（用于键盘快捷键）
+            savePostWithoutRedirect() {
+                console.log('Editor savePostWithoutRedirect() called');
+                // 检查权限
+                if (!this.authChecked) {
+                    this.checkAuth();
+                }
+
+                if (typeof blogAuth !== 'undefined' && blogAuth && !blogAuth.isAuthor()) {
+                    console.log('Permission denied - not author');
+                    this.showMessage('您没有保存文章的权限', 'error');
+                    return false;
+                }
+
+                console.log('Permission check passed');
+                console.log('Getting form values...');
+
+                const titleElement = document.getElementById('post-title');
+                const excerptElement = document.getElementById('post-excerpt');
+                const authorElement = document.getElementById('post-author');
+
+                if (!titleElement || !excerptElement || !authorElement) {
+                    console.error('Form elements not found');
+                    this.showMessage('页面元素未正确加载，请刷新页面重试', 'error');
+                    return false;
+                }
+
+                const title = titleElement.value.trim();
+                const excerpt = excerptElement.value.trim();
+                const author = authorElement.value.trim();
+                const content = this.editor ? this.editor.getValue() : '';
+
+                if (!title) {
+                    this.showMessage('请输入文章标题', 'error');
+                    return false;
+                }
+
+                if (!excerpt) {
+                    this.showMessage('请输入文章摘要', 'error');
+                    return false;
+                }
+
+                if (!content) {
+                    this.showMessage('请输入文章内容', 'error');
+                    return false;
+                }
+
+                const postData = {
+                    title,
+                    excerpt,
+                    content,
+                    author: author || '时子延',
+                    tags: this.tags.length > 0 ? this.tags : ['未分类'],
+                    featured: this.isFeatured
+                };
+
+                if (this.currentPost) {
+                    // 更新现有文章
+                    const index = this.posts.findIndex(post => post.id === this.currentPost.id);
+                    if (index !== -1) {
+                        this.posts[index] = { ...this.posts[index], ...postData };
+                        this.currentPost = this.posts[index]; // 更新当前文章引用
+                    }
+                } else {
+                    // 创建新文章
+                    postData.id = Date.now();
+                    postData.date = new Date().toISOString().split('T')[0];
+                    this.posts.unshift(postData);
+                    this.currentPost = postData; // 设置为当前文章
+                }
+
+                this.savePosts();
+                return true; // 保存成功
+            }
+
+            autoSave() {
+                const title = document.getElementById('post-title').value.trim();
+                const content = this.editor.getValue();
+
+                if (title || content) {
+                    localStorage.setItem('blog_autosave', JSON.stringify({
+                        title,
+                        excerpt: document.getElementById('post-excerpt').value,
+                        author: document.getElementById('post-author').value,
+                        content,
+                        tags: this.tags,
+                        featured: this.isFeatured,
+                        timestamp: new Date().toISOString()
+                    }));
+                }
+            }
+
+            loadAutoSave() {
+                const autosave = localStorage.getItem('blog_autosave');
+                if (autosave) {
+                    const data = JSON.parse(autosave);
+                    const timeDiff = new Date() - new Date(data.timestamp);
+
+                    // 如果自动保存的数据是30分钟内的，询问是否恢复
+                    if (timeDiff < 30 * 60 * 1000 && !this.currentPost) {
+                        if (confirm('检测到未保存的草稿，是否恢复？')) {
+                            document.getElementById('post-title').value = data.title || '';
+                            document.getElementById('post-excerpt').value = data.excerpt || '';
+                            document.getElementById('post-author').value = data.author || '时子延';
+                            this.editor.setValue(data.content || '');
+                            this.tags = data.tags || [];
+                            this.isFeatured = data.featured || false;
+                            this.renderTags();
+                            this.updateFeaturedToggle();
+                            this.updatePreview();
+                        }
+                        localStorage.removeItem('blog_autosave');
+                    }
+                }
+            }
+
+            previewPost() {
+                const title = document.getElementById('post-title').value.trim() || '预览文章';
+                const content = this.editor.getValue();
+
+                if (!content) {
+                    this.showMessage('请先输入文章内容', 'warning');
+                    return;
+                }
+
+                // 创建临时文章数据进行预览
+                const tempPost = {
+                    id: 'preview',
+                    title,
+                    excerpt: document.getElementById('post-excerpt').value.trim() || '文章预览',
+                    content,
+                    author: document.getElementById('post-author').value.trim() || '时子延',
+                    tags: this.tags.length > 0 ? this.tags : ['预览'],
+                    date: new Date().toISOString().split('T')[0],
+                    featured: this.isFeatured
+                };
+
+                // 保存到临时存储
+                sessionStorage.setItem('preview_post', JSON.stringify(tempPost));
+
+                // 在新窗口中打开预览
+                const previewWindow = window.open('post.html?preview=true', '_blank');
+
+                // 检查窗口是否被阻止
+                if (!previewWindow) {
+                    this.showMessage('预览窗口被阻止，请检查浏览器设置', 'error');
+                }
+            }
+
+            cancelEdit() {
+                if (confirm('确定要取消编辑吗？未保存的更改将会丢失。')) {
+                    window.location.href = 'admin.html';
+                }
+            }
+
+            showMessage(message, type = 'info') {
+                // 创建消息提示
+                const messageDiv = document.createElement('div');
+                messageDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    max-width: 300px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    animation: slideIn 0.3s ease-out;
+                    font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+                `;
+
+                switch(type) {
+                    case 'success':
+                        messageDiv.style.background = '#4CAF50';
+                        break;
+                    case 'error':
+                        messageDiv.style.background = '#f44336';
+                        break;
+                    case 'warning':
+                        messageDiv.style.background = '#FF9800';
+                        break;
+                    default:
+                        messageDiv.style.background = '#2196F3';
+                }
+
+                messageDiv.textContent = message;
+                document.body.appendChild(messageDiv);
+
+                // 3秒后自动移除
+                setTimeout(() => {
+                    messageDiv.style.animation = 'slideOut 0.3s ease-in';
+                    setTimeout(() => {
+                        if (document.body.contains(messageDiv)) {
+                            document.body.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // 全局编辑器实例
+        let editor;
+
+        // 全局函数
+        function focusTagInput() {
+            document.getElementById('tag-input').focus();
+        }
+
+        function handleTagInput(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const input = event.target;
+                const tag = input.value.trim();
+                if (tag) {
+                    editor.addTag(tag);
+                    input.value = '';
+                }
+            }
+        }
+
+        function removeTag(index) {
+            editor.removeTag(index);
+        }
+
+        function toggleFeatured() {
+            editor.toggleFeatured();
+        }
+
+        function savePost() {
+            console.log('Save button clicked, editor:', !!editor);
+            if (editor) {
+                console.log('Calling editor.savePost()');
+                editor.savePost();
+                // 显示保存成功通知
+                showSaveNotification(true);
+            } else {
+                console.error('Editor not initialized');
+                showSaveNotification(false, '编辑器未初始化，请刷新页面重试');
+            }
+        }
+
+        function previewPost() {
+            if (editor) {
+                editor.previewPost();
+            } else {
+                alert('编辑器未初始化，请刷新页面重试');
+            }
+        }
+
+        function cancelEdit() {
+            if (editor) {
+                editor.cancelEdit();
+            } else {
+                if (confirm('确定要离开编辑页面吗？')) {
+                    window.location.href = 'admin.html';
+                }
+            }
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+
+            .internal-link {
+                color: var(--accent-blue);
+                text-decoration: none;
+                border-bottom: 1px dotted var(--accent-blue);
+            }
+
+            .internal-link:hover {
+                color: var(--primary-blue);
+                border-bottom-style: solid;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Toggle mobile navigation menu
+        function toggleNavbar() {
+            const menu = document.getElementById('navbar-menu');
+            const toggle = document.getElementById('navbar-toggle');
+
+            if (menu) {
+                menu.classList.toggle('active');
+
+                // Toggle icon
+                const icon = toggle.querySelector('i');
+                if (menu.classList.contains('active')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            }
+        }
+
+        // Toggle Obsidian callout
+        function toggleCallout() {
+            const content = document.getElementById('callout-content');
+            const toggle = document.getElementById('callout-toggle');
+
+            if (content && toggle) {
+                content.classList.toggle('collapsed');
+                toggle.classList.toggle('collapsed');
+            }
+        }
+
+        // Set active navigation item based on current page
+        function setActiveNavItem() {
+            const currentPage = window.location.pathname;
+            const navItems = document.querySelectorAll('.navbar-item');
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                const itemPage = item.getAttribute('data-page');
+
+                if (
+                    (itemPage === 'home' && (currentPage === '/' || currentPage === '/index.html')) ||
+                    (itemPage === 'blog' && currentPage.includes('blog')) ||
+                    (itemPage === 'obsidian' && currentPage.includes('obsidian')) ||
+                    (itemPage === 'docs' && currentPage.includes('MkDocs'))
+                ) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.querySelector('.navbar');
+            const menu = document.getElementById('navbar-menu');
+            const toggle = document.getElementById('navbar-toggle');
+
+            if (navbar && !navbar.contains(event.target) && menu && menu.classList.contains('active')) {
+                menu.classList.remove('active');
+                const icon = toggle.querySelector('i');
+                icon.className = 'fas fa-bars';
+            }
+        });
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Set active navigation item
+            setActiveNavItem();
+            console.log('编辑页面开始加载...');
+
+            // 等待所有脚本完全加载
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            console.log('检查BlogAuth类:', typeof BlogAuth);
+            console.log('检查全局blogAuth实例:', typeof blogAuth);
+
+            // 使用已存在的全局实例或创建新实例
+            if (typeof blogAuth !== 'undefined' && blogAuth) {
+                console.log('使用现有的blogAuth实例');
+                window.blogAuth = blogAuth;
+            } else if (typeof BlogAuth !== 'undefined') {
+                console.log('创建新的BlogAuth实例');
+                try {
+                    window.blogAuth = new BlogAuth();
+                    console.log('认证系统初始化完成');
+                } catch (error) {
+                    console.error('创建BlogAuth实例失败:', error);
+                    // 不阻止编辑器初始化，允许继续使用
+                    console.log('编辑器将在没有认证的情况下继续初始化');
+                }
+            } else {
+                console.log('BlogAuth类未定义，尝试重新加载认证脚本...');
+                try {
+                    // 移除现有的认证脚本
+                    const existingScripts = document.querySelectorAll('script[src*="auth.js"]');
+                    existingScripts.forEach(script => script.remove());
+
+                    // 重新加载认证脚本
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = '/blog/auth.js';
+                        script.onload = () => {
+                            setTimeout(resolve, 500); // 等待脚本完全执行
+                        };
+                        script.onerror = () => reject(new Error('无法加载认证脚本'));
+                        document.head.appendChild(script);
+                    });
+
+                    if (typeof BlogAuth !== 'undefined') {
+                        window.blogAuth = new BlogAuth();
+                        console.log('重新创建认证系统成功');
+                    } else {
+                        console.log('认证系统加载失败，编辑器将继续运行但功能受限');
+                    }
+                } catch (error) {
+                    console.error('重新加载认证脚本失败:', error);
+                    console.log('编辑器将在没有认证的情况下继续初始化');
+                }
+            }
+
+            // 初始化编辑器
+            console.log('初始化编辑器...');
+            try {
+                editor = new BlogEditor();
+                await editor.init(); // 调用异步初始化方法
+                editor.loadAutoSave();
+                console.log('编辑器初始化完成');
+            } catch (error) {
+                console.error('编辑器初始化失败:', error);
+                alert('编辑器初始化失败: ' + error.message);
+            }
+
+            // 添加键盘快捷键监听
+            document.addEventListener('keydown', function(event) {
+                // 检查是否按下了 Ctrl+S 或 Cmd+S
+                if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                    event.preventDefault(); // 阻止浏览器默认的保存行为
+                    event.stopPropagation();
+
+                    console.log('键盘快捷键保存文章');
+
+                    // 调用保存函数（不跳转页面）
+                    if (editor) {
+                        editor.savePostWithoutRedirect();
+
+                        // 显示保存提示
+                        showSaveNotification(true, '文章已保存');
+                    } else {
+                        console.error('编辑器未初始化，无法使用快捷键保存');
+                        showSaveNotification(false, '编辑器未初始化，请刷新页面重试');
+                    }
+                }
+            });
+        });
+
+        // 显示保存提示通知
+        function showSaveNotification(success = true, message = null) {
+            // 移除已存在的通知
+            const existingNotification = document.querySelector('.save-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            // 创建新通知
+            const notification = document.createElement('div');
+            notification.className = `save-notification ${success ? 'success' : 'error'}`;
+
+            const icon = success ? 'fa-check-circle' : 'fa-exclamation-circle';
+            const defaultMessage = success ? '文章已保存' : '保存失败';
+            const finalMessage = message || defaultMessage;
+
+            notification.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${finalMessage}</span>
+            `;
+
+            document.body.appendChild(notification);
+
+            // 显示动画
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 页面卸载时清理自动保存
+        window.addEventListener('beforeunload', function() {
+            if (editor) {
+                editor.autoSave();
+            }
+        });
+    </script>
+</body>
+</html>

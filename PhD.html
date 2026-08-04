@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>博士阶段 5 年现金流（SMART + 国家助学金 + 助教 + Blux + HiMCM）</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #fafafa;
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      margin: 30px 0 10px;
+    }
+    .chart-container {
+      width: 1600px;
+      height: 480px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h2>博士阶段 5 年现金流：月度堆叠 + 累计折线（双纵轴）</h2>
+
+<div class="chart-container">
+  <div style="max-width: 1600px; margin: 0 auto 14px auto; display: flex; gap: 12px; align-items: center; justify-content: flex-end; font-size: 14px;">
+    <span style="opacity: 0.8;">可编辑（万元 / 月）:</span>
+    <label>生活费
+      <input id="living-input" type="number" step="0.01" value="0.20" style="width: 70px; margin-left: 6px;">
+    </label>
+    <label style="margin-left: 10px;">房租
+      <input id="rent-input" type="number" step="0.01" value="0.20" style="width: 70px; margin-left: 6px;">
+    </label>
+  </div>
+  <canvas id="comboChart"></canvas>
+</div>
+
+<script>
+  // ===== 时间轴：2026-09 → 2031-08（60个月）=====
+  const labels = [];
+  let year = 2026;
+  let month = 9;
+  for (let i = 0; i < 60; i++) {
+    const currentMonth = month;
+    labels.push(`${year}-${String(currentMonth).padStart(2, "0")}`);
+    month++;
+    if (month > 12) { month = 1; year++; }
+  }
+
+  // ===== 金额参数（万元 / 月）=====
+  const smartAcademicBefore = 0.693;
+  const smartAcademicAfter  = 0.840;
+  const nationalGrant       = 0.125;
+  const taMonthly           = 0.083; // 助教
+  const bluxMonthly         = 1.000;
+  const hiMcmBonus          = 1.000; // HiMCM 奖金（万元）
+  const tuitionMonthly      = 0.10;  // 学费 1000 元 = 0.10 万
+  let livingMonthly         = 0.20;  // 生活费 2000 元 = 0.20 万（可编辑）
+  let rentMonthly           = 0.20;  // 房租 2000 元 = 0.20 万（可编辑）
+
+  // ===== 月度数据 =====
+  function computeSeries(livingVal, rentVal) {
+    const smartAcademic = [];
+    const nationalGrantArr = [];
+    const taArr = [];
+    const bluxArr = [];
+    const hiMcmArr = [];
+    const tuitionArr = [];
+    const livingArr = [];
+    const rentArr = [];
+
+    year = 2026;
+    month = 9;
+    for (let i = 0; i < 60; i++) {
+      const currentMonth = month;
+
+      smartAcademic.push(i < 24 ? smartAcademicBefore : smartAcademicAfter);
+      nationalGrantArr.push(nationalGrant);
+
+      // 助教：第 25–48 个月
+      taArr.push(i >= 24 && i < 48 ? taMonthly : 0);
+
+      bluxArr.push(bluxMonthly);
+
+      // HiMCM 奖金：每年 10、11 月各 1 万
+      hiMcmArr.push(currentMonth === 10 || currentMonth === 11 ? hiMcmBonus : 0);
+
+      // 每月支出
+      tuitionArr.push(tuitionMonthly);
+      livingArr.push(livingVal);
+      rentArr.push(rentVal);
+
+      month++;
+      if (month > 12) { month = 1; year++; }
+    }
+
+    const smartOnlyCumulative = [];
+    const totalCumulative = [];
+    const netCumulative = [];
+    const netNoBluxCumulative = [];
+    const expenseCumulative = [];
+
+    let smartSum = 0;
+    let totalSum = 0;
+    let totalNoBluxSum = 0;
+    let expenseSum = 0;
+
+    for (let i = 0; i < 60; i++) {
+      const smartMonthly = smartAcademic[i] + nationalGrantArr[i];
+      const expenseMonthly = tuitionArr[i] + livingArr[i] + rentArr[i];
+
+      smartSum += smartMonthly;
+      totalSum += smartMonthly + taArr[i] + bluxArr[i] + hiMcmArr[i];
+      totalNoBluxSum += smartMonthly + taArr[i] + hiMcmArr[i];
+      expenseSum += expenseMonthly;
+
+      smartOnlyCumulative.push(Number(smartSum.toFixed(2)));
+      totalCumulative.push(Number(totalSum.toFixed(2)));
+      expenseCumulative.push(Number(expenseSum.toFixed(2)));
+      netCumulative.push(Number((totalSum - expenseSum).toFixed(2)));
+      netNoBluxCumulative.push(Number((totalNoBluxSum - expenseSum).toFixed(2)));
+    }
+
+    return {
+      smartAcademic, nationalGrantArr, taArr, bluxArr, hiMcmArr,
+      tuitionArr, livingArr, rentArr,
+      smartOnlyCumulative, totalCumulative, netCumulative, netNoBluxCumulative
+    };
+  }
+
+  function buildDatasets(series) {
+    return [
+      // 左轴堆叠柱
+      {
+        type: "bar",
+        label: "SMART 学业资助",
+        data: series.smartAcademic,
+        backgroundColor: "#2E7D32",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 1,
+        stack: "income",
+        yAxisID: "yMonthly"
+      },
+      {
+        type: "bar",
+        label: "国家助学金",
+        data: series.nationalGrantArr,
+        backgroundColor: "#43A047",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 1,
+        stack: "income",
+        yAxisID: "yMonthly"
+      },
+      {
+        type: "bar",
+        label: "助教（TA）",
+        data: series.taArr,
+        backgroundColor: "#66BB6A",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 1,
+        stack: "income",
+        yAxisID: "yMonthly"
+      },
+      {
+        type: "bar",
+        label: "Blux 收入",
+        data: series.bluxArr,
+        backgroundColor: "#8BC34A",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 1,
+        stack: "income",
+        yAxisID: "yMonthly"
+      },
+      {
+        type: "bar",
+        label: "HiMCM 奖金",
+        data: series.hiMcmArr,
+        backgroundColor: "#A5D6A7",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 1,
+        stack: "income",
+        yAxisID: "yMonthly"
+      },
+      // 支出分组（红色系，右侧相邻）
+      {
+        type: "bar",
+        label: "学费",
+        data: series.tuitionArr,
+        backgroundColor: "#F44336",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 2,
+        stack: "expense",
+        yAxisID: "yMonthly"
+      },
+      {
+        type: "bar",
+        label: "生活费",
+        data: series.livingArr,
+        backgroundColor: "#EF5350",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 2,
+        stack: "expense",
+        yAxisID: "yMonthly"
+      },
+      {
+        type: "bar",
+        label: "房租",
+        data: series.rentArr,
+        backgroundColor: "#E57373",
+        barThickness: 10,
+        maxBarThickness: 12,
+        categoryPercentage: 0.35,
+        barPercentage: 0.85,
+        stackWeight: 1,
+        order: 2,
+        stack: "expense",
+        yAxisID: "yMonthly"
+      },
+      // 右轴累计折线
+      {
+        type: "line",
+        label: "纯 SMART 累计",
+        data: series.smartOnlyCumulative,
+        borderColor: "#4A90E2",
+        backgroundColor: "#4A90E2",
+        tension: 0,
+        pointRadius: 1,
+        fill: false,
+        order: 10,
+        yAxisID: "yCumulative"
+      },
+      {
+        type: "line",
+        label: "SMART + TA + Blux + HiMCM 累计",
+        data: series.totalCumulative,
+        borderColor: "#F5A623",
+        backgroundColor: "#F5A623",
+        tension: 0,
+        pointRadius: 1,
+        fill: false,
+        order: 10,
+        yAxisID: "yCumulative"
+      },
+      {
+        type: "line",
+        label: "净累计（扣除学费/生活费/房租）",
+        data: series.netCumulative,
+        borderColor: "#D32F2F",
+        backgroundColor: "#D32F2F",
+        tension: 0,
+        pointRadius: 1,
+        borderDash: [4, 4],
+        fill: false,
+        order: 10,
+        yAxisID: "yCumulative"
+      },
+      {
+        type: "line",
+        label: "净累计（不含 Blux）",
+        data: series.netNoBluxCumulative,
+        borderColor: "#7E57C2",
+        backgroundColor: "#7E57C2",
+        tension: 0,
+        pointRadius: 1,
+        borderDash: [2, 6],
+        fill: false,
+        order: 10,
+        yAxisID: "yCumulative"
+      }
+    ];
+  }
+
+  const initialSeries = computeSeries(livingMonthly, rentMonthly);
+
+  const comboChart = new Chart(document.getElementById("comboChart"), {
+    data: {
+      labels: labels,
+      datasets: buildDatasets(initialSeries)
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { stacked: true, offset: true },
+        yMonthly: {
+          type: "linear",
+          position: "left",
+          stacked: true,
+          title: { display: true, text: "月度现金流（万元 / 月）" },
+          grid: { drawOnChartArea: true }
+        },
+        yCumulative: {
+          type: "linear",
+          position: "right",
+          title: { display: true, text: "累计金额（万元）" },
+          grid: { drawOnChartArea: false }
+        }
+      },
+      plugins: {
+        legend: { position: "top" },
+        datalabels: {
+          color: "#000",
+          anchor: "center",
+          align: "center",
+          formatter: (v, ctx) => ctx.dataset.type === "bar" && v > 0 ? v.toFixed(2) : "",
+          font: { size: 9 }
+        },
+        annotation: {
+          annotations: {
+            qualExam: {
+              type: "line",
+              xMin: labels[24],
+              xMax: labels[24],
+              borderColor: "red",
+              borderWidth: 2,
+              borderDash: [6, 6],
+              label: {
+                enabled: true,
+                content: "博士资格考试通过",
+                position: "start"
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  function applyLivingRent() {
+    const livingInput = document.getElementById("living-input");
+    const rentInput = document.getElementById("rent-input");
+    const newLiving = Number(livingInput.value);
+    const newRent = Number(rentInput.value);
+    livingMonthly = isFinite(newLiving) ? newLiving : livingMonthly;
+    rentMonthly = isFinite(newRent) ? newRent : rentMonthly;
+    const updatedSeries = computeSeries(livingMonthly, rentMonthly);
+    comboChart.data.datasets = buildDatasets(updatedSeries);
+    comboChart.update();
+  }
+
+  document.getElementById("living-input").addEventListener("input", applyLivingRent);
+  document.getElementById("rent-input").addEventListener("input", applyLivingRent);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元素周期表 - 教科书专业版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-paper: #ffffff;
+            --cell-green-dark: #81c784;
+            --cell-green-light: #dcedc8;
+            --cell-white: #f9f9f9;
+            --header-bg: #e0e0e0;
+            --text-black: #000000;
+            --text-red: #d63031;
+            --border-color: #333333;
+            --font-serif: 'Times New Roman', Times, serif;
+            --font-sans: 'Microsoft YaHei', 'SimHei', sans-serif;
+            
+            /* 定义固定尺寸以防止遮挡 */
+            --cell-width: 74px;
+            --cell-height: 94px;
+            --gap-size: 2px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-paper);
+            color: var(--text-black);
+            font-family: var(--font-sans);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--text-black);
+            display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; flex-shrink: 0;
+        }
+
+        h1 { font-family: 'KaiTi', '楷体', serif; font-size: 1.8rem; letter-spacing: 2px; font-weight: bold; }
+        .legend-box { display: flex; gap: 15px; font-size: 0.8rem; flex-wrap: wrap;}
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .color-block { width: 15px; height: 15px; border: 1px solid #000; }
+
+        /* --- 主体滚动容器 --- */
+        .table-scroll-container {
+            flex-grow: 1;
+            overflow: auto; /* 允许横向和纵向滚动 */
+            padding: 20px;
+            display: flex;
+            justify-content: center; /* 内容居中 */
+            align-items: flex-start;
+        }
+
+        /* --- 超级网格系统 (包含表头和元素) --- */
+        .super-grid {
+            display: grid;
+            /* 定义列宽：左表头 | 18个元素列(固定宽) | 右表头 */
+            grid-template-columns: 30px repeat(18, var(--cell-width)) 50px;
+            /* 定义行高：上表头1(数字) | 上表头2(罗马) | 7个周期 | 间隙 | 2个镧锕系 */
+            grid-template-rows: 25px 25px repeat(7, var(--cell-height)) 20px repeat(2, var(--cell-height));
+            gap: var(--gap-size);
+            border: 1px solid #ccc;
+            padding: 2px;
+            background: #eee;
+            /* 确保最小宽度，防止挤压 */
+            min-width: max-content;
+        }
+
+        /* 表头单元格通用样式 */
+        .header-cell {
+            display: flex; justify-content: center; align-items: center;
+            font-family: var(--font-serif); font-weight: bold; color: #555; background: var(--header-bg);
+            font-size: 0.9rem; text-align: center;
+        }
+        .header-cell.roman { font-size: 0.75rem; } /* 罗马数字稍小 */
+        .header-cell.shell-info { flex-direction: column; font-size: 0.7rem; line-height: 1.2; }
+
+        /* --- 元素格子样式 --- */
+        .element {
+            border: 1px solid var(--border-color);
+            position: relative; cursor: pointer; transition: transform 0.1s;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            width: 100%; height: 100%; /* 填满网格单元 */
+            background: var(--cell-white);
+        }
+
+        .element:hover {
+            transform: scale(1.08); z-index: 10;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3); border: 2px solid #000;
+        }
+
+        .bg-green { background-color: var(--cell-green-dark); }
+        .bg-light { background-color: var(--cell-green-light); }
+        .bg-white { background-color: var(--cell-white); }
+
+        /* 格子内部布局 (紧凑调整) */
+        .el-num { position: absolute; top: 2px; left: 3px; font-family: var(--font-serif); font-size: 0.7rem; font-weight: bold; }
+        .el-sym { font-family: var(--font-serif); font-size: 1.6rem; font-weight: bold; line-height: 1; margin-top: 8px; }
+        .radioactive .el-sym { color: var(--text-red); }
+        .el-cn { font-family: 'KaiTi', '楷体', serif; font-size: 0.85rem; margin-top: 2px; font-weight: bold; }
+        .el-mass { font-family: var(--font-serif); font-size: 0.65rem; position: absolute; bottom: 2px; left: 0; width: 100%; text-align: center; }
+        
+        /* 电子排布调整 */
+        .el-config {
+            position: absolute; top: 2px; right: 2px; text-align: right;
+            font-family: var(--font-serif); font-size: 0.5rem; line-height: 1.05; color: #333;
+            white-space: nowrap; /* 防止换行 */
+        }
+        .el-config sup { font-size: 0.85em; vertical-align: super; }
+
+        /* --- 弹窗详情卡片 --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8); z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(2px);
+        }
+        .overlay.active { opacity: 1; pointer-events: all; }
+        .card { width: 900px; height: 600px; background: #fff; border: 2px solid #000; box-shadow: 10px 10px 0px rgba(0,0,0,0.1); display: flex; }
+        .visual-side { width: 50%; background: #f9f9f9; position: relative; border-right: 1px solid #ccc; }
+        .info-side { width: 50%; padding: 40px; display: flex; flex-direction: column; overflow-y: auto;}
+        .info-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .big-sym { font-family: var(--font-serif); font-size: 4rem; font-weight: bold; line-height: 0.8; }
+        .big-name { font-family: 'KaiTi', serif; font-size: 2rem; }
+        .info-table { width: 100%; border-collapse: collapse; font-family: var(--font-serif); }
+        .info-table td { padding: 8px 0; border-bottom: 1px dashed #ccc; font-size: 1.1rem; }
+        .label { font-weight: bold; color: #555; width: 140px; }
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 2rem; cursor: pointer; color: #999; }
+        .close-btn:hover { color: #000; }
+        #canvas-container { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>元素周期表 <span style="font-size:0.9rem; font-family:var(--font-sans); font-weight:normal">(教科书专业版)</span></h1>
+    <div class="legend-box">
+        <div class="legend-item"><div class="color-block" style="background:var(--cell-green-dark)"></div>非金属</div>
+        <div class="legend-item"><div class="color-block" style="background:var(--cell-green-light)"></div>金属</div>
+        <div class="legend-item"><div class="color-block" style="background:var(--cell-white)"></div>过渡</div>
+        <div class="legend-item"><span style="color:red; font-weight:bold;">Tc</span>&nbsp;放射性</div>
+    </div>
+</header>
+
+<div class="table-scroll-container">
+    <div class="super-grid" id="superGrid">
+        </div>
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="card">
+        <div class="close-btn" onclick="closeCard()">×</div>
+        <div class="visual-side" id="canvas-container">
+            <div style="position: absolute; bottom: 10px; left: 10px; font-size: 0.8rem; color: #888;">* 3D示意图：s/p/d/f 电子云</div>
+        </div>
+        <div class="info-side">
+            <div class="info-header">
+                <div><div class="big-sym" id="dSym">Fe</div><div class="big-name" id="dCn">铁</div></div>
+                <div style="text-align:right"><div style="font-size: 1.5rem; font-weight: bold;" id="dNum">26</div><div style="color: #666;" id="dEn">Iron</div></div>
+            </div>
+            <table class="info-table">
+                <tr><td class="label">相对原子质量</td><td id="dMass">55.845</td></tr>
+                <tr><td class="label">电子排布</td><td id="dConfRaw">[Ar] 3d6 4s2</td></tr>
+                <tr><td class="label">元素分类</td><td id="dCat">过渡金属</td></tr>
+                <tr><td class="label">标准相态</td><td id="dPhase">固态</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 数据集 (1-118 精简版) ---
+    const elements = [
+        [1,"H","氢","Hydrogen","1.008","nm","1s1",1,1,"Gas"],
+        [2,"He","氦","Helium","4.0026","ng","1s2",18,1,"Gas"],
+        [3,"Li","锂","Lithium","6.94","mt","[He] 2s1",1,2,"Solid"],
+        [4,"Be","铍","Beryllium","9.0122","mt","[He] 2s2",2,2,"Solid"],
+        [5,"B","硼","Boron","10.81","nm","[He] 2s2 2p1",13,2,"Solid"],
+        [6,"C","碳","Carbon","12.011","nm","[He] 2s2 2p2",14,2,"Solid"],
+        [7,"N","氮","Nitrogen","14.007","nm","[He] 2s2 2p3",15,2,"Gas"],
+        [8,"O","氧","Oxygen","15.999","nm","[He] 2s2 2p4",16,2,"Gas"],
+        [9,"F","氟","Fluorine","18.998","nm","[He] 2s2 2p5",17,2,"Gas"],
+        [10,"Ne","氖","Neon","20.180","ng","[He] 2s2 2p6",18,2,"Gas"],
+        [11,"Na","钠","Sodium","22.990","mt","[Ne] 3s1",1,3,"Solid"],
+        [12,"Mg","镁","Magnesium","24.305","mt","[Ne] 3s2",2,3,"Solid"],
+        [13,"Al","铝","Aluminum","26.982","mt","[Ne] 3s2 3p1",13,3,"Solid"],
+        [14,"Si","硅","Silicon","28.085","nm","[Ne] 3s2 3p2",14,3,"Solid"],
+        [15,"P","磷","Phosphorus","30.974","nm","[Ne] 3s2 3p3",15,3,"Solid"],
+        [16,"S","硫","Sulfur","32.06","nm","[Ne] 3s2 3p4",16,3,"Solid"],
+        [17,"Cl","氯","Chlorine","35.45","nm","[Ne] 3s2 3p5",17,3,"Gas"],
+        [18,"Ar","氩","Argon","39.948","ng","[Ne] 3s2 3p6",18,3,"Gas"],
+        [19,"K","钾","Potassium","39.098","mt","[Ar] 4s1",1,4,"Solid"],
+        [20,"Ca","钙","Calcium","40.078","mt","[Ar] 4s2",2,4,"Solid"],
+        [21,"Sc","钪","Scandium","44.956","tm","[Ar] 3d1 4s2",3,4,"Solid"],
+        [22,"Ti","钛","Titanium","47.867","tm","[Ar] 3d2 4s2",4,4,"Solid"],
+        [23,"V","钒","Vanadium","50.942","tm","[Ar] 3d3 4s2",5,4,"Solid"],
+        [24,"Cr","铬","Chromium","51.996","tm","[Ar] 3d5 4s1",6,4,"Solid"],
+        [25,"Mn","锰","Manganese","54.938","tm","[Ar] 3d5 4s2",7,4,"Solid"],
+        [26,"Fe","铁","Iron","55.845","tm","[Ar] 3d6 4s2",8,4,"Solid"],
+        [27,"Co","钴","Cobalt","58.933","tm","[Ar] 3d7 4s2",9,4,"Solid"],
+        [28,"Ni","镍","Nickel","58.693","tm","[Ar] 3d8 4s2",10,4,"Solid"],
+        [29,"Cu","铜","Copper","63.546","tm","[Ar] 3d10 4s1",11,4,"Solid"],
+        [30,"Zn","锌","Zinc","65.38","mt","[Ar] 3d10 4s2",12,4,"Solid"],
+        [31,"Ga","镓","Gallium","69.723","mt","[Ar] 3d10 4s2 4p1",13,4,"Solid"],
+        [32,"Ge","锗","Germanium","72.63","nm","[Ar] 3d10 4s2 4p2",14,4,"Solid"],
+        [33,"As","砷","Arsenic","74.922","nm","[Ar] 3d10 4s2 4p3",15,4,"Solid"],
+        [34,"Se","硒","Selenium","78.96","nm","[Ar] 3d10 4s2 4p4",16,4,"Solid"],
+        [35,"Br","溴","Bromine","79.904","nm","[Ar] 3d10 4s2 4p5",17,4,"Liquid"],
+        [36,"Kr","氪","Krypton","83.798","ng","[Ar] 3d10 4s2 4p6",18,4,"Gas"],
+        [37,"Rb","铷","Rubidium","85.468","mt","[Kr] 5s1",1,5,"Solid"],
+        [38,"Sr","锶","Strontium","87.62","mt","[Kr] 5s2",2,5,"Solid"],
+        [39,"Y","钇","Yttrium","88.906","tm","[Kr] 4d1 5s2",3,5,"Solid"],
+        [40,"Zr","锆","Zirconium","91.224","tm","[Kr] 4d2 5s2",4,5,"Solid"],
+        [41,"Nb","铌","Niobium","92.906","tm","[Kr] 4d4 5s1",5,5,"Solid"],
+        [42,"Mo","钼","Molybdenum","95.95","tm","[Kr] 4d5 5s1",6,5,"Solid"],
+        [43,"Tc","锝","Technetium","(98)","tm","[Kr] 4d5 5s2",7,5,"Solid"],
+        [44,"Ru","钌","Ruthenium","101.07","tm","[Kr] 4d7 5s1",8,5,"Solid"],
+        [45,"Rh","铑","Rhodium","102.91","tm","[Kr] 4d8 5s1",9,5,"Solid"],
+        [46,"Pd","钯","Palladium","106.42","tm","[Kr] 4d10",10,5,"Solid"],
+        [47,"Ag","银","Silver","107.87","tm","[Kr] 4d10 5s1",11,5,"Solid"],
+        [48,"Cd","镉","Cadmium","112.41","mt","[Kr] 4d10 5s2",12,5,"Solid"],
+        [49,"In","铟","Indium","114.82","mt","[Kr] 4d10 5s2 5p1",13,5,"Solid"],
+        [50,"Sn","锡","Tin","118.71","mt","[Kr] 4d10 5s2 5p2",14,5,"Solid"],
+        [51,"Sb","锑","Antimony","121.76","nm","[Kr] 4d10 5s2 5p3",15,5,"Solid"],
+        [52,"Te","碲","Tellurium","127.60","nm","[Kr] 4d10 5s2 5p4",16,5,"Solid"],
+        [53,"I","碘","Iodine","126.90","nm","[Kr] 4d10 5s2 5p5",17,5,"Solid"],
+        [54,"Xe","氙","Xenon","131.29","ng","[Kr] 4d10 5s2 5p6",18,5,"Gas"],
+        [55,"Cs","铯","Cesium","132.91","mt","[Xe] 6s1",1,6,"Solid"],
+        [56,"Ba","钡","Barium","137.33","mt","[Xe] 6s2",2,6,"Solid"],
+        [57,"La","镧","Lanthanum","138.91","mt","[Xe] 5d1 6s2",3,6,"Solid"],
+        [58,"Ce","铈","Cerium","140.12","mt","[Xe] 4f1 5d1 6s2",4,9,"Solid"], 
+        [59,"Pr","镨","Praseodymium","140.91","mt","[Xe] 4f3 6s2",5,9,"Solid"],
+        [60,"Nd","钕","Neodymium","144.24","mt","[Xe] 4f4 6s2",6,9,"Solid"],
+        [61,"Pm","钷","Promethium","(145)","mt","[Xe] 4f5 6s2",7,9,"Solid"],
+        [62,"Sm","钐","Samarium","150.36","mt","[Xe] 4f6 6s2",8,9,"Solid"],
+        [63,"Eu","铕","Europium","151.96","mt","[Xe] 4f7 6s2",9,9,"Solid"],
+        [64,"Gd","钆","Gadolinium","157.25","mt","[Xe] 4f7 5d1 6s2",10,9,"Solid"],
+        [65,"Tb","铽","Terbium","158.93","mt","[Xe] 4f9 6s2",11,9,"Solid"],
+        [66,"Dy","镝","Dysprosium","162.50","mt","[Xe] 4f10 6s2",12,9,"Solid"],
+        [67,"Ho","钬","Holmium","164.93","mt","[Xe] 4f11 6s2",13,9,"Solid"],
+        [68,"Er","铒","Erbium","167.26","mt","[Xe] 4f12 6s2",14,9,"Solid"],
+        [69,"Tm","铥","Thulium","168.93","mt","[Xe] 4f13 6s2",15,9,"Solid"],
+        [70,"Yb","镱","Ytterbium","173.05","mt","[Xe] 4f14 6s2",16,9,"Solid"],
+        [71,"Lu","镥","Lutetium","174.97","mt","[Xe] 4f14 5d1 6s2",17,9,"Solid"],
+        [72,"Hf","铪","Hafnium","178.49","tm","[Xe] 4f14 5d2 6s2",4,6,"Solid"],
+        [73,"Ta","钽","Tantalum","180.95","tm","[Xe] 4f14 5d3 6s2",5,6,"Solid"],
+        [74,"W","钨","Tungsten","183.84","tm","[Xe] 4f14 5d4 6s2",6,6,"Solid"],
+        [75,"Re","铼","Rhenium","186.21","tm","[Xe] 4f14 5d5 6s2",7,6,"Solid"],
+        [76,"Os","锇","Osmium","190.23","tm","[Xe] 4f14 5d6 6s2",8,6,"Solid"],
+        [77,"Ir","铱","Iridium","192.22","tm","[Xe] 4f14 5d7 6s2",9,6,"Solid"],
+        [78,"Pt","铂","Platinum","195.08","tm","[Xe] 4f14 5d9 6s1",10,6,"Solid"],
+        [79,"Au","金","Gold","196.97","tm","[Xe] 4f14 5d10 6s1",11,6,"Solid"],
+        [80,"Hg","汞","Mercury","200.59","mt","[Xe] 4f14 5d10 6s2",12,6,"Liquid"],
+        [81,"Tl","铊","Thallium","204.38","mt","[Xe] 4f14 5d10 6s2 6p1",13,6,"Solid"],
+        [82,"Pb","铅","Lead","207.2","mt","[Xe] 4f14 5d10 6s2 6p2",14,6,"Solid"],
+        [83,"Bi","铋","Bismuth","208.98","mt","[Xe] 4f14 5d10 6s2 6p3",15,6,"Solid"],
+        [84,"Po","钋","Polonium","(209)","mt","[Xe] 4f14 5d10 6s2 6p4",16,6,"Solid"],
+        [85,"At","砹","Astatine","(210)","nm","[Xe] 4f14 5d10 6s2 6p5",17,6,"Solid"],
+        [86,"Rn","氡","Radon","(222)","ng","[Xe] 4f14 5d10 6s2 6p6",18,6,"Gas"],
+        [87,"Fr","钫","Francium","(223)","mt","[Rn] 7s1",1,7,"Solid"],
+        [88,"Ra","镭","Radium","(226)","mt","[Rn] 7s2",2,7,"Solid"],
+        [89,"Ac","锕","Actinium","(227)","mt","[Rn] 6d1 7s2",3,7,"Solid"],
+        [90,"Th","钍","Thorium","232.04","mt","[Rn] 6d2 7s2",4,10,"Solid"],
+        [91,"Pa","镤","Protactinium","231.04","mt","[Rn] 5f2 6d1 7s2",5,10,"Solid"],
+        [92,"U","铀","Uranium","238.03","mt","[Rn] 5f3 6d1 7s2",6,10,"Solid"],
+        [93,"Np","镎","Neptunium","(237)","mt","[Rn] 5f4 6d1 7s2",7,10,"Solid"],
+        [94,"Pu","钚","Plutonium","(244)","mt","[Rn] 5f6 7s2",8,10,"Solid"],
+        [95,"Am","镅","Americium","(243)","mt","[Rn] 5f7 7s2",9,10,"Solid"],
+        [96,"Cm","锔","Curium","(247)","mt","[Rn] 5f7 6d1 7s2",10,10,"Solid"],
+        [97,"Bk","锫","Berkelium","(247)","mt","[Rn] 5f9 7s2",11,10,"Solid"],
+        [98,"Cf","锎","Californium","(251)","mt","[Rn] 5f10 7s2",12,10,"Solid"],
+        [99,"Es","锿","Einsteinium","(252)","mt","[Rn] 5f11 7s2",13,10,"Solid"],
+        [100,"Fm","镄","Fermium","(257)","mt","[Rn] 5f12 7s2",14,10,"Solid"],
+        [101,"Md","钔","Mendelevium","(258)","mt","[Rn] 5f13 7s2",15,10,"Solid"],
+        [102,"No","锘","Nobelium","(259)","mt","[Rn] 5f14 7s2",16,10,"Solid"],
+        [103,"Lr","铹","Lawrencium","(266)","mt","[Rn] 5f14 7p1",17,10,"Solid"],
+        [104,"Rf","鑪","Rutherfordium","(267)","tm","[Rn] 5f14 6d2 7s2",4,7,"Solid"],
+        [105,"Db","𨧀","Dubnium","(268)","tm","[Rn] 5f14 6d3 7s2",5,7,"Solid"],
+        [106,"Sg","𨭎","Seaborgium","(269)","tm","[Rn] 5f14 6d4 7s2",6,7,"Solid"],
+        [107,"Bh","𨨏","Bohrium","(270)","tm","[Rn] 5f14 6d5 7s2",7,7,"Solid"],
+        [108,"Hs","𨭆","Hassium","(269)","tm","[Rn] 5f14 6d6 7s2",8,7,"Solid"],
+        [109,"Mt","䥑","Meitnerium","(278)","tm","[Rn] 5f14 6d7 7s2",9,7,"Solid"],
+        [110,"Ds","鐽","Darmstadtium","(281)","tm","[Rn] 5f14 6d8 7s2",10,7,"Solid"],
+        [111,"Rg","錀","Roentgenium","(282)","tm","[Rn] 5f14 6d9 7s2",11,7,"Solid"],
+        [112,"Cn","鎶","Copernicium","(285)","tm","[Rn] 5f14 6d10 7s2",12,7,"Solid"],
+        [113,"Nh","鉨","Nihonium","(286)","mt","[Rn] 5f14 6d10 7s2 7p1",13,7,"Solid"],
+        [114,"Fl","鈇","Flerovium","(289)","mt","[Rn] 5f14 6d10 7s2 7p2",14,7,"Solid"],
+        [115,"Mc","镆","Moscovium","(290)","mt","[Rn] 5f14 6d10 7s2 7p3",15,7,"Solid"],
+        [116,"Lv","鉝","Livermorium","(293)","mt","[Rn] 5f14 6d10 7s2 7p4",16,7,"Solid"],
+        [117,"Ts","Ts","Tennessine","(294)","nm","[Rn] 5f14 6d10 7s2 7p5",17,7,"Solid"],
+        [118,"Og","Og","Oganesson","(294)","ng","[Rn] 5f14 6d10 7s2 7p6",18,7,"Gas"]
+    ];
+
+    const catInfo = { 'nm':'非金属', 'ng':'稀有气体', 'mt':'金属', 'tm':'过渡元素' };
+    function isRadioactive(num) { return num === 43 || num === 61 || num >= 84; }
+
+    // 格式化电子排布 (小格子用,只显示最后两个)
+    function formatConfigSmall(str) {
+        const parts = str.split(' ').filter(p => !p.startsWith('['));
+        // 只取最后两个显示，否则太挤
+        const displayParts = parts.slice(-2); 
+        let html = '';
+        displayParts.forEach((p, i) => {
+            html += p.replace(/(\d+)([spdf])(\d+)/, '$1$2<sup>$3</sup>');
+            if(i < displayParts.length - 1) html += '<br>';
+        });
+        return html;
+    }
+
+    // --- 初始化表头和网格 ---
+    const superGrid = document.getElementById('superGrid');
+
+    // 1. 添加表头函数
+    function addHeader(text, col, row, className = '') {
+        const div = document.createElement('div');
+        div.className = `header-cell ${className}`;
+        div.innerHTML = text;
+        // 坐标偏移: 加上左侧和上方的表头占用
+        div.style.gridColumn = col + 1;
+        div.style.gridRow = row + 2;
+        superGrid.appendChild(div);
+    }
+
+    // 2. 生成顶部表头 (数字 1-18 和 罗马 IA-0)
+    const groupRomans = ['IA','IIA','IIIB','IVB','VB','VIB','VIIB','VIII','VIII','VIII','IB','IIB','IIIA','IVA','VA','VIA','VIIA','0'];
+    for(let i=1; i<=18; i++) {
+        // 数字表头 (Row 1 in grid terms)
+        const divNum = document.createElement('div');
+        divNum.className = 'header-cell'; divNum.innerText = i;
+        divNum.style.gridColumn = i + 1; divNum.style.gridRow = 1;
+        superGrid.appendChild(divNum);
+        // 罗马表头 (Row 2 in grid terms)
+        const divRoman = document.createElement('div');
+        divRoman.className = 'header-cell roman'; divRoman.innerText = groupRomans[i-1];
+        divRoman.style.gridColumn = i + 1; divRoman.style.gridRow = 2;
+        superGrid.appendChild(divRoman);
+    }
+
+    // 3. 生成左侧表头 (周期 1-7)
+    for(let i=1; i<=7; i++) {
+        const divPer = document.createElement('div');
+        divPer.className = 'header-cell'; divPer.innerText = i;
+        // 坐标偏移: 加上上方两行表头
+        divPer.style.gridColumn = 1; divPer.style.gridRow = i + 2;
+        superGrid.appendChild(divPer);
+    }
+
+    // 4. 生成右侧表头 (电子层 K-Q)
+    const shells = [
+        {L:'K', N:'2'}, {L:'L', N:'8'}, {L:'M', N:'18'}, {L:'N', N:'32'},
+        {L:'O', N:'50'}, {L:'P', N:'72'}, {L:'Q', N:'98'}
+    ];
+    shells.forEach((s, i) => {
+        const divShell = document.createElement('div');
+        divShell.className = 'header-cell shell-info'; 
+        divShell.innerHTML = `<div>${s.L}</div><div style="font-weight:normal">${s.N}</div>`;
+        divShell.style.gridColumn = 20; // 最后一列
+        divShell.style.gridRow = i + 3; // 从第3行开始(对应周期1)
+        superGrid.appendChild(divShell);
+    });
+
+    // 5. 填充元素
+    elements.forEach(d => {
+        const [num, sym, cn, en, mass, cat, conf, col, row] = d;
+        const el = document.createElement('div');
+        let colorClass = 'bg-white';
+        if(cat === 'nm' || cat === 'ng') colorClass = 'bg-green'; else if(cat === 'mt') colorClass = 'bg-light';
+        const isRadio = isRadioactive(num);
+        el.className = `element ${colorClass} ${isRadio ? 'radioactive' : ''}`;
+        
+        // 坐标计算 (关键：加上表头的偏移量)
+        // 列 +1 (左表头), 行 +2 (上表头)
+        let gCol = col + 1; let gRow = row + 2;
+        // 镧系锕系特殊处理，放到下方
+        if(num >= 58 && num <= 71) { gRow = 11; gCol = num - 58 + 5; } // +5 是为了对齐到 IIIB 之后
+        if(num >= 90 && num <= 103) { gRow = 12; gCol = num - 90 + 5; }
+
+        el.style.gridColumn = gCol; el.style.gridRow = gRow;
+        // 镧系/锕系标签占位
+        if(num === 57) { // La 旁边加标签
+             addHeader("镧系", 4, 9, 'roman');
+        }
+        if(num === 89) { // Ac 旁边加标签
+             addHeader("锕系", 4, 10, 'roman');
+        }
+
+        el.innerHTML = `
+            <span class="el-num">${num}</span>
+            <div class="el-config">${formatConfigSmall(conf)}</div>
+            <span class="el-sym">${sym}</span>
+            <span class="el-cn">${cn}</span>
+            <span class="el-mass">${mass}</span>
+        `;
+        el.onclick = () => openCard(d);
+        superGrid.appendChild(el);
+    });
+
+    // --- 详情弹窗逻辑 ---
+    const overlay = document.getElementById('overlay');
+    function openCard(d) {
+        const [num, sym, cn, en, mass, cat, conf, col, row, phase] = d;
+        document.getElementById('dSym').innerText = sym;
+        document.getElementById('dSym').style.color = isRadioactive(num) ? '#d63031' : '#000';
+        document.getElementById('dCn').innerText = cn;
+        document.getElementById('dNum').innerText = num;
+        document.getElementById('dEn').innerText = en;
+        document.getElementById('dMass').innerText = mass;
+        document.getElementById('dConfRaw').innerHTML = conf.replace(/(\d)([spdf])(\d+)/g, '$1$2<sup>$3</sup>');
+        document.getElementById('dCat').innerText = catInfo[cat] || '未知';
+        document.getElementById('dPhase').innerText = phase === 'Gas' ? '气态' : '固态/液态';
+        overlay.classList.add('active');
+        visualizeAtom(conf);
+    }
+    function closeCard() { overlay.classList.remove('active'); }
+    overlay.addEventListener('click', (e) => { if(e.target===overlay) closeCard(); });
+
+    // --- 3D 可视化 (保持不变) ---
+    let scene, camera, renderer, atomGroup, controls;
+    let electrons = []; let time = 0;
+    function initThree() {
+        const container = document.getElementById('canvas-container');
+        scene = new THREE.Scene(); scene.background = new THREE.Color(0xf9f9f9);
+        camera = new THREE.PerspectiveCamera(50, container.clientWidth/container.clientHeight, 0.1, 100); camera.position.z = 14;
+        renderer = new THREE.WebGLRenderer({antialias: true}); renderer.setSize(container.clientWidth, container.clientHeight);
+        container.innerHTML = ''; container.appendChild(renderer.domElement);
+        const hint = document.createElement('div'); hint.style.cssText = "position:absolute; bottom:10px; left:10px; font-size:0.8rem; color:#888;"; hint.innerText = "* 3D示意图：s/p/d/f 电子云"; container.appendChild(hint);
+        controls = new THREE.OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.autoRotate = true;
+        const light = new THREE.PointLight(0xffffff, 1, 50); light.position.set(10, 10, 20); scene.add(light); scene.add(new THREE.AmbientLight(0x888888));
+        atomGroup = new THREE.Group(); scene.add(atomGroup); animate();
+    }
+    function createOrbital(type, size, color) {
+        const mat = new THREE.MeshBasicMaterial({color: color, wireframe: true, opacity: 0.3, transparent: true, side: THREE.DoubleSide});
+        if(type==='s') return new THREE.Mesh(new THREE.SphereGeometry(size, 32, 32), mat);
+        if(type==='p') { const g = new THREE.Group(); const geo = new THREE.SphereGeometry(size/1.6, 16, 16); geo.scale(0.8, 1.4, 0.8); const m1 = new THREE.Mesh(geo, mat); m1.position.y = size/1.6; const m2 = new THREE.Mesh(geo, mat); m2.position.y = -size/1.6; g.add(m1, m2); return g; }
+        const g = new THREE.Group(); const geo = new THREE.SphereGeometry(size/2, 16, 16); geo.scale(0.6, 1.5, 0.6); for(let i=0; i<4; i++) { const m = new THREE.Mesh(geo, mat); m.rotation.z = (Math.PI/2)*i; m.position.set(Math.cos((Math.PI/2)*i+Math.PI/4)*size/1.5, Math.sin((Math.PI/2)*i+Math.PI/4)*size/1.5, 0); m.lookAt(0,0,0); g.add(m); }
+        if(type==='f') { const ex = g.clone(); ex.rotation.x = Math.PI/2; g.add(ex); } return g;
+    }
+    function visualizeAtom(configStr) {
+        if(!renderer) initThree(); while(atomGroup.children.length > 0) atomGroup.remove(atomGroup.children[0]); electrons = [];
+        const nucleus = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshBasicMaterial({color: 0x555555})); atomGroup.add(nucleus);
+        const parts = configStr.split(' ').filter(p => !p.startsWith('[')); const colors = {s:0x2980b9, p:0x27ae60, d:0xe67e22, f:0x8e44ad};
+        parts.forEach((p, i) => {
+            const match = p.match(/(\d)([spdf])(\d+)/); if(!match) return; const type = match[2], count = parseInt(match[3]); const radius = 2 + i * 1.5; const color = colors[type];
+            const orb = createOrbital(type, radius, color); orb.rotation.set(Math.random()*3, Math.random()*3, 0); atomGroup.add(orb);
+            for(let k=0; k<count; k++) { const elMesh = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), new THREE.MeshBasicMaterial({color: color})); atomGroup.add(elMesh); electrons.push({ mesh:elMesh, type:type, radius:radius, offset:Math.random()*10, rotation:orb.rotation }); }
+        });
+    }
+    function animate() {
+        requestAnimationFrame(animate); if(controls) controls.update(); time += 0.01;
+        electrons.forEach(e => { const t = time + e.offset; const r = e.radius; let x=0,y=0,z=0; if(e.type==='s') { x=Math.cos(t)*r; y=Math.sin(t)*r; z=Math.sin(t*0.5)*r*0.5; } else if(e.type==='p') { y=Math.sin(t)*r; z=Math.sin(2*t)*r*0.5; } else { x=Math.cos(2*t)*r; y=Math.sin(3*t)*r; z=Math.cos(t)*r*0.3; } const v = new THREE.Vector3(x,y,z); if(e.type!=='s') v.applyEuler(e.rotation); e.mesh.position.copy(v); });
+        renderer.render(scene, camera);
+    }
+    window.addEventListener('resize', () => { const container = document.getElementById('canvas-container'); if(renderer && container) { camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); } });
+</script>
+</body>
+</html>

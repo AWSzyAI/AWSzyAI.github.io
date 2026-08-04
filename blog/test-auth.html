@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub OAuth 测试 - 时子延的个人主页</title>
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <script src="github-oauth-config.js"></script>
+    <script src="auth.js"></script>
+    <style>
+        body {
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 50%, #32CD32 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+            font-family: 'SimSun', serif;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .test-section h3 {
+            color: #2E7D32;
+            margin-top: 0;
+        }
+
+        .config-display {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+
+        .btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        .btn.secondary {
+            background: #2196f3;
+        }
+
+        .btn.secondary:hover {
+            background: #1976d2;
+        }
+
+        .btn.danger {
+            background: #f44336;
+        }
+
+        .btn.danger:hover {
+            background: #d32f2f;
+        }
+
+        .user-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #c8e6c9;
+            margin: 10px 0;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .debug-log {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>GitHub OAuth 测试页面</h1>
+            <p>测试博客系统的GitHub登录功能</p>
+        </div>
+
+        <!-- 配置状态检查 -->
+        <div class="test-section">
+            <h3>配置状态检查</h3>
+            <div id="config-status"></div>
+            <button class="btn secondary" onclick="checkConfig()">检查配置</button>
+            <button class="btn" onclick="showConfigDialog()">配置GitHub OAuth</button>
+        </div>
+
+        <!-- 用户登录状态 -->
+        <div class="test-section">
+            <h3>用户登录状态</h3>
+            <div id="user-status"></div>
+            <button class="btn" onclick="testGitHubLogin()">测试GitHub登录</button>
+            <button class="btn secondary" onclick="testSimpleLogin()">测试模拟登录</button>
+            <button class="btn danger" onclick="testLogout()">退出登录</button>
+        </div>
+
+        <!-- 权限测试 -->
+        <div class="test-section">
+            <h3>权限测试</h3>
+            <div id="permission-status"></div>
+            <button class="btn secondary" onclick="testPermissions()">测试权限</button>
+        </div>
+
+        <!-- 调试信息 -->
+        <div class="test-section">
+            <h3>调试信息</h3>
+            <div id="debug-info" class="debug-log">等待测试...</div>
+            <button class="btn secondary" onclick="clearDebugLog()">清空日志</button>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="instructions">
+            <h4>使用说明：</h4>
+            <ol>
+                <li>首先检查GitHub OAuth配置状态</li>
+                <li>如果未配置，点击"配置GitHub OAuth"按钮</li>
+                <li>配置完成后，测试GitHub登录功能</li>
+                <li>查看调试信息了解详细的执行过程</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = '';
+
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            debugLog += logMessage;
+            document.getElementById('debug-info').textContent = debugLog;
+            console.log(logMessage);
+        }
+
+        // 检查配置
+        function checkConfig() {
+            addLog('开始检查GitHub OAuth配置...');
+
+            const configStatus = document.getElementById('config-status');
+            const config = getGitHubOAuthConfig();
+
+            let html = '<div class="config-display">';
+            html += `Client ID: ${config.CLIENT_ID}\n`;
+            html += `Redirect URI: ${config.REDIRECT_URI}\n`;
+            html += `Scope: ${config.SCOPE}\n`;
+            html += `Debug Mode: ${config.DEBUG}\n`;
+            html += '</div>';
+
+            if (config.CLIENT_ID === 'GITHUB_CLIENT_ID_PLACEHOLDER') {
+                html += '<span class="status-indicator status-warning">未配置Client ID</span>';
+                addLog('警告：Client ID未配置', 'warning');
+            } else {
+                html += '<span class="status-indicator status-success">配置正常</span>';
+                addLog('GitHub OAuth配置检查完成', 'success');
+            }
+
+            configStatus.innerHTML = html;
+        }
+
+        // 显示配置对话框
+        function showConfigDialog() {
+            if (blogAuth) {
+                blogAuth.showConfigDialog();
+                addLog('显示配置对话框');
+            } else {
+                addLog('错误：blogAuth实例未找到', 'error');
+            }
+        }
+
+        // 测试GitHub登录
+        function testGitHubLogin() {
+            addLog('开始测试GitHub OAuth登录...');
+
+            if (blogAuth) {
+                const config = getGitHubOAuthConfig();
+                if (config.CLIENT_ID === 'GITHUB_CLIENT_ID_PLACEHOLDER') {
+                    addLog('错误：请先配置GitHub Client ID', 'error');
+                    alert('请先配置GitHub Client ID');
+                    return;
+                }
+
+                addLog('调用GitHub OAuth登录...');
+                blogAuth.loginWithGitHub();
+            } else {
+                addLog('错误：blogAuth实例未找到', 'error');
+            }
+        }
+
+        // 测试模拟登录
+        function testSimpleLogin() {
+            addLog('开始测试模拟登录...');
+
+            if (blogAuth) {
+                blogAuth.showSimpleLoginDialog();
+                addLog('显示模拟登录对话框');
+            } else {
+                addLog('错误：blogAuth实例未找到', 'error');
+            }
+        }
+
+        // 测试退出登录
+        function testLogout() {
+            addLog('开始测试退出登录...');
+
+            if (blogAuth) {
+                blogAuth.logout();
+                addLog('退出登录成功');
+                updateUserStatus();
+            } else {
+                addLog('错误：blogAuth实例未找到', 'error');
+            }
+        }
+
+        // 更新用户状态显示
+        function updateUserStatus() {
+            const userStatus = document.getElementById('user-status');
+
+            if (blogAuth && blogAuth.isLoggedIn()) {
+                const user = blogAuth.getCurrentUser();
+                let html = '<div class="user-info">';
+                html += `<img src="${user.avatar}" alt="${user.name}" class="user-avatar">`;
+                html += `<strong>${user.name}</strong> (@${user.username})`;
+                if (user.isAuthor) {
+                    html += '<span class="status-indicator status-success">作者</span>';
+                }
+                html += `<br><small>登录时间: ${new Date(user.loginTime).toLocaleString()}</small>`;
+                html += '</div>';
+                userStatus.innerHTML = html;
+                addLog(`当前用户: ${user.name} (@${user.username})`);
+            } else {
+                userStatus.innerHTML = '<p>未登录</p>';
+                addLog('用户未登录');
+            }
+        }
+
+        // 测试权限
+        function testPermissions() {
+            addLog('开始测试用户权限...');
+
+            const permissionStatus = document.getElementById('permission-status');
+            let html = '<div class="config-display">';
+
+            if (blogAuth && blogAuth.isLoggedIn()) {
+                html += `评论权限: ${blogAuth.hasPermission('comment') ? '✓' : '✗'}\n`;
+                html += `点赞权限: ${blogAuth.hasPermission('like') ? '✓' : '✗'}\n`;
+                html += `划线权限: ${blogAuth.hasPermission('highlight') ? '✓' : '✗'}\n`;
+                html += `写博客权限: ${blogAuth.hasPermission('write_blog') ? '✓' : '✗'}\n`;
+
+                addLog('权限检查完成');
+            } else {
+                html += '请先登录';
+                addLog('请先登录再测试权限', 'warning');
+            }
+
+            html += '</div>';
+            permissionStatus.innerHTML = html;
+        }
+
+        // 清空调试日志
+        function clearDebugLog() {
+            debugLog = '';
+            document.getElementById('debug-info').textContent = '等待测试...';
+            addLog('调试日志已清空');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('GitHub OAuth 测试页面加载完成');
+
+            // 等待blogAuth实例初始化
+            setTimeout(() => {
+                addLog('开始初始化测试...');
+                checkConfig();
+                updateUserStatus();
+                testPermissions();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

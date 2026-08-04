@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub登录调试 - 时子延的个人主页</title>
+    <link rel="icon" type="image/x-icon" href="/szy.ico">
+    <script src="github-oauth-config.js"></script>
+    <script src="auth.js"></script>
+    <style>
+        body {
+            font-family: 'LXGWWenKai', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn.danger {
+            background: #f44336;
+        }
+        .btn.danger:hover {
+            background: #d32f2f;
+        }
+        .status {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        .debug-info {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GitHub登录调试页面</h1>
+
+        <div class="status" id="status">
+            正在检查状态...
+        </div>
+
+        <h2>测试操作</h2>
+        <button class="btn" onclick="testShowLoginModal()">测试显示登录模态框</button>
+        <button class="btn" onclick="testDirectLogin()">直接测试GitHub登录</button>
+        <button class="btn danger" onclick="clearLogs()">清空日志</button>
+
+        <h2>调试信息</h2>
+        <div class="debug-info" id="debug-info">等待调试信息...</div>
+
+        <h2>配置信息</h2>
+        <div class="debug-info" id="config-info">加载配置中...</div>
+    </div>
+
+    <script>
+        let debugDiv = document.getElementById('debug-info');
+        let statusDiv = document.getElementById('status');
+        let configDiv = document.getElementById('config-info');
+
+        // 添加日志
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.textContent += `[${timestamp}] ${message}\n`;
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+            console.log(message);
+        }
+
+        // 更新状态
+        function updateStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'status error' : 'status';
+            addLog(message);
+        }
+
+        // 测试显示登录模态框
+        function testShowLoginModal() {
+            addLog('=== 测试显示登录模态框 ===');
+
+            if (typeof blogAuth === 'undefined') {
+                updateStatus('错误：blogAuth对象未定义', true);
+                return;
+            }
+
+            if (typeof blogAuth.showLoginModal !== 'function') {
+                updateStatus('错误：showLoginModal方法不存在', true);
+                return;
+            }
+
+            addLog('调用 blogAuth.showLoginModal()');
+            try {
+                blogAuth.showLoginModal();
+                updateStatus('登录模态框应该已显示');
+            } catch (error) {
+                updateStatus('调用showLoginModal时出错：' + error.message, true);
+            }
+        }
+
+        // 直接测试GitHub登录
+        function testDirectLogin() {
+            addLog('=== 直接测试GitHub登录 ===');
+
+            if (typeof blogAuth === 'undefined') {
+                updateStatus('错误：blogAuth对象未定义', true);
+                return;
+            }
+
+            if (typeof blogAuth.loginWithGitHub !== 'function') {
+                updateStatus('错误：loginWithGitHub方法不存在', true);
+                return;
+            }
+
+            addLog('调用 blogAuth.loginWithGitHub()');
+            try {
+                blogAuth.loginWithGitHub();
+                updateStatus('GitHub登录流程已启动');
+            } catch (error) {
+                updateStatus('调用loginWithGitHub时出错：' + error.message, true);
+            }
+        }
+
+        // 清空日志
+        function clearLogs() {
+            debugDiv.textContent = '';
+            addLog('日志已清空');
+        }
+
+        // 显示配置信息
+        function showConfigInfo() {
+            if (typeof GITHUB_CONFIG === 'undefined') {
+                configDiv.textContent = 'GITHUB_CONFIG 未定义';
+                addLog('错误：GITHUB_CONFIG未定义');
+                return;
+            }
+
+            let configText = '';
+            configText += `CLIENT_ID: ${GITHUB_CONFIG.CLIENT_ID}\n`;
+            configText += `REDIRECT_URI: ${GITHUB_CONFIG.REDIRECT_URI}\n`;
+            configText += `SCOPE: ${GITHUB_CONFIG.SCOPE}\n`;
+            configText += `AUTH_URL: ${GITHUB_CONFIG.AUTH_URL}\n`;
+            configText += `DEBUG: ${GITHUB_CONFIG.DEBUG}\n`;
+
+            configDiv.textContent = configText;
+            addLog('配置信息已显示');
+        }
+
+        // 检查页面状态
+        function checkPageStatus() {
+            addLog('=== 页面状态检查 ===');
+
+            // 检查blogAuth对象
+            if (typeof blogAuth === 'undefined') {
+                updateStatus('错误：blogAuth对象未定义，脚本可能加载失败', true);
+                return;
+            } else {
+                addLog('✓ blogAuth对象已定义');
+            }
+
+            // 检查方法
+            const methods = ['showLoginModal', 'loginWithGitHub', 'showMessage'];
+            methods.forEach(method => {
+                if (typeof blogAuth[method] === 'function') {
+                    addLog(`✓ blogAuth.${method} 方法存在`);
+                } else {
+                    addLog(`✗ blogAuth.${method} 方法不存在`);
+                }
+            });
+
+            // 检查DOM元素
+            const hasBody = document.body !== null;
+            const hasHead = document.head !== null;
+            addLog(`✓ document.body 存在: ${hasBody}`);
+            addLog(`✓ document.head 存在: ${hasHead}`);
+
+            // 检查配置
+            showConfigInfo();
+
+            updateStatus('检查完成，可以进行测试');
+        }
+
+        // 页面加载完成后检查
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('页面加载完成');
+
+            // 等待脚本加载
+            setTimeout(() => {
+                checkPageStatus();
+            }, 1000);
+        });
+
+        // 监听错误
+        window.addEventListener('error', function(event) {
+            addLog(`JavaScript错误: ${event.error.message} at ${event.filename}:${event.lineno}`);
+            updateStatus('发生JavaScript错误：' + event.error.message, true);
+        });
+
+        // 监听未处理的Promise拒绝
+        window.addEventListener('unhandledrejection', function(event) {
+            addLog(`未处理的Promise拒绝: ${event.reason}`);
+            updateStatus('发生Promise错误：' + event.reason, true);
+        });
+    </script>
+</body>
+</html>
