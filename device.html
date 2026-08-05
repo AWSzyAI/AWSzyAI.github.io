@@ -811,6 +811,9 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/cloud-config.js"></script>
+  <script src="/cloud-sync.js"></script>
   <script>
     // ===================== 数据与常量 =====================
     let items = [
@@ -862,6 +865,17 @@
       }
     ];
 
+    const DEVICE_STORAGE_KEY = 'szy_device_manager_v1';
+    const DEVICE_TEMPLATE_ITEMS = JSON.parse(JSON.stringify(items));
+    const DEFAULT_DEVICE_STATE = {
+      exportedAt: null,
+      items: JSON.parse(JSON.stringify(DEVICE_TEMPLATE_ITEMS)),
+      ledger: {},
+      mileage: null,
+      template: true
+    };
+    let deviceMileage = null;
+
     let currentTab = 'active';
     let editingId = null;
     let currentFormKind = 'asset'; // 'asset' | 'sub' | 'rental' | 'checkin'
@@ -884,7 +898,6 @@
       'bg-rose-400'
     ];
 
-    const LEDGER_STORAGE_KEY = 'szy_finance_ledger_v1';
     const DEFAULT_EXPENSE_PRESETS = ['早餐', '午餐', '晚餐', '地铁'];
     const DEFAULT_INCOME_PRESETS = ['生活费', '房租', '工资'];
     let ledgerData = {};
@@ -1366,6 +1379,41 @@
       return null;
     }
 
+    function getDevicePayload() {
+      return {
+        exportedAt: new Date().toISOString(),
+        items: items.map((item) => ({ ...item })),
+        ledger: JSON.parse(JSON.stringify(ledgerData || {})),
+        mileage: deviceMileage ? JSON.parse(JSON.stringify(deviceMileage)) : null
+      };
+    }
+
+    function applyDevicePayload(payload) {
+      const rawItems = extractItemsFromPayload(payload);
+      items = (rawItems && rawItems.length ? rawItems : DEVICE_TEMPLATE_ITEMS)
+        .map(normalizeItem)
+        .filter(Boolean);
+      ledgerData = payload && payload.ledger && typeof payload.ledger === 'object'
+        ? JSON.parse(JSON.stringify(payload.ledger))
+        : {};
+      deviceMileage = payload && payload.mileage
+        ? JSON.parse(JSON.stringify(payload.mileage))
+        : null;
+      FINANCE_DEMO_ENABLED = !(rawItems && rawItems.length) || payload?.template === true;
+      editingId = null;
+      tempSubRecords = [];
+      if (document.readyState !== 'loading') {
+        renderLedgerCalendar();
+        switchTab(currentTab || 'finance');
+      }
+    }
+
+    function scheduleDeviceSave() {
+      if (window.SzyCloud?.isSignedIn()) {
+        window.SzyCloud.scheduleSave(getDevicePayload());
+      }
+    }
+
     // 某个订阅在区间 [rangeStart, rangeEnd) 内的成本
     function calcSubCostInRange(item, rangeStart, rangeEnd) {
       if (!item.records || !Array.isArray(item.records)) return 0;
@@ -1399,21 +1447,11 @@
 
     // ===================== 收支数据工具 =====================
     function loadLedgerFromStorage() {
-      try {
-        const raw = localStorage.getItem(LEDGER_STORAGE_KEY);
-        ledgerData = raw ? JSON.parse(raw) || {} : {};
-      } catch (err) {
-        console.warn('load ledger failed', err);
-        ledgerData = {};
-      }
+      ledgerData = {};
     }
 
     function saveLedgerToStorage() {
-      try {
-        localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(ledgerData));
-      } catch (err) {
-        console.warn('save ledger failed', err);
-      }
+      scheduleDeviceSave();
     }
 
     function ledgerHasManual(dateStr) {
@@ -1637,7 +1675,7 @@
     }
 
     // ===================== 初始化 =====================
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       items = items.map(normalizeItem).filter(Boolean);
       loadLedgerFromStorage();
       ledgerMonthCursor = startOfDay(new Date());
@@ -1698,6 +1736,14 @@
 
       renderLedgerCalendar();
       switchTab('finance');
+
+      await window.SzyCloud.init({
+        documentType: 'device',
+        legacyStorageKey: DEVICE_STORAGE_KEY,
+        template: DEFAULT_DEVICE_STATE,
+        getData: getDevicePayload,
+        applyData: applyDevicePayload
+      });
     });
 
     // ===================== Tab & 表单类型 =====================
@@ -4503,17 +4549,20 @@
       } else {
         items.push(normalizeItem(newItem));
       }
+      scheduleDeviceSave();
       resetForm();
     }
 
     function deleteFromForm() {
       if (!editingId) return;
       items = items.filter((i) => i.id !== editingId);
+      scheduleDeviceSave();
       resetForm();
     }
 
     function deleteItem(id) {
       items = items.filter((i) => i.id !== id);
+      scheduleDeviceSave();
       if (editingId === id) {
         resetForm();
       } else {
@@ -5534,6 +5583,7 @@
 
       item.records[idx] = nextRec;
       items = items.map((it) => (it.id === itemId ? normalizeItem(it) : it)).filter(Boolean);
+      scheduleDeviceSave();
       const keepYear = detailSelectedYear;
       closeCycleModal();
       // 重新打开详情以刷新视图，保持当前年份
@@ -5663,6 +5713,7 @@
         item.records[dateStr] = packCheckinRecord(value ? true : false, note);
       }
 
+      scheduleDeviceSave();
       const keepYear = detailSelectedYear;
       closeCheckinModal();
       render();
@@ -5675,6 +5726,7 @@
       const item = items.find((i) => i.id === itemId);
       if (!item || item.type !== 'checkin') return;
       if (item.records) delete item.records[dateStr];
+      scheduleDeviceSave();
       const keepYear = detailSelectedYear;
       closeCheckinModal();
       render();
@@ -5933,7 +5985,8 @@
       const payload = {
         exportedAt: new Date().toISOString(),
         items: items.map((i) => ({ ...i })),
-        ledger: ledgerData
+        ledger: ledgerData,
+        mileage: deviceMileage
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: 'application/json'
@@ -5963,6 +6016,9 @@
           items = rawItems.map(normalizeItem).filter(Boolean);
           ledgerData =
             parsed && parsed.ledger && typeof parsed.ledger === 'object' ? parsed.ledger : {};
+          deviceMileage = parsed && parsed.mileage
+            ? JSON.parse(JSON.stringify(parsed.mileage))
+            : null;
           FINANCE_DEMO_ENABLED = false;
           saveLedgerToStorage();
           renderLedgerCalendar();
@@ -6047,6 +6103,7 @@
           }
 
           items = keep.concat(add);
+          scheduleDeviceSave();
           editingId = null;
           tempSubRecords = [];
           resetForm();
@@ -6208,7 +6265,6 @@
       </div>
     </div>
   </div>
-  </script>
 </body>
 
 </html>

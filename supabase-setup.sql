@@ -1,12 +1,20 @@
 create table if not exists public.user_documents (
     user_id uuid not null references auth.users(id) on delete cascade,
-    document_type text not null check (document_type in ('money', 'tax')),
+    document_type text not null check (document_type in ('money', 'tax', 'device')),
     payload jsonb not null default '{}'::jsonb,
     updated_at timestamptz not null default now(),
     primary key (user_id, document_type)
 );
 
 alter table public.user_documents enable row level security;
+
+-- Existing projects created before Device sync need the old two-value check
+-- constraint replaced. The default PostgreSQL name is stable for this column.
+alter table public.user_documents
+    drop constraint if exists user_documents_document_type_check;
+alter table public.user_documents
+    add constraint user_documents_document_type_check
+    check (document_type in ('money', 'tax', 'device'));
 
 revoke all on table public.user_documents from anon;
 grant select, insert, update, delete on table public.user_documents to authenticated;

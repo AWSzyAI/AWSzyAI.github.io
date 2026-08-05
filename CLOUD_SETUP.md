@@ -1,4 +1,4 @@
-# Money / Tax 云同步、备份与恢复
+# Money / Tax / Device 云同步、备份与恢复
 
 最后更新：2026-08-05
 
@@ -19,7 +19,7 @@ Publishable key 本来就会发送给浏览器，可以公开。GitHub Client Se
 2. 启用 RLS。
 3. 撤销匿名角色权限。
 4. 只允许 authenticated 用户操作自己的行。
-5. 为 Money 和 Tax 各保存一份 JSON payload。
+5. 为 Money、Tax 和 Device 各保存一份 JSON payload。
 
 脚本可重复执行，策略会先删除再重建。
 
@@ -43,16 +43,18 @@ Supabase Authentication → URL Configuration：
   - `https://awszyai.github.io/money`
   - `https://awszyai.github.io/tax.html`
   - `https://awszyai.github.io/tax`
+  - `https://awszyai.github.io/device.html`
+  - `https://awszyai.github.io/device`
 
 页面当前使用 `location.origin + location.pathname` 作为 `redirectTo`，所以带扩展名和无扩展名的入口最好都加入允许列表。
 
 ## 正常使用流程
 
-1. 打开 Money 或 Tax。
+1. 打开 Money、Tax 或 Device。
 2. 点击右下角“GitHub 登录”。
 3. 在 GitHub 页面输入 GitHub 用户名/邮箱和密码，完成授权。
 4. 返回页面后确认右下角显示 `<GitHub 用户名> · 已同步`。
-5. Money 与 Tax 是两个独立文档，两页都要至少打开一次。
+5. Money、Tax 与 Device 是三个独立文档，三页都要至少打开一次。
 
 登录密码只输入 GitHub 官方页面。任何维护者都不应索取密码、验证码或 Client Secret。
 
@@ -61,7 +63,7 @@ Supabase Authentication → URL Configuration：
 ### 未登录
 
 - 页面显示“模板模式”。
-- Money/Tax 只展示脱敏示例。
+- Money/Tax/Device 只展示脱敏示例。
 - 修改后刷新不应保留财务数据。
 - 对 `user_documents` 的匿名 REST 读取应得到 401/permission denied。
 
@@ -83,6 +85,16 @@ Tax 页面支持“导出 JSON”。做重大修改、迁移或恢复前必须�
 4. 至少保留一份近期可用备份。
 
 Money 当前有 JSON Load/Sync 流程。改动 Money 数据结构前，也应先导出或复制原始 JSON；如果界面没有清楚的导出入口，应优先补齐该功能。
+
+Device 页面支持全量导入/导出。真实源文件当前位于：
+
+```text
+C:\Users\szy\iCloudDrive\PhD\all_assets_2026-07-02_13_38_22.json
+```
+
+导入前必须先执行更新后的 `supabase-setup.sql`，否则旧数据库约束只允许 `money` 和 `tax`，Device 保存会失败。
+
+Device 恢复步骤：登录 `AWSzyAI` → 确认右下角已同步 → 点击“加载全部”并选择源 JSON → 等待已同步 → 刷新核对 → 再导出一份新的私人备份。源 JSON 不得提交到 Git。
 
 ## 恢复 Tax 数据
 
@@ -151,6 +163,6 @@ C:\Users\szy\AppData\Local\Temp\szy-tax-recovery-2026-2027.json
 2. 匿名 REST 读取被拒绝。
 3. 所有者登录后可以保存、刷新并恢复。
 4. 第二账号只能看到自己的模板/数据。
-5. Money 与 Tax 互不覆盖。
+5. Money、Tax 与 Device 互不覆盖。
 6. 登出后立即恢复模板显示。
 7. 网络失败时显示错误，不删除本地旧数据。

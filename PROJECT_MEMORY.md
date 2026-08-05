@@ -15,7 +15,7 @@
 1. 主页保持浅色、墨绿色点缀、简约清晰。
 2. 避免深色霓虹、玻璃拟态、渐变光效和“很多圆角卡片”的 AI landing page 风格。
 3. 项目按用途排列，用目录式分割线呈现，不重复堆叠 Projects 与 Tools。
-4. Money/Tax 的真实数据绝不能作为默认值写进公开源码。
+4. Money/Tax/Device 的真实数据绝不能作为默认值写进公开源码。
 5. 未登录用户只看到模板；登录用户只看到自己的云端数据。
 
 ## 2. 当前文件与职责
@@ -23,7 +23,7 @@
 ### 公共页面
 
 - `index.html`：主页，CSS 内嵌，只有少量移动导航脚本。
-- `device.html`：设备与订阅记录。
+- `device.html`：设备、订阅、租赁、打卡、里程和收支记录，并接入云同步。
 - `PhD.html`：长期情景建模。
 - `blog.html`、`blog/`：博客入口和旧博客系统。
 - `obsidian/`、`MkDocs/site/`、`Archive/`：静态内容与历史归档。
@@ -84,7 +84,24 @@
 
 公开默认数据位于 `defaultState`，必须始终保持脱敏。Money 当前遗留 key 为 `szy_finance_demo_v2_sanitized`。
 
-## 5. Tax 页面模型
+## 5. Device 页面模型
+
+`device.html` 的云端 payload 包含：
+
+- `items[]`：实体资产、订阅、租赁与打卡项目。
+- `ledger`：按日期保存的手动收入与支出。
+- `mileage`：旧导出文件中的 CSV 与结构化里程行；即使当前界面没有单独编辑全部字段，也要原样保留，避免导入后丢失。
+- `exportedAt`：最近生成 payload 的时间。
+
+公开页面默认只包含“示例”项目。真实数据来源文件不进入 Git：
+
+```text
+C:\Users\szy\iCloudDrive\PhD\all_assets_2026-07-02_13_38_22.json
+```
+
+Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态下随后自动保存到 `document_type = device`。卡片列数、财务列数与标签拆分开关属于界面偏好，可继续保留在 localStorage；真实资产和账本不再写入 localStorage。
+
+## 6. Tax 页面模型
 
 `tax.html` 使用年度账本结构：
 
@@ -131,7 +148,7 @@ book
 
 Tax 数据 key：`szy_tax_refund_planner_v2`。列宽仅保存在本机 `szy_tax_column_widths_v1`，不属于财务数据。
 
-## 6. 云同步架构
+## 7. 云同步架构
 
 ### 登录与路由
 
@@ -139,7 +156,7 @@ Tax 数据 key：`szy_tax_refund_planner_v2`。列宽仅保存在本机 `szy_tax
 2. 未登录时应用脱敏模板。
 3. 点击“GitHub 登录”后，经 GitHub OAuth 返回 Supabase callback。
 4. Supabase 恢复会话后按当前用户 ID 查询数据。
-5. Money 与 Tax 分别使用 `document_type = money` 和 `document_type = tax`。
+5. Money、Tax、Device 分别使用 `document_type = money`、`tax`、`device`。
 
 ### 数据表
 
@@ -147,7 +164,7 @@ Tax 数据 key：`szy_tax_refund_planner_v2`。列宽仅保存在本机 `szy_tax
 
 ```text
 user_id       auth.users.id
-document_type money | tax
+document_type money | tax | device
 payload       jsonb
 updated_at    timestamptz
 ```
@@ -168,7 +185,7 @@ RLS 强制所有 select/insert/update/delete 都满足 `auth.uid() = user_id`。
 - 当前不是客户端端到端加密：Supabase 项目管理员仍具备数据库管理能力。
 - 如果以后要求“平台管理员也看不到明文”，需要增加用户侧密钥和客户端加密，不能只依赖 RLS。
 
-## 7. 数据事故与恢复状态
+## 8. 数据事故与恢复状态
 
 ### 发生了什么
 
@@ -193,24 +210,25 @@ Money 还有额外风险：当前 `legacyStorageKey` 是新的脱敏 key，而�
 
 不要把恢复 JSON 加入 Git。完成恢复后应先导出一份用户自行保管的备份，再删除临时文件。
 
-## 8. 下次继续时的优先事项
+## 9. 下次继续时的优先事项
 
 1. 完成 Tax 恢复：用 `AWSzyAI` 登录 Tax 页面，导入临时恢复 JSON，检查 2026/2027 年份和汇总结果，等待云端同步。
 2. 立刻从 Tax 页“导出 JSON”保存新的私有备份。
 3. 检查 Money 是否仍能在原浏览器找到旧数据；不要在未备份前反复刷新或清理浏览器数据。
 4. 改进首次迁移策略：当远端只有模板时，提供明确的“导入旧本机数据/保留云端模板”选择，禁止静默覆盖。
 5. 为 Money 与 Tax 增加可见的“最近云端保存时间”和手动导出提醒。
+6. 在 Supabase 执行更新后的 `supabase-setup.sql`，启用 `document_type = device`，再用所有者账号导入 Device 私有 JSON。
 
-## 9. 安全操作规则
+## 10. 安全操作规则
 
 - 公开仓库中只能存在脱敏模板。
-- 不提交 JSON 备份、截图中的真实金额、access token、refresh token、GitHub Client Secret 或 Supabase `service_role` key。
+- 不提交 Money/Tax/Device JSON 备份、截图中的真实金额、access token、refresh token、GitHub Client Secret 或 Supabase `service_role` key。
 - `cloud-config.js` 只允许 Project URL 和 Publishable key。
 - 修改 `supabase-setup.sql` 后必须重新验证匿名读取被拒绝、不同账号互相不可见。
 - 在删除 localStorage 前，必须确认云端写入成功并能在刷新后重新读取。
 - 历史重写只用于清除已公开的敏感信息；执行前要保留本地恢复点。
 
-## 10. 开发与验证流程
+## 11. 开发与验证流程
 
 ### 本地检查
 
@@ -225,7 +243,7 @@ python -m http.server 4173
 
 - 主页桌面与移动布局无横向溢出。
 - 所有导航和项目链接有效。
-- Money/Tax 未登录时只显示模板。
+- Money/Tax/Device 未登录时只显示模板。
 - 登录后状态显示 GitHub 用户名与“已同步”。
 - 修改数据、等待自动保存、刷新后数据仍存在。
 - 用第二个账号登录时只能看到该账号自己的模板或数据。
@@ -243,7 +261,7 @@ GitHub Pages 成功后，用带查询参数的地址绕过浏览器缓存：
 https://awszyai.github.io/?deploy=<commit>
 ```
 
-## 11. 关键提交
+## 12. 关键提交
 
 | 提交 | 含义 |
 | --- | --- |
@@ -252,9 +270,8 @@ https://awszyai.github.io/?deploy=<commit>
 | `4b85da0` | 安全重置公开历史，移除真实财务默认数据 |
 | `cb50d4b` | 本机仍可访问的旧 Tax 实现与恢复来源，不应重新推到公开远端 |
 
-## 12. 下次会话建议开场
+## 13. 下次会话建议开场
 
 可以直接告诉维护者：
 
 > 请先阅读仓库根目录的 `PROJECT_MEMORY.md` 和 `CLOUD_SETUP.md`。先检查 Tax 恢复是否完成，再做其他财务页面改动。不要把本机恢复 JSON 或真实金额提交到 Git。
-
