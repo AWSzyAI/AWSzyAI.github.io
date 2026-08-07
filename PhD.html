@@ -2,382 +2,965 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>博士阶段 5 年现金流（SMART + 国家助学金 + 助教 + Blux + HiMCM）</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="博士五年现金流情景测算器：组合 Blux 工资、博士补助、助教、车贷与生活费，查看完整收入时间轴和毕业现金。">
+  <title>博士五年现金流决策台</title>
+  <link rel="icon" type="image/x-icon" href="/szy.ico">
   <style>
+    :root {
+      --paper: #f5f1e8;
+      --paper-deep: #ebe4d7;
+      --ink: #17231e;
+      --muted: #69736d;
+      --green: #164f3b;
+      --green-2: #2d7157;
+      --income: #237a57;
+      --expense: #c55246;
+      --equity: #7b817d;
+      --lime: #bdd768;
+      --orange: #e7874a;
+      --red: #b64b3f;
+      --white: #fffdf8;
+      --line: rgba(23, 35, 30, .13);
+      --shadow: 0 20px 60px rgba(40, 49, 40, .09);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                   "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: #fafafa;
-      padding: 30px;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 84% 5%, rgba(189, 215, 104, .22), transparent 24rem),
+        linear-gradient(180deg, var(--paper) 0%, #f8f6f0 42%, var(--paper) 100%);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-variant-numeric: tabular-nums;
     }
-    h2 {
-      text-align: center;
-      margin: 30px 0 10px;
+
+    button, input { font: inherit; }
+    a { color: inherit; }
+    .shell { width: min(1540px, calc(100% - 36px)); margin: 0 auto; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 26px 0;
     }
-    .chart-container {
-      width: 1600px;
-      height: 480px;
-      margin: auto;
+    .back {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .back-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px rgba(189,215,104,.2); }
+    .date-pill { color: var(--muted); font-size: 13px; border: 1px solid var(--line); padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.45); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+      gap: 24px;
+      align-items: end;
+      padding: 50px 0 38px;
+    }
+    .eyebrow { color: var(--green-2); font-weight: 800; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 15px 0 18px; font-family: Georgia, "Songti SC", serif; font-size: clamp(44px, 6.7vw, 86px); line-height: .98; letter-spacing: -.055em; font-weight: 500; }
+    .hero p { max-width: 680px; color: var(--muted); font-size: 17px; line-height: 1.8; margin: 0; }
+    .hero-note { padding: 24px; border-left: 1px solid var(--line); }
+    .hero-note strong { display: block; font-family: Georgia, serif; font-size: 40px; font-weight: 500; margin-bottom: 8px; }
+    .hero-note span { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .workspace { display: grid; grid-template-columns: minmax(300px, 3fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+    .panel { background: rgba(255, 253, 248, .82); border: 1px solid rgba(23,35,30,.11); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(14px); }
+    .controls { position: sticky; top: 18px; padding: 22px; max-height: calc(100vh - 36px); overflow: auto; scrollbar-width: thin; }
+    .panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .panel-title h2 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: 23px; font-weight: 500; letter-spacing: -.02em; }
+    .reset { border: 0; background: none; padding: 5px; color: var(--green-2); cursor: pointer; font-size: 13px; }
+    .section-label { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin: 23px 0 10px; }
+
+    .decision-list { display: grid; gap: 8px; }
+    .decision-card { border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.68); overflow: hidden; transition: box-shadow .16s, opacity .16s; }
+    .decision-card:hover { box-shadow: 0 8px 22px rgba(30,50,39,.08); }
+    .decision-card.dragging { opacity: .35; }
+    .card-main { display: grid; grid-template-columns: 14px minmax(0,1fr) auto; gap: 9px; align-items: center; padding: 12px 10px; }
+    .drag-grip { color: #9aa19c; font-size: 13px; letter-spacing: -3px; cursor: grab; }
+    .card-toggle { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 9px; cursor: pointer; }
+    .card-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .card-toggle:has(input:focus-visible) { outline: 2px solid var(--lime); outline-offset: 3px; border-radius: 6px; }
+    .card-edit { border: 0; border-radius: 8px; background: var(--paper); color: var(--green-2); padding: 7px 8px; cursor: pointer; font-size: 10px; font-weight: 700; }
+    .card-edit.active { background: var(--green); color: white; }
+    .card-details { padding: 13px; border-top: 1px solid var(--line); background: rgba(245,241,232,.65); }
+    .card-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card-field-grid .full { grid-column: 1 / -1; }
+    .base-cash { margin-bottom: 4px; }
+    .annual-mini-head, .annual-mini-row { display: grid; grid-template-columns: 62px 1fr; gap: 7px; align-items: center; }
+    .annual-mini-head.three, .annual-mini-row.three { grid-template-columns: 52px .8fr 1.2fr; }
+    .annual-mini-head { color: var(--muted); font-size: 9px; margin-top: 12px; padding: 0 5px 5px; }
+    .annual-mini-row { padding: 6px 5px; border-top: 1px solid var(--line); font-size: 11px; }
+    .annual-mini-row input { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: white; padding: 7px; }
+    .year-checks { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-top: 7px; }
+    .year-checks label { cursor: pointer; }
+    .year-checks input { position: absolute; opacity: 0; }
+    .year-checks span { display: block; text-align: center; padding: 8px 2px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--muted); font-size: 10px; }
+    .year-checks input:checked + span { background: var(--green); border-color: var(--green); color: white; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 11px; padding: 12px 11px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.66); cursor: grab; transition: transform .16s, box-shadow .16s, opacity .16s; user-select: none; }
+    .toggle-row::before { content: "⋮⋮"; color: #9aa19c; font-size: 13px; letter-spacing: -3px; flex: 0 0 10px; }
+    .toggle-row:hover { box-shadow: 0 7px 18px rgba(30,50,39,.08); transform: translateY(-1px); }
+    .toggle-row.dragging { opacity: .38; box-shadow: none; }
+    .toggle-copy strong { display: block; font-size: 14px; }
+    .toggle-copy span { color: var(--muted); font-size: 11px; display: block; margin-top: 3px; }
+    .switch { width: 43px; height: 25px; border-radius: 20px; background: #d5d5cf; position: relative; flex: 0 0 auto; transition: .2s; }
+    .switch::after { content: ""; position: absolute; width: 19px; height: 19px; border-radius: 50%; top: 3px; left: 3px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,.2); transition: .2s; }
+    input:checked + .switch { background: var(--green); }
+    input:checked + .switch::after { transform: translateX(18px); }
+    .toggle-row input { position: absolute; opacity: 0; pointer-events: none; }
+    .toggle-row:has(input:focus-visible) { outline: 2px solid var(--lime); outline-offset: 3px; border-radius: 8px; }
+
+    .input-wrap { position: relative; }
+    .input-wrap input { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 14px 56px 14px 14px; color: var(--ink); outline: none; font-size: 16px; }
+    .input-wrap input:focus { border-color: var(--green-2); box-shadow: 0 0 0 3px rgba(45,113,87,.12); }
+    .input-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; }
+    .quick-costs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 8px; }
+    .quick-costs button { border: 1px solid var(--line); border-radius: 9px; padding: 7px 3px; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; }
+    .quick-costs button:hover, .quick-costs button.active { background: var(--green); color: white; border-color: var(--green); }
+    details { margin-top: 18px; }
+    summary { cursor: pointer; color: var(--green-2); font-weight: 700; font-size: 13px; }
+    .assumption-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .mini-input label { display: block; color: var(--muted); font-size: 10px; margin-bottom: 5px; }
+    .mini-input input { width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 9px; background: white; }
+    .method-note { margin-top: 16px; padding: 12px; background: var(--paper); border-radius: 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+
+    .results { min-width: 0; }
+    .results .entry-form { grid-template-columns: 1fr 1fr; }
+    .primary-result { padding: 28px; overflow: hidden; position: relative; background: var(--green); color: white; }
+    .primary-result::after { content: ""; position: absolute; width: 260px; height: 260px; border-radius: 50%; background: var(--lime); opacity: .14; right: -65px; top: -95px; }
+    .primary-result .label { font-size: 12px; color: rgba(255,255,255,.68); letter-spacing: .09em; text-transform: uppercase; }
+    .big-number { position: relative; z-index: 1; font-family: Georgia, "Times New Roman", serif; font-size: clamp(48px, 7vw, 82px); letter-spacing: -.055em; line-height: 1; margin: 16px 0 11px; }
+    .big-number small { font-size: .27em; margin-left: 8px; letter-spacing: 0; }
+    .result-sub { color: rgba(255,255,255,.72); font-size: 13px; }
+    .result-sub strong { color: var(--lime); }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin: 13px 0; }
+    .average-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; margin: 0 0 13px; }
+    .stats-scope { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin: 13px 0 -1px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.5); font-size: 11px; }
+    .stats-scope strong { color: var(--green-2); }
+    .stats-scope span { color: var(--muted); text-align: right; }
+    .metric { padding: 19px; min-height: 128px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric .kicker { color: var(--muted); font-size: 11px; }
+    .metric strong { font-family: Georgia, serif; font-size: clamp(25px, 3vw, 36px); font-weight: 500; letter-spacing: -.03em; }
+    .metric .delta { color: var(--muted); font-size: 11px; }
+    #cashIncome, #economicIncome, #averageIncome, .amount-income { color: var(--income) !important; }
+    #totalExpense, #averageExpense, #loanPaid, #loanRemaining, .amount-expense { color: var(--expense) !important; }
+    .amount-equity { color: var(--equity) !important; }
+    #incomeDecisionList .toggle-copy span, #incomeDecisionList input[type="number"] { color: var(--income); }
+    #expenseDecisionList .toggle-copy span, #expenseDecisionList input[type="number"] { color: var(--expense); }
+    #incomeDecisionList [data-decision="housing"] .toggle-copy span, #incomeDecisionList [data-decision="housing"] input[type="number"] { color: var(--equity); }
+
+    .chart-panel { padding: 24px; }
+    .chart-head { display: flex; justify-content: space-between; gap: 20px; align-items: start; margin-bottom: 18px; }
+    .chart-head h2, .timeline-section h2, .compare h2 { margin: 0; font-family: Georgia, "Songti SC", serif; font-weight: 500; font-size: 25px; }
+    .chart-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; color: var(--muted); font-size: 11px; }
+    .legend span::before { content: ""; width: 18px; height: 3px; border-radius: 5px; display: inline-block; vertical-align: middle; margin-right: 5px; background: var(--green-2); }
+    .legend .expense::before { background: var(--orange); }
+    .legend .gross::before { background: var(--lime); }
+    .legend .actual::before { background: var(--orange); height: 9px; width: 9px; border-radius: 50%; }
+    .canvas-wrap { position: relative; width: 100%; height: 320px; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .chart-tooltip { position: absolute; z-index: 3; min-width: 150px; pointer-events: none; opacity: 0; transform: translate(-50%, calc(-100% - 12px)); padding: 10px 12px; border-radius: 11px; background: rgba(23,35,30,.94); color: white; box-shadow: 0 10px 30px rgba(0,0,0,.18); font-size: 11px; transition: opacity .12s; }
+    .chart-tooltip.show { opacity: 1; }
+    .chart-tooltip time { display: block; color: rgba(255,255,255,.62); margin-bottom: 5px; }
+    .chart-tooltip strong { display: block; font-size: 14px; margin-top: 3px; }
+
+    .timeline-section { padding: 30px 0 8px; }
+    .lower-workspace { display: grid; grid-template-columns: minmax(420px, 2fr) minmax(0, 3fr); gap: 20px; align-items: start; margin-top: 30px; }
+    .lower-workspace .cash-entry { margin: 0; padding: 26px; }
+    .lower-workspace .entry-form { grid-template-columns: 140px 1fr; }
+    .lower-workspace .timeline-section { padding: 26px; }
+    .timeline-intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 18px; }
+    .timeline-intro p { margin: 0; color: var(--muted); font-size: 12px; }
+    .stage-list { display: grid; gap: 8px; }
+    .stage { display: grid; grid-template-columns: 58px minmax(180px, 1.2fr) repeat(4, minmax(95px, .7fr)); gap: 12px; align-items: center; padding: 17px 18px; background: rgba(255,255,255,.55); border: 1px solid var(--line); border-radius: 15px; transition: .2s; }
+    .stage:hover { transform: translateY(-2px); background: var(--white); box-shadow: 0 12px 30px rgba(30,50,39,.07); }
+    .stage-index { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: white; font-family: Georgia, serif; }
+    .stage-title strong { display: block; font-size: 14px; }
+    .stage-title span { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+    .stage-value small { display: block; color: var(--muted); font-size: 9px; letter-spacing: .08em; margin-bottom: 4px; }
+    .stage-value strong { font-size: 13px; }
+
+    .compare { margin: 34px 0 24px; padding: 26px; }
+    .compare-head { display: flex; justify-content: space-between; gap: 18px; align-items: start; }
+    .compare-head p { max-width: 540px; margin: 3px 0 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .baseline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .baseline { background: var(--white); padding: 20px; }
+    .baseline small { display: block; color: var(--muted); font-size: 10px; margin-bottom: 8px; }
+    .baseline strong { font-family: Georgia, serif; font-size: 28px; font-weight: 500; }
+    .baseline span { display: block; color: var(--muted); font-size: 10px; margin-top: 5px; }
+    .cash-entry { margin: 13px 0; padding: 22px; }
+    .cash-entry-head, .loan-head, .schedule-head { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+    .cash-entry h2, .schedule-panel h2 { margin: 0; font: 500 23px Georgia, "Songti SC", serif; }
+    .cash-entry-head p, .schedule-head p { color: var(--muted); font-size: 11px; margin: 4px 0 0; }
+    .entry-form { display: grid; grid-template-columns: 150px 1fr 1fr auto; gap: 9px; margin-top: 16px; }
+    .field label { display: block; font-size: 10px; color: var(--muted); margin: 0 0 5px 2px; }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 11px; outline: 0; }
+    .field input:focus { border-color: var(--green-2); box-shadow: 0 0 0 3px rgba(45,113,87,.12); }
+    .save-btn { align-self: end; border: 0; background: var(--green); color: white; border-radius: 10px; padding: 12px 16px; cursor: pointer; font-weight: 700; white-space: nowrap; }
+    .record-list { display: grid; gap: 7px; margin-top: 13px; }
+    .record-item { display: grid; grid-template-columns: 100px 1fr auto auto; gap: 12px; align-items: center; padding: 9px 11px; border-radius: 10px; background: var(--paper); font-size: 11px; }
+    .record-item strong { font-size: 13px; }
+    .record-item span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .record-item button, .clear-btn { border: 0; background: none; color: var(--red); cursor: pointer; font-size: 11px; }
+    .empty-records { color: var(--muted); font-size: 11px; padding: 11px 0 2px; }
+    .loan-panel { padding: 19px 22px; margin: 13px 0; }
+    .loan-head strong { font-size: 14px; }
+    .loan-head span { color: var(--muted); font-size: 11px; }
+    .progress { height: 10px; border-radius: 999px; background: var(--paper-deep); overflow: hidden; margin: 14px 0 9px; }
+    .progress > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--green), var(--lime)); border-radius: inherit; transition: width .3s; }
+    .loan-stats { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+    .schedule-panel { margin: 30px 0; padding: 26px; }
+    .pay-rule-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0 24px; }
+    .annual-head, .year-row { display: grid; grid-template-columns: 70px repeat(3, 1fr); gap: 10px; align-items: center; }
+    .annual-head { color: var(--muted); font-size: 10px; padding: 0 10px 7px; }
+    .year-row { border-top: 1px solid var(--line); padding: 10px; }
+    .year-row strong { font-family: Georgia, serif; font-size: 17px; }
+    .year-row input { width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 9px; background: white; min-width: 0; }
+    .storage-note { display: inline-flex; align-items: center; gap: 7px; color: var(--green-2); font-size: 11px; }
+    .storage-note::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--lime); }
+    .salary-plan { padding: 17px; margin: -5px 0 22px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); }
+    .salary-plan-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .salary-plan-head strong { font-size: 13px; }
+    .salary-plan-head span { color: var(--muted); font-size: 10px; }
+    .salary-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin: 11px 0 15px; }
+    .salary-suggestions button { border: 1px solid var(--line); background: white; color: var(--green-2); border-radius: 999px; padding: 6px 9px; cursor: pointer; font-size: 10px; }
+    .salary-suggestions button.active { background: var(--green); border-color: var(--green); color: white; }
+    .salary-change-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; }
+    .salary-change-list { display: grid; gap: 6px; margin-top: 10px; }
+    .salary-change-item { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 9px; background: white; font-size: 11px; }
+    .salary-change-item span { color: var(--muted); }
+    .salary-change-item button { border: 0; background: none; color: var(--red); cursor: pointer; }
+    .ledger-panel { margin: 0 0 30px; padding: 26px; }
+    .ledger-column { min-width: 0; position: static; margin: 0 0 70px; }
+    .ledger-column .ledger-panel { margin: 0; display: flex; flex-direction: column; }
+    .ledger-column .ledger-wrap { max-height: 720px; flex: 1; min-height: 420px; }
+    .ledger-tools { display: flex; gap: 8px; align-items: center; }
+    .ledger-tools select { border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; background: white; color: var(--ink); }
+    .ledger-wrap { margin-top: 18px; max-height: 520px; overflow: auto; border: 1px solid var(--line); border-radius: 13px; }
+    .ledger-table { width: 850px; min-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+    .ledger-table th { position: sticky; top: 0; z-index: 1; text-align: left; color: var(--muted); font-size: 10px; font-weight: 700; background: var(--paper); padding: 10px 12px; }
+    .col-resizer { position: absolute; z-index: 3; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; touch-action: none; }
+    .col-resizer::after { content: ""; position: absolute; top: 22%; bottom: 22%; left: 3px; width: 1px; background: rgba(23,35,30,.16); }
+    .col-resizer:hover::after, body.resizing-columns .col-resizer::after { background: var(--green-2); width: 2px; }
+    body.resizing-columns { cursor: col-resize; user-select: none; }
+    .ledger-table td { padding: 9px 12px; border-top: 1px solid var(--line); }
+    .ledger-table input { width: 100%; min-width: 105px; border: 1px solid transparent; border-radius: 7px; padding: 7px; background: transparent; }
+    .ledger-table input:hover, .ledger-table input:focus { background: white; border-color: var(--line); outline: 0; }
+    .ledger-category { display: inline-flex; padding: 5px 8px; border-radius: 999px; background: rgba(45,113,87,.1); color: var(--green-2); white-space: nowrap; }
+    .override-mark { color: var(--orange); font-size: 10px; }
+    .ledger-reset { border: 0; background: none; color: var(--green-2); cursor: pointer; font-size: 10px; }
+    footer { border-top: 1px solid var(--line); padding: 24px 0 38px; color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; }
+
+    @media (max-width: 960px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-note { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .lower-workspace { grid-template-columns: 1fr; }
+      .controls { position: static; max-height: none; overflow: visible; }
+      .ledger-column .ledger-wrap { max-height: 520px; min-height: 0; }
+      .stage { grid-template-columns: 50px 1fr 1fr; }
+      .stage-value:nth-last-child(-n+2) { display: none; }
+      .pay-rule-grid { grid-template-columns: repeat(3, 1fr); }
+      .entry-form { grid-template-columns: 1fr 1fr; }
+      .save-btn { width: 100%; }
+    }
+    @media (min-width: 961px) and (max-width: 1250px) {
+      .workspace { grid-template-columns: minmax(300px,3fr) minmax(0,7fr); }
+      .ledger-column .ledger-wrap { max-height: 560px; min-height: 0; }
+    }
+    @media (max-width: 660px) {
+      .shell { width: min(100% - 22px, 1220px); }
+      .topbar { padding: 18px 0; }
+      .date-pill { display: none; }
+      .hero { padding-top: 26px; }
+      h1 { font-size: 48px; }
+      .metric-grid, .average-grid, .baseline-grid { grid-template-columns: 1fr; }
+      .metric { min-height: 105px; }
+      .chart-head, .timeline-intro, .compare-head { display: block; }
+      .legend { justify-content: flex-start; margin-top: 12px; }
+      .canvas-wrap { height: 275px; }
+      .stage { grid-template-columns: 42px 1fr; }
+      .stage-value { grid-column: 2; }
+      .stage-value:nth-last-child(-n+3) { display: none; }
+      .pay-rule-grid, .entry-form { grid-template-columns: 1fr; }
+      .results .entry-form { grid-template-columns: 1fr; }
+      .salary-change-form { grid-template-columns: 1fr; }
+      .annual-head { display: none; }
+      .year-row { grid-template-columns: 58px 1fr; }
+      .year-row input { grid-column: 2; }
+      .record-item { grid-template-columns: 85px 1fr auto; }
+      .record-item span { display: none; }
+      .ledger-tools { margin-top: 12px; }
+      .schedule-head { display: block; }
+      footer { display: block; line-height: 1.8; }
     }
   </style>
 </head>
 <body>
+  <header class="shell topbar">
+    <a class="back" href="/"><span class="back-dot"></span>Ziyan Shi · Scenario Lab</a>
+    <div class="date-pill">2026.08.17 → 2031.07.01</div>
+  </header>
 
-<h2>博士阶段 5 年现金流：月度堆叠 + 累计折线（双纵轴）</h2>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">PhD Financial Decision Desk</div>
+        <h1>未来收支，<br>逐笔计划。</h1>
+        <p>这是一张由决策自动生成、又能逐笔校准的未来收入支出表。先勾选要考虑的工资、补助、贷款与生活成本，再在系统默认值上调整具体日期和金额。</p>
+      </div>
+      <div class="hero-note">
+        <strong>58.5<small style="font-size:16px"> 个月</small></strong>
+        <span>勾选决策后自动生成逐笔计划，再按实际预期校准日期与金额；五年整年口径另列在底部复核。</span>
+      </div>
+    </section>
 
-<div class="chart-container">
-  <div style="max-width: 1600px; margin: 0 auto 14px auto; display: flex; gap: 12px; align-items: center; justify-content: flex-end; font-size: 14px;">
-    <span style="opacity: 0.8;">可编辑（万元 / 月）:</span>
-    <label>生活费
-      <input id="living-input" type="number" step="0.01" value="0.20" style="width: 70px; margin-left: 6px;">
-    </label>
-    <label style="margin-left: 10px;">房租
-      <input id="rent-input" type="number" step="0.01" value="0.20" style="width: 70px; margin-left: 6px;">
-    </label>
-  </div>
-  <canvas id="comboChart"></canvas>
-</div>
+    <div class="workspace">
+      <aside class="panel controls" aria-label="情景设置">
+        <div class="panel-title"><h2>搭配你的情景</h2><button class="reset" id="resetBtn">恢复基准</button></div>
+        <div class="mini-input base-cash"><label for="startCash">无实际记录时的起始现金</label><input id="startCash" type="number" value="55825"></div>
 
-<script>
-  // ===== 时间轴：2026-09 → 2031-08（60个月）=====
-  const labels = [];
-  let year = 2026;
-  let month = 9;
-  for (let i = 0; i < 60; i++) {
-    const currentMonth = month;
-    labels.push(`${year}-${String(currentMonth).padStart(2, "0")}`);
-    month++;
-    if (month > 12) { month = 1; year++; }
-  }
+        <div class="section-label">收入模块</div>
+        <div class="decision-list" id="incomeDecisionList">
+          <article class="decision-card" draggable="true" data-decision="blux"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>Blux 工资</strong><span id="bluxSummary">¥12,210 / 月 · 10 日发放 · 至毕业</span></span><input id="blux" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="bluxDetails" type="button">编辑</button></div><div class="card-details" id="bluxDetails" hidden>
+            <div class="card-field-grid"><div class="field"><label for="salaryAmount">当前月到手</label><input id="salaryAmount" type="number" min="0" value="12210"></div><div class="field"><label for="salaryDay">每月发薪日</label><input id="salaryDay" type="number" min="1" max="31" value="10"></div><div class="field full"><label for="bluxEndDate">预计离职日期</label><input id="bluxEndDate" type="date" value="2031-07-01"></div></div>
+            <div class="salary-suggestions"><button data-blux-end="2027-08-07">1 年</button><button data-blux-end="2028-08-07">2 年</button><button data-blux-end="2029-08-07">3 年</button><button data-blux-end="2031-07-01" class="active">到毕业</button></div>
+            <div class="salary-plan-head"><strong>涨薪 / 降薪节点</strong><span>生效后采用新金额</span></div><div class="salary-change-form"><div class="field"><label for="salaryChangeDate">生效日期</label><input id="salaryChangeDate" type="date"></div><div class="field"><label for="salaryChangeAmount">新月到手</label><input id="salaryChangeAmount" type="number" min="0" step="100"></div><button class="save-btn" id="addSalaryChange">添加</button></div><div class="salary-change-list" id="salaryChangeList"></div>
+          </div></article>
+          <article class="decision-card" draggable="true" data-decision="grant"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>博士补助</strong><span id="grantSummary">2026-09-15 首次到账 · 资格考试后上调</span></span><input id="grant" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="grantDetails" type="button">编辑</button></div><div class="card-details" id="grantDetails" hidden><div class="card-field-grid"><div class="field full"><label for="grantStartDate">首次补助到账日</label><input id="grantStartDate" type="date" value="2026-09-15"></div><div class="field full"><label for="qualExamDate">博士资格考试日期</label><input id="qualExamDate" type="date" value="2027-08-17"></div><div class="field"><label for="grantBefore">考试前月补助</label><input id="grantBefore" type="number" min="0" value="6933.33"></div><div class="field"><label for="grantAfter">通过后月补助</label><input id="grantAfter" type="number" min="0" value="8400"></div></div><div class="method-note">从首次到账日起按月延续；资格考试日期之前采用考试前金额，当日及之后采用通过后金额。</div></div></article>
+          <article class="decision-card" draggable="true" data-decision="ta"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>助教收入</strong><span id="taSummary">默认博二至博五 · 2027-09-15 首次到账</span></span><input id="ta" type="checkbox"><span class="switch"></span></label><button class="card-edit" data-edit-card="taDetails" type="button">编辑</button></div><div class="card-details" id="taDetails" hidden><div class="card-field-grid"><div class="field"><label for="taPay">每月到手金额</label><input id="taPay" type="number" value="830"></div><div class="field"><label for="taStartDate">首次助教到账日</label><input id="taStartDate" type="date" value="2027-09-15"></div></div><div class="field" style="margin-top:10px"><label>选择担任助教的博士学年</label><div class="year-checks"><label><input id="taYear1" type="checkbox"><span>博一</span></label><label><input id="taYear2" type="checkbox" checked><span>博二</span></label><label><input id="taYear3" type="checkbox" checked><span>博三</span></label><label><input id="taYear4" type="checkbox" checked><span>博四</span></label><label><input id="taYear5" type="checkbox" checked><span>博五</span></label></div></div><div class="method-note">博一默认不选；可自由组合任意学年，首次到账日之前不生成助教收入。</div></div></article>
+          <article class="decision-card" draggable="true" data-decision="housing"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>住房权益</strong><span id="housingSummary">¥2,050 / 月 · 每月 19 日计入</span></span><input id="housing" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="housingDetails" type="button">编辑</button></div><div class="card-details" id="housingDetails" hidden><div class="field"><label for="housingMonthly">每月权益估值</label><input id="housingMonthly" type="number" min="0" value="2050"></div><div class="method-note">2026-08-19 入住后开始计算，固定于每月 19 日计入综合收益。</div></div></article>
+          <article class="decision-card" draggable="true" data-decision="taxRefund"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>Blux 年度退税</strong><span>与博士补助独立 · 截止跟随 Blux 工资</span></span><input id="taxRefund" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="refundDetails" type="button">编辑</button></div><div class="card-details" id="refundDetails" hidden><div class="annual-mini-head three"><span>年份</span><span>退税金额</span><span>到账日</span></div><div id="refundAnnualRows"></div></div></article>
+        </div>
 
-  // ===== 金额参数（万元 / 月）=====
-  const smartAcademicBefore = 0.693;
-  const smartAcademicAfter  = 0.840;
-  const nationalGrant       = 0.125;
-  const taMonthly           = 0.083; // 助教
-  const bluxMonthly         = 1.000;
-  const hiMcmBonus          = 1.000; // HiMCM 奖金（万元）
-  const tuitionMonthly      = 0.10;  // 学费 1000 元 = 0.10 万
-  let livingMonthly         = 0.20;  // 生活费 2000 元 = 0.20 万（可编辑）
-  let rentMonthly           = 0.20;  // 房租 2000 元 = 0.20 万（可编辑）
+        <div class="section-label">支出模块</div>
+        <div class="decision-list" id="expenseDecisionList">
+          <article class="decision-card" draggable="true" data-decision="loan"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>车贷</strong><span id="loanSummary">剩余 58 期 · ¥2,527 / 月</span></span><input id="loan" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="loanDetails" type="button">编辑</button></div><div class="card-details" id="loanDetails" hidden><div class="card-field-grid"><div class="field"><label for="loanMonthly">每期金额</label><input id="loanMonthly" type="number" min="0" step="0.01" value="2526.67"></div><div class="field"><label for="loanDay">每月扣款日</label><input id="loanDay" type="number" min="1" max="31" value="20"></div></div><div class="method-note">总计 60 期；2026-06-20、07-20 已支付，未来从第 3 期开始。</div></div></article>
+          <article class="decision-card" draggable="true" data-decision="livingIncluded"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>日常生活费</strong><span id="livingSummary">¥8,000 / 月</span></span><input id="livingIncluded" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="livingDetails" type="button">编辑</button></div><div class="card-details" id="livingDetails" hidden><div class="input-wrap"><input id="living" type="number" min="0" max="100000" step="500" value="8000"><span class="input-unit">元 / 月</span></div><div class="quick-costs"><button data-cost="2000">2,000</button><button data-cost="3000">3,000</button><button data-cost="4000">4,000</button><button data-cost="5000">5,000</button><button data-cost="6000">6,000</button><button data-cost="7000">7,000</button><button data-cost="8000" class="active">8,000</button></div></div></article>
+          <article class="decision-card" draggable="true" data-decision="parkingIncluded"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>停车费</strong><span id="parkingSummary">¥0 / 月 · 1 日扣款</span></span><input id="parkingIncluded" type="checkbox"><span class="switch"></span></label><button class="card-edit" data-edit-card="parkingDetails" type="button">编辑</button></div><div class="card-details" id="parkingDetails" hidden><div class="card-field-grid"><div class="field"><label for="parking">每月金额</label><input id="parking" type="number" min="0" step="100" value="0"></div><div class="field"><label for="parkingDay">每月扣款日</label><input id="parkingDay" type="number" min="1" max="31" value="1"></div></div></div></article>
+          <article class="decision-card" draggable="true" data-decision="carCostIncluded"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>用车成本</strong><span id="carCostSummary">¥400 / 月 · 充电与临时停车</span></span><input id="carCostIncluded" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="carCostDetails" type="button">编辑</button></div><div class="card-details" id="carCostDetails" hidden><div class="card-field-grid"><div class="field"><label for="carCost">每月估计金额</label><input id="carCost" type="number" min="0" step="50" value="400"></div><div class="field"><label for="carCostDay">每月支出日</label><input id="carCostDay" type="number" min="1" max="31" value="1"></div></div><div class="method-note">包含充电和非包月临时停车；待深圳生活测算后可再校准。</div></div></article>
+          <article class="decision-card" draggable="true" data-decision="tuitionIncluded"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>博士学费</strong><span id="tuitionSummary">¥10,000 / 年 · 共 5 次</span></span><input id="tuitionIncluded" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="tuitionDetails" type="button">编辑</button></div><div class="card-details" id="tuitionDetails" hidden><div class="field"><label for="tuition">每年学费</label><input id="tuition" type="number" value="10000"></div></div></article>
+          <article class="decision-card" draggable="true" data-decision="lodgingIncluded"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>公寓住宿费</strong><span id="lodgingSummary">¥1,800 / 年 · 共 5 次</span></span><input id="lodgingIncluded" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="lodgingDetails" type="button">编辑</button></div><div class="card-details" id="lodgingDetails" hidden><div class="field"><label for="lodging">每年住宿费</label><input id="lodging" type="number" value="1800"></div></div></article>
+          <article class="decision-card" draggable="true" data-decision="insuranceIncluded"><div class="card-main"><span class="drag-grip">⋮⋮</span><label class="card-toggle"><span class="toggle-copy"><strong>保险</strong><span id="insuranceSummary">¥6,947.90 / 年 · 05-20 支出</span></span><input id="insuranceIncluded" type="checkbox" checked><span class="switch"></span></label><button class="card-edit" data-edit-card="insuranceDetails" type="button">编辑</button></div><div class="card-details" id="insuranceDetails" hidden><div class="card-field-grid"><div class="field full"><label for="insuranceAmount">每年保险金额</label><input id="insuranceAmount" type="number" min="0" step="0.1" value="6947.9"></div><div class="field"><label for="insuranceMonth">缴费月份</label><input id="insuranceMonth" type="number" min="1" max="12" value="5"></div><div class="field"><label for="insuranceDay">缴费日期</label><input id="insuranceDay" type="number" min="1" max="31" value="20"></div></div></div></article>
+        </div>
+        <div class="method-note">卡片负责批量生成默认计划；计划表仍支持逐笔二次校准。</div>
+      </aside>
 
-  // ===== 月度数据 =====
-  function computeSeries(livingVal, rentVal) {
-    const smartAcademic = [];
-    const nationalGrantArr = [];
-    const taArr = [];
-    const bluxArr = [];
-    const hiMcmArr = [];
-    const tuitionArr = [];
-    const livingArr = [];
-    const rentArr = [];
+      <section class="results" aria-live="polite">
+        <div class="panel primary-result">
+          <div class="label">毕业时预计可支配现金</div>
+          <div class="big-number" id="endingCash">—</div>
+          <div class="result-sub" id="endingDescription">从当前现金出发，扣除已选择的全部支出</div>
+        </div>
 
-    year = 2026;
-    month = 9;
-    for (let i = 0; i < 60; i++) {
-      const currentMonth = month;
+        <div class="stats-scope"><strong>总统计口径</strong><span id="statsPeriod">从首条数据开始，包含已实现与未来预计</span></div>
+        <div class="metric-grid">
+          <div class="panel metric"><span class="kicker">现金总收入</span><strong id="cashIncome">—</strong><span class="delta" id="incomeMix">工资 + 补助</span></div>
+          <div class="panel metric"><span class="kicker">综合总收益</span><strong id="economicIncome">—</strong><span class="delta">现金收入 + 已实现及预计住房权益</span></div>
+          <div class="panel metric"><span class="kicker">现金总支出</span><strong id="totalExpense">—</strong><span class="delta" id="expenseMix">生活费 + 固定支出</span></div>
+        </div>
+        <div class="average-grid">
+          <div class="panel metric"><span class="kicker">勾选情景 · 月均总收入</span><strong id="averageIncome">—</strong><span class="delta" id="averageIncomeNote">现金口径；含住房权益另列</span></div>
+          <div class="panel metric"><span class="kicker">勾选情景 · 月均总支出</span><strong id="averageExpense">—</strong><span class="delta" id="averagePeriodNote">按总统计周期折算</span></div>
+        </div>
 
-      smartAcademic.push(i < 24 ? smartAcademicBefore : smartAcademicAfter);
-      nationalGrantArr.push(nationalGrant);
+        <div class="panel loan-panel">
+          <div class="loan-head"><strong>车贷进度</strong><span id="loanStatus">—</span></div>
+          <div class="progress"><div id="loanProgress"></div></div>
+          <div class="loan-stats"><span id="loanPaid">已还 —</span><span id="loanRemaining">剩余 —</span></div>
+        </div>
 
-      // 助教：第 25–48 个月
-      taArr.push(i >= 24 && i < 48 ? taMonthly : 0);
+        <div class="panel chart-panel">
+          <div class="chart-head">
+            <div><h2>实际 vs. 预测</h2><p>预测按真实到账日跳变，并在最新实际余额处自动校准。</p></div>
+            <div class="legend"><span>校正后预测</span><span class="actual">实际现金记录</span></div>
+          </div>
+          <div class="canvas-wrap"><canvas id="cashChart" role="img" aria-label="博士阶段实际与预测现金折线图"></canvas><div class="chart-tooltip" id="chartTooltip"></div></div>
+        </div>
+      </section>
+    </div>
 
-      bluxArr.push(bluxMonthly);
+    <section class="lower-workspace">
+      <div class="panel cash-entry">
+        <div class="cash-entry-head">
+          <div><h2>记录实际现金</h2><p>保存某一天银行卡与现金账户的合计余额，未来预测会从最新记录重新起算。</p></div>
+          <span class="storage-note">本机保存 · 登录后云同步</span>
+        </div>
+        <div class="entry-form">
+          <div class="field"><label for="actualDate">记录日期</label><input id="actualDate" type="date"></div>
+          <div class="field"><label for="actualBalance">实际现金余额</label><input id="actualBalance" type="number" step="100" placeholder="例如 55825"></div>
+          <div class="field"><label for="actualNote">备注</label><input id="actualNote" type="text" maxlength="40" placeholder="工资到账 / 月末盘点"></div>
+          <button class="save-btn" id="saveActual">保存记录</button>
+        </div>
+        <div class="record-list" id="recordList"></div>
+      </div>
+      <section class="panel timeline-section">
+        <div class="timeline-intro"><h2>五个阶段，逐段看清</h2><p>阶段金额会随左侧选项即时变化。</p></div>
+        <div class="stage-list" id="stageList"></div>
+      </section>
+    </section>
 
-      // HiMCM 奖金：每年 10、11 月各 1 万
-      hiMcmArr.push(currentMonth === 10 || currentMonth === 11 ? hiMcmBonus : 0);
+    <section class="panel compare">
+      <div class="compare-head">
+        <h2>原始五年模型复核</h2>
+        <p>以下是你提供的 60 个完整月基准，不随上方选项变化；上方主模型以 2031-07-01 毕业日为终点，因此会略低于整五年口径。</p>
+      </div>
+      <div class="baseline-grid">
+        <div class="baseline"><small>实际现金收入</small><strong class="amount-income">121.90 万</strong><span>Blux 73.26 万 + 博士补助 48.64 万</span></div>
+        <div class="baseline"><small>含住房权益的总收益</small><strong class="amount-income">134.20 万</strong><span>另含专项住房权益 <span class="amount-equity" style="display:inline">12.30 万</span></span></div>
+        <div class="baseline"><small>不计生活费的期末现金</small><strong>106.93 万</strong><span>55,825 + 收入 − 205,547 固定支出</span></div>
+      </div>
+    </section>
 
-      // 每月支出
-      tuitionArr.push(tuitionMonthly);
-      livingArr.push(livingVal);
-      rentArr.push(rentVal);
+    <section class="ledger-column" aria-label="未来收入支出计划表">
+      <div class="panel ledger-panel">
+        <div class="schedule-head">
+          <div><h2>未来收入支出计划表</h2><p>系统默认与手动校准同时保留；校准后的日期和金额将同步影响上方汇总与预测。</p></div>
+          <div class="ledger-tools"><select id="ledgerYear" aria-label="按年份筛选"><option value="all">全部年份</option></select><select id="ledgerDirection" aria-label="按收支筛选"><option value="all">全部收支</option><option value="income">收入</option><option value="expense">支出</option><option value="equity">非现金权益</option></select><select id="ledgerCategory" aria-label="按栏目筛选"><option value="all">全部栏目</option></select></div>
+        </div>
+        <div class="ledger-wrap"><table class="ledger-table" id="ledgerTable"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>预计日期<span class="col-resizer" data-column="0"></span></th><th>收支<span class="col-resizer" data-column="1"></span></th><th>对应栏目<span class="col-resizer" data-column="2"></span></th><th>系统默认<span class="col-resizer" data-column="3"></span></th><th>校准金额<span class="col-resizer" data-column="4"></span></th><th>状态<span class="col-resizer" data-column="5"></span></th></tr></thead><tbody id="ledgerRows"></tbody></table></div>
+      </div>
+    </section>
+  </main>
 
-      month++;
-      if (month > 12) { month = 1; year++; }
-    }
+  <footer class="shell"><span>此页面用于个人情景规划，不构成财务建议。</span><span>金额四舍五入；精确结果以逐笔收支计划为准。</span></footer>
 
-    const smartOnlyCumulative = [];
-    const totalCumulative = [];
-    const netCumulative = [];
-    const netNoBluxCumulative = [];
-    const expenseCumulative = [];
-
-    let smartSum = 0;
-    let totalSum = 0;
-    let totalNoBluxSum = 0;
-    let expenseSum = 0;
-
-    for (let i = 0; i < 60; i++) {
-      const smartMonthly = smartAcademic[i] + nationalGrantArr[i];
-      const expenseMonthly = tuitionArr[i] + livingArr[i] + rentArr[i];
-
-      smartSum += smartMonthly;
-      totalSum += smartMonthly + taArr[i] + bluxArr[i] + hiMcmArr[i];
-      totalNoBluxSum += smartMonthly + taArr[i] + hiMcmArr[i];
-      expenseSum += expenseMonthly;
-
-      smartOnlyCumulative.push(Number(smartSum.toFixed(2)));
-      totalCumulative.push(Number(totalSum.toFixed(2)));
-      expenseCumulative.push(Number(expenseSum.toFixed(2)));
-      netCumulative.push(Number((totalSum - expenseSum).toFixed(2)));
-      netNoBluxCumulative.push(Number((totalNoBluxSum - expenseSum).toFixed(2)));
-    }
-
-    return {
-      smartAcademic, nationalGrantArr, taArr, bluxArr, hiMcmArr,
-      tuitionArr, livingArr, rentArr,
-      smartOnlyCumulative, totalCumulative, netCumulative, netNoBluxCumulative
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/cloud-config.js"></script>
+  <script src="/cloud-sync.js"></script>
+  <script>
+    const DAY = 86400000;
+    const MODEL_START = new Date('2026-08-17T00:00:00');
+    const MODEL_END = new Date('2031-07-01T00:00:00');
+    const STORAGE_KEY = 'phd-cashflow-desk-v2';
+    const HOUSING_MONTHLY = 2050;
+    const LOAN_REMAINING_TOTAL = 146547;
+    const LOAN_REMAINING_COUNT = 58;
+    const LOAN_COUNT = 60;
+    const LOAN_MONTHLY = LOAN_REMAINING_TOTAL / LOAN_REMAINING_COUNT;
+    const LOAN_TOTAL = LOAN_MONTHLY * LOAN_COUNT;
+    const YEARS = [2026, 2027, 2028, 2029, 2030, 2031];
+    const annualDefaults = {
+      2026: { grant: 6933.33, refund: 17628, refundDate: '2026-09-30' },
+      2027: { grant: 7422.22, refund: 0, refundDate: '2027-04-30' },
+      2028: { grant: 8400, refund: 0, refundDate: '2028-04-30' },
+      2029: { grant: 8400, refund: 0, refundDate: '2029-04-30' },
+      2030: { grant: 8400, refund: 0, refundDate: '2030-04-30' },
+      2031: { grant: 8400, refund: 0, refundDate: '2031-04-30' }
     };
-  }
-
-  function buildDatasets(series) {
-    return [
-      // 左轴堆叠柱
-      {
-        type: "bar",
-        label: "SMART 学业资助",
-        data: series.smartAcademic,
-        backgroundColor: "#2E7D32",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 1,
-        stack: "income",
-        yAxisID: "yMonthly"
-      },
-      {
-        type: "bar",
-        label: "国家助学金",
-        data: series.nationalGrantArr,
-        backgroundColor: "#43A047",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 1,
-        stack: "income",
-        yAxisID: "yMonthly"
-      },
-      {
-        type: "bar",
-        label: "助教（TA）",
-        data: series.taArr,
-        backgroundColor: "#66BB6A",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 1,
-        stack: "income",
-        yAxisID: "yMonthly"
-      },
-      {
-        type: "bar",
-        label: "Blux 收入",
-        data: series.bluxArr,
-        backgroundColor: "#8BC34A",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 1,
-        stack: "income",
-        yAxisID: "yMonthly"
-      },
-      {
-        type: "bar",
-        label: "HiMCM 奖金",
-        data: series.hiMcmArr,
-        backgroundColor: "#A5D6A7",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 1,
-        stack: "income",
-        yAxisID: "yMonthly"
-      },
-      // 支出分组（红色系，右侧相邻）
-      {
-        type: "bar",
-        label: "学费",
-        data: series.tuitionArr,
-        backgroundColor: "#F44336",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 2,
-        stack: "expense",
-        yAxisID: "yMonthly"
-      },
-      {
-        type: "bar",
-        label: "生活费",
-        data: series.livingArr,
-        backgroundColor: "#EF5350",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 2,
-        stack: "expense",
-        yAxisID: "yMonthly"
-      },
-      {
-        type: "bar",
-        label: "房租",
-        data: series.rentArr,
-        backgroundColor: "#E57373",
-        barThickness: 10,
-        maxBarThickness: 12,
-        categoryPercentage: 0.35,
-        barPercentage: 0.85,
-        stackWeight: 1,
-        order: 2,
-        stack: "expense",
-        yAxisID: "yMonthly"
-      },
-      // 右轴累计折线
-      {
-        type: "line",
-        label: "纯 SMART 累计",
-        data: series.smartOnlyCumulative,
-        borderColor: "#4A90E2",
-        backgroundColor: "#4A90E2",
-        tension: 0,
-        pointRadius: 1,
-        fill: false,
-        order: 10,
-        yAxisID: "yCumulative"
-      },
-      {
-        type: "line",
-        label: "SMART + TA + Blux + HiMCM 累计",
-        data: series.totalCumulative,
-        borderColor: "#F5A623",
-        backgroundColor: "#F5A623",
-        tension: 0,
-        pointRadius: 1,
-        fill: false,
-        order: 10,
-        yAxisID: "yCumulative"
-      },
-      {
-        type: "line",
-        label: "净累计（扣除学费/生活费/房租）",
-        data: series.netCumulative,
-        borderColor: "#D32F2F",
-        backgroundColor: "#D32F2F",
-        tension: 0,
-        pointRadius: 1,
-        borderDash: [4, 4],
-        fill: false,
-        order: 10,
-        yAxisID: "yCumulative"
-      },
-      {
-        type: "line",
-        label: "净累计（不含 Blux）",
-        data: series.netNoBluxCumulative,
-        borderColor: "#7E57C2",
-        backgroundColor: "#7E57C2",
-        tension: 0,
-        pointRadius: 1,
-        borderDash: [2, 6],
-        fill: false,
-        order: 10,
-        yAxisID: "yCumulative"
-      }
+    const controlDefaults = {
+      blux: true, grant: true, ta: false, loan: true, livingIncluded: true, parkingIncluded: false, carCostIncluded: true, insuranceIncluded: true, tuitionIncluded: true, lodgingIncluded: true, housing: true, taxRefund: true,
+      living: 8000, parking: 0, carCost: 400, insuranceAmount: 6947.9, startCash: 55825, taPay: 830, tuition: 10000, lodging: 1800, housingMonthly: 2050, loanMonthly: LOAN_MONTHLY, grantBefore: 6933.33, grantAfter: 8400,
+      salaryDay: 10, salaryAmount: 12210, bluxEndDate: '2031-07-01', grantStartDate: '2026-09-15', qualExamDate: '2027-08-17', taStartDate: '2027-09-15', loanDay: 20, parkingDay: 1, carCostDay: 1, insuranceMonth: 5, insuranceDay: 20
+    };
+    const DEFAULT_INCOME_ORDER = ['blux','grant','ta','housing','taxRefund'];
+    const DEFAULT_EXPENSE_ORDER = ['loan','livingIncluded','parkingIncluded','carCostIncluded','insuranceIncluded','tuitionIncluded','lodgingIncluded'];
+    const stages = [
+      { name: '搬家 · 报到 · 入住公寓', start: '2026-08-17', end: '2026-08-19' },
+      { name: '深圳 & 杭州开学典礼', start: '2026-08-19', end: '2026-08-24' },
+      { name: '轮转阶段', start: '2026-08-24', end: '2027-01-01' },
+      { name: '开题 + 正式进入实验室', start: '2027-01-01', end: '2031-01-01' },
+      { name: '毕业阶段', start: '2031-01-01', end: '2031-07-01' }
     ];
-  }
 
-  const initialSeries = computeSeries(livingMonthly, rentMonthly);
+    document.getElementById('refundAnnualRows').innerHTML = YEARS.map(year => `<div class="annual-mini-row three"><strong>${year}</strong><input class="annual-input" id="refund-${year}" type="number" min="0" step="100" value="${annualDefaults[year].refund}" aria-label="${year}年 Blux 退税"><input class="annual-input" id="refundDate-${year}" type="date" value="${annualDefaults[year].refundDate}" aria-label="${year}年 Blux 退税到账日期"></div>`).join('');
 
-  const comboChart = new Chart(document.getElementById("comboChart"), {
-    data: {
-      labels: labels,
-      datasets: buildDatasets(initialSeries)
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: "index", intersect: false },
-      scales: {
-        x: { stacked: true, offset: true },
-        yMonthly: {
-          type: "linear",
-          position: "left",
-          stacked: true,
-          title: { display: true, text: "月度现金流（万元 / 月）" },
-          grid: { drawOnChartArea: true }
-        },
-        yCumulative: {
-          type: "linear",
-          position: "right",
-          title: { display: true, text: "累计金额（万元）" },
-          grid: { drawOnChartArea: false }
-        }
-      },
-      plugins: {
-        legend: { position: "top" },
-        datalabels: {
-          color: "#000",
-          anchor: "center",
-          align: "center",
-          formatter: (v, ctx) => ctx.dataset.type === "bar" && v > 0 ? v.toFixed(2) : "",
-          font: { size: 9 }
-        },
-        annotation: {
-          annotations: {
-            qualExam: {
-              type: "line",
-              xMin: labels[24],
-              xMax: labels[24],
-              borderColor: "red",
-              borderWidth: 2,
-              borderDash: [6, 6],
-              label: {
-                enabled: true,
-                content: "博士资格考试通过",
-                position: "start"
-              }
-            }
-          }
-        }
-      }
+    const ids = [...Object.keys(controlDefaults), 'actualDate', 'actualBalance', 'actualNote', 'salaryChangeDate', 'salaryChangeAmount', 'taYear1', 'taYear2', 'taYear3', 'taYear4', 'taYear5'];
+    const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+    const decisionLists = [document.getElementById('incomeDecisionList'),document.getElementById('expenseDecisionList')];
+    const fmt = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 });
+    const money = value => {
+      const absolute=Math.abs(Number(value)||0), hasDecimals=Math.abs(absolute-Math.round(absolute))>0.000001;
+      return `${value < 0 ? '−' : ''}¥${absolute.toLocaleString('zh-CN',{minimumFractionDigits:hasDecimals?2:0,maximumFractionDigits:2})}`;
+    };
+    const wan = value => `${value < 0 ? '−' : ''}${(Math.abs(value) / 10000).toFixed(2)} 万`;
+    const parseDate = value => new Date(`${value}T00:00:00`);
+    const ymd = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const todayYmd = () => ymd(new Date());
+    const daysInMonth = date => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const validDay = value => Math.min(31, Math.max(1, Math.round(Number(value) || 1)));
+    const inputNumber = (node, fallback = 0) => Number.isFinite(Number(node.value)) ? Math.max(0, Number(node.value)) : fallback;
+    const isPayDay = (date, day) => date.getDate() === Math.min(validDay(day), daysInMonth(date));
+    const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+
+    let records = [];
+    let overrides = {};
+    let salaryChanges = [];
+    function readStored() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (_) { return {}; }
     }
-  });
+    function annualSettings() {
+      return Object.fromEntries(YEARS.map(year => [year, {
+        refund: inputNumber(document.getElementById(`refund-${year}`)),
+        refundDate: document.getElementById(`refundDate-${year}`).value
+      }]));
+    }
+    function settings() {
+      return {
+        ...Object.fromEntries(['blux','grant','ta','loan','livingIncluded','parkingIncluded','carCostIncluded','insuranceIncluded','tuitionIncluded','lodgingIncluded','housing','taxRefund'].map(id => [id, el[id].checked])),
+        ...Object.fromEntries(['living','parking','carCost','insuranceAmount','startCash','taPay','tuition','lodging','salaryAmount','housingMonthly','loanMonthly','grantBefore','grantAfter'].map(id => [id, inputNumber(el[id], controlDefaults[id])])),
+        ...Object.fromEntries(['salaryDay','loanDay','parkingDay','carCostDay','insuranceDay'].map(id => [id, validDay(el[id].value)])),
+        insuranceMonth: Math.min(12,validDay(el.insuranceMonth.value)),
+        bluxEndDate: el.bluxEndDate.value || '2031-07-01',
+        grantStartDate: el.grantStartDate.value || '2026-09-15',
+        qualExamDate: el.qualExamDate.value || '2027-08-17',
+        taStartDate: el.taStartDate.value || '2027-09-15',
+        taYears: [1,2,3,4,5].filter(year=>el[`taYear${year}`].checked),
+        annual: annualSettings()
+      };
+    }
+    function currentData() {
+      return { controls: settings(), annual: annualSettings(), records, overrides, salaryChanges, decisionOrder:{ income:[...decisionLists[0].children].map(card=>card.dataset.decision), expense:[...decisionLists[1].children].map(card=>card.dataset.decision) } };
+    }
+    function persist() {
+      const data = currentData();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      if (window.SzyCloud) window.SzyCloud.scheduleSave(data);
+    }
+    function applyData(stored) {
+      stored = stored && typeof stored === 'object' ? stored : {};
+      const controls = stored.controls || {};
+      Object.keys(controlDefaults).forEach(id => {
+        if (!(id in controls) || !el[id]) return;
+        if (el[id].type === 'checkbox') el[id].checked = Boolean(controls[id]);
+        else el[id].value = controls[id];
+      });
+      const savedTaYears=Array.isArray(controls.taYears)?controls.taYears:[2,3,4,5];
+      [1,2,3,4,5].forEach(year=>el[`taYear${year}`].checked=savedTaYears.includes(year));
+      const annual = stored.annual || controls.annual || {};
+      YEARS.forEach(year => {
+        const row = annual[year];
+        if (!row) return;
+        document.getElementById(`refund-${year}`).value = row.refund ?? annualDefaults[year].refund;
+        document.getElementById(`refundDate-${year}`).value = row.refundDate || annualDefaults[year].refundDate;
+      });
+      records = Array.isArray(stored.records) ? stored.records.filter(r => r.date && Number.isFinite(Number(r.balance))) : [];
+      overrides = stored.overrides && typeof stored.overrides === 'object' ? stored.overrides : {};
+      salaryChanges = Array.isArray(stored.salaryChanges) ? stored.salaryChanges.filter(item=>item.date && Number.isFinite(Number(item.amount))).sort((a,b)=>a.date.localeCompare(b.date)) : [];
+      applyDecisionOrder(stored.decisionOrder);
+      if (el.actualDate) el.actualDate.value = todayYmd();
+      update({save:false});
+    }
+    function restore() { applyData(readStored()); }
 
-  function applyLivingRent() {
-    const livingInput = document.getElementById("living-input");
-    const rentInput = document.getElementById("rent-input");
-    const newLiving = Number(livingInput.value);
-    const newRent = Number(rentInput.value);
-    livingMonthly = isFinite(newLiving) ? newLiving : livingMonthly;
-    rentMonthly = isFinite(newRent) ? newRent : rentMonthly;
-    const updatedSeries = computeSeries(livingMonthly, rentMonthly);
-    comboChart.data.datasets = buildDatasets(updatedSeries);
-    comboChart.update();
-  }
+    function applyDecisionOrder(order) {
+      const legacy=Array.isArray(order)?order:null;
+      const groups=[
+        {list:decisionLists[0], order:order?.income || legacy?.filter(id=>DEFAULT_INCOME_ORDER.includes(id)) || DEFAULT_INCOME_ORDER, defaults:DEFAULT_INCOME_ORDER},
+        {list:decisionLists[1], order:order?.expense || legacy?.filter(id=>DEFAULT_EXPENSE_ORDER.includes(id)) || DEFAULT_EXPENSE_ORDER, defaults:DEFAULT_EXPENSE_ORDER}
+      ];
+      groups.forEach(group=>{
+        const cards=new Map([...group.list.children].map(card=>[card.dataset.decision,card]));
+        [...group.order,...group.defaults].forEach(id=>{ const card=cards.get(id); if(card){ group.list.appendChild(card); cards.delete(id); } });
+      });
+    }
 
-  document.getElementById("living-input").addEventListener("input", applyLivingRent);
-  document.getElementById("rent-input").addEventListener("input", applyLivingRent);
-</script>
+    function loanSchedule(day) {
+      return Array.from({ length: LOAN_COUNT }, (_, i) => {
+        if (i === 0) return new Date(2026, 5, 20);
+        if (i === 1) return new Date(2026, 6, 20);
+        const base = new Date(2026, 5 + i, 1);
+        return new Date(base.getFullYear(), base.getMonth(), Math.min(validDay(day), daysInMonth(base)));
+      });
+    }
 
+    function scheduledDate(year, month, day) {
+      const base = new Date(year, month, 1);
+      return new Date(year, month, Math.min(validDay(day), daysInMonth(base)));
+    }
+    function salaryAt(date, baseAmount) {
+      let amount = baseAmount;
+      salaryChanges.filter(item=>item.date<=ymd(date)).sort((a,b)=>a.date.localeCompare(b.date)).forEach(item=>{ amount=Number(item.amount); });
+      return amount;
+    }
+    function academicYearAt(date) {
+      for(let year=1;year<=5;year++) {
+        const from=new Date(2026+year-1,7,17), to=new Date(2026+year,7,17);
+        if(date>=from && date<to) return year;
+      }
+      return null;
+    }
+    function buildIncomeEvents(s) {
+      const events = [];
+      const grantStart=parseDate(s.grantStartDate), grantPayDay=grantStart.getDate(), qualDate=parseDate(s.qualExamDate);
+      const taStart=parseDate(s.taStartDate), taPayDay=taStart.getDate();
+      for (let cursor = new Date(2026, 7, 1); cursor < MODEL_END; cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)) {
+        const year = cursor.getFullYear(), month = cursor.getMonth(), monthId = `${year}-${String(month+1).padStart(2,'0')}`;
+        const salaryDate = scheduledDate(year,month,s.salaryDay);
+        if (s.blux && salaryDate < parseDate(s.bluxEndDate)) events.push({ id:`salary-${monthId}`, direction:'income', category:'Blux 工资', defaultDate:ymd(salaryDate), defaultAmount:salaryAt(salaryDate,s.salaryAmount) });
+        const grantDate=scheduledDate(year,month,grantPayDay);
+        if (s.grant && grantDate>=grantStart) events.push({ id:`grant-${monthId}`, direction:'income', category:'博士补助', defaultDate:ymd(grantDate), defaultAmount:grantDate<qualDate?s.grantBefore:s.grantAfter });
+        const taDate=scheduledDate(year,month,taPayDay), taYear=academicYearAt(taDate);
+        if (s.ta && taDate>=taStart && taYear && s.taYears.includes(taYear)) events.push({ id:`ta-${monthId}`, direction:'income', category:'助教收入', defaultDate:ymd(taDate), defaultAmount:s.taPay });
+      }
+      YEARS.forEach(year => {
+        const refundDate=parseDate(s.annual[year].refundDate);
+        if (s.taxRefund && s.blux && refundDate<parseDate(s.bluxEndDate)) events.push({ id:`refund-${year}`, direction:'income', category:'Blux 退税', defaultDate:s.annual[year].refundDate, defaultAmount:s.annual[year].refund });
+      });
+      return events.map(event => {
+        const custom = overrides[event.id];
+        return { ...event, date:custom?.date || event.defaultDate, amount:Number(custom?.amount ?? event.defaultAmount), overridden:Boolean(custom) };
+      }).filter(event => event.date);
+    }
+
+    function buildTransactions(s) {
+      const items = [...buildIncomeEvents(s)];
+      for (let cursor = new Date(2026, 7, 1); cursor < MODEL_END; cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)) {
+        const year=cursor.getFullYear(), month=cursor.getMonth(), monthId=`${year}-${String(month+1).padStart(2,'0')}`;
+        const monthStart = new Date(year,month,1), monthEnd = new Date(year,month+1,0);
+        const activeStart = monthStart < MODEL_START ? MODEL_START : monthStart;
+        const activeEnd = monthEnd >= MODEL_END ? new Date(MODEL_END.getTime()-DAY) : monthEnd;
+        const activeDays = Math.max(0,Math.round((activeEnd-activeStart)/DAY)+1);
+        if (s.livingIncluded && activeDays > 0 && s.living > 0) items.push({ id:`living-${monthId}`, direction:'expense', category:'日常生活费', defaultDate:ymd(activeEnd), defaultAmount:s.living*activeDays/daysInMonth(cursor) });
+        const parkingDate=scheduledDate(year,month,s.parkingDay), carCostDate=scheduledDate(year,month,s.carCostDay);
+        if (s.parkingIncluded && s.parking > 0 && parkingDate>=MODEL_START) items.push({ id:`parking-${monthId}`, direction:'expense', category:'停车费', defaultDate:ymd(parkingDate), defaultAmount:s.parking });
+        if (s.carCostIncluded && s.carCost > 0 && carCostDate>=MODEL_START) items.push({ id:`car-cost-${monthId}`, direction:'expense', category:'用车成本', defaultDate:ymd(carCostDate), defaultAmount:s.carCost });
+        const housingDate=scheduledDate(year,month,19);
+        if (s.housing && housingDate>=parseDate('2026-08-19')) items.push({ id:`housing-${monthId}`, direction:'equity', category:'住房权益', defaultDate:ymd(housingDate), defaultAmount:s.housingMonthly });
+      }
+      if (s.loan) loanSchedule(s.loanDay).forEach((date,index) => items.push({ id:`loan-${index+1}`, direction:'expense', category:'车贷', defaultDate:ymd(date), defaultAmount:s.loanMonthly, pastPaid:index<2 }));
+      if (s.tuitionIncluded) [2026,2027,2028,2029,2030].forEach((year,index) => items.push({ id:`tuition-${year}`, direction:'expense', category:'博士学费', defaultDate:index===0?'2026-08-17':`${year}-09-01`, defaultAmount:s.tuition }));
+      if (s.lodgingIncluded) [2026,2027,2028,2029,2030].forEach(year => items.push({ id:`lodging-${year}`, direction:'expense', category:'公寓住宿费', defaultDate:`${year}-08-17`, defaultAmount:s.lodging }));
+      if (s.insuranceIncluded && s.insuranceAmount > 0) [2026,2027,2028,2029,2030,2031].forEach(year => {
+        const month=s.insuranceMonth-1;
+        const date=scheduledDate(year,month,s.insuranceDay);
+        if (date>=MODEL_START && date<MODEL_END) items.push({ id:`insurance-${year}`, direction:'expense', category:'保险', defaultDate:ymd(date), defaultAmount:s.insuranceAmount });
+      });
+      return items.map(item => {
+        const custom=overrides[item.id];
+        return custom ? {...item,date:custom.date||item.defaultDate,amount:Number(custom.amount??item.defaultAmount),overridden:true} : {...item,date:item.defaultDate,amount:Number(item.defaultAmount),overridden:false};
+      }).filter(item => item.date && parseDate(item.date) < MODEL_END).sort((a,b)=>a.date.localeCompare(b.date)||a.category.localeCompare(b.category));
+    }
+
+    function totalStatistics(s) {
+      const firstRecord = [...records].sort((a,b)=>a.date.localeCompare(b.date))[0];
+      const startDate = firstRecord?.date || todayYmd();
+      const items = buildTransactions(s).filter(item => item.date >= startDate && parseDate(item.date) < MODEL_END);
+      const cashIncome = items.filter(item=>item.direction==='income').reduce((sum,item)=>sum+item.amount,0);
+      const housing = items.filter(item=>item.direction==='equity').reduce((sum,item)=>sum+item.amount,0);
+      const expenses = items.filter(item=>item.direction==='expense');
+      const expenseByCategory=expenses.reduce((map,item)=>{ map[item.category]=(map[item.category]||0)+item.amount; return map; },{});
+      const living = expenses.filter(item=>item.category==='日常生活费').reduce((sum,item)=>sum+item.amount,0);
+      const parking = expenses.filter(item=>item.category==='停车费').reduce((sum,item)=>sum+item.amount,0);
+      const carCost = expenses.filter(item=>item.category==='用车成本').reduce((sum,item)=>sum+item.amount,0);
+      const fixed = expenses.filter(item=>!['日常生活费','停车费','用车成本'].includes(item.category)).reduce((sum,item)=>sum+item.amount,0);
+      return { startDate, cashIncome, housing, economic:cashIncome+housing, living, parking, carCost, fixed, expenseByCategory, expense:living+parking+carCost+fixed };
+    }
+
+    function simulate(s, anchorDate, anchorCash) {
+      const days = [];
+      let cashIncome = 0, housing = 0, living = 0, fixed = 0, parking = 0, carCost = 0, cash = anchorCash;
+      const transactionsByDate = new Map();
+      buildTransactions(s).forEach(item => {
+        const items = transactionsByDate.get(item.date) || [];
+        items.push(item); transactionsByDate.set(item.date, items);
+      });
+      const firstDay = new Date(anchorDate.getTime() + DAY);
+      for (let date = firstDay; date < MODEL_END; date = new Date(date.getTime() + DAY)) {
+        const todayItems = transactionsByDate.get(ymd(date)) || [];
+        const dayIncome = todayItems.filter(item=>item.direction==='income').reduce((sum,item)=>sum+item.amount,0);
+        const dayHousing = todayItems.filter(item=>item.direction==='equity').reduce((sum,item)=>sum+item.amount,0);
+        const dayLiving = todayItems.filter(item=>item.category==='日常生活费').reduce((sum,item)=>sum+item.amount,0);
+        const dayParking = todayItems.filter(item=>item.category==='停车费').reduce((sum,item)=>sum+item.amount,0);
+        const dayCarCost = todayItems.filter(item=>item.category==='用车成本').reduce((sum,item)=>sum+item.amount,0);
+        const dayFixed = todayItems.filter(item=>item.direction==='expense' && !['日常生活费','停车费','用车成本'].includes(item.category)).reduce((sum,item)=>sum+item.amount,0);
+
+        cashIncome += dayIncome; housing += dayHousing; living += dayLiving; fixed += dayFixed; parking += dayParking; carCost += dayCarCost;
+        cash += dayIncome - dayLiving - dayFixed - dayParking - dayCarCost;
+        days.push({ date: new Date(date), income: dayIncome, housing: dayHousing, living: dayLiving, fixed: dayFixed + dayParking + dayCarCost, cash });
+      }
+      return { days, cashIncome, housing, living, fixed, parking, carCost, expense: living + fixed + parking + carCost, endingCash: cash, economic: cashIncome + housing, anchorCash, anchorDate };
+    }
+
+    function latestRecord() {
+      return [...records].sort((a,b) => a.date.localeCompare(b.date)).at(-1) || null;
+    }
+    function buildModels(s) {
+      const baselineAnchor = new Date(MODEL_START.getTime() - DAY);
+      const baseline = simulate(s, baselineAnchor, s.startCash);
+      const latest = latestRecord();
+      if (!latest) return { baseline, remaining: baseline, forecast: baseline.days, latest: null };
+      const actualDate = parseDate(latest.date);
+      const remaining = simulate(s, actualDate, Number(latest.balance));
+      const before = baseline.days.filter(d => d.date < actualDate);
+      const forecast = [...before, { date: actualDate, cash: Number(latest.balance) }, ...remaining.days];
+      return { baseline, remaining, forecast, latest };
+    }
+
+    function stageTotals(result, stage) {
+      const a = parseDate(stage.start), b = parseDate(stage.end);
+      const rows = result.days.filter(d => d.date >= a && d.date < b);
+      const income = rows.reduce((n,d) => n + d.income, 0);
+      const expense = rows.reduce((n,d) => n + d.living + d.fixed, 0);
+      const ending = rows.length ? rows.at(-1).cash : result.anchorCash;
+      return { income, expense, net: income - expense, ending };
+    }
+    function renderStages(result) {
+      document.getElementById('stageList').innerHTML = stages.map((stage, i) => {
+        const x = stageTotals(result, stage);
+        return `<article class="stage"><div class="stage-index">${String(i + 1).padStart(2, '0')}</div>
+          <div class="stage-title"><strong>${stage.name}</strong><span>${stage.start.replaceAll('-','.')} — ${stage.end.replaceAll('-','.')}</span></div>
+          <div class="stage-value"><small>阶段现金收入</small><strong class="amount-income">${money(x.income)}</strong></div>
+          <div class="stage-value"><small>阶段现金支出</small><strong class="amount-expense">${money(x.expense)}</strong></div>
+          <div class="stage-value"><small>阶段净变化</small><strong style="color:${x.net >= 0 ? 'var(--green-2)' : 'var(--red)'}">${money(x.net)}</strong></div>
+          <div class="stage-value"><small>节点预测余额</small><strong>${money(x.ending)}</strong></div></article>`;
+      }).join('');
+    }
+    function renderRecords() {
+      const list = document.getElementById('recordList');
+      const sorted = [...records].sort((a,b) => b.date.localeCompare(a.date));
+      list.innerHTML = sorted.length ? sorted.map(r => `<div class="record-item">
+        <time>${escapeHtml(r.date)}</time><strong>${money(Number(r.balance))}</strong><span>${escapeHtml(r.note || '现金盘点')}</span>
+        <button data-delete-record="${escapeHtml(r.date)}" aria-label="删除 ${escapeHtml(r.date)} 的记录">删除</button></div>`).join('')
+        : '<div class="empty-records">还没有实际记录。保存第一条后，图中会出现实际现金曲线。</div>';
+      list.querySelectorAll('[data-delete-record]').forEach(button => button.addEventListener('click', () => {
+        records = records.filter(r => r.date !== button.dataset.deleteRecord); persist(); update();
+      }));
+    }
+
+    function renderSalaryChanges() {
+      const list=document.getElementById('salaryChangeList');
+      list.innerHTML=salaryChanges.length ? salaryChanges.map((item,index)=>`<div class="salary-change-item"><strong>${escapeHtml(item.date)}</strong><span>月到手 ${money(Number(item.amount))}</span><button data-delete-salary="${index}" aria-label="删除该薪资节点">删除</button></div>`).join('') : '<div class="empty-records">暂无调薪节点，所有工资沿用当前月到手金额。</div>';
+      list.querySelectorAll('[data-delete-salary]').forEach(button=>button.addEventListener('click',()=>{ salaryChanges.splice(Number(button.dataset.deleteSalary),1); update(); }));
+      document.querySelectorAll('[data-blux-end]').forEach(button=>button.classList.toggle('active',button.dataset.bluxEnd===el.bluxEndDate.value));
+    }
+
+    function renderLedger(s) {
+      const yearFilter = document.getElementById('ledgerYear').value;
+      const directionFilter = document.getElementById('ledgerDirection').value;
+      const categorySelect = document.getElementById('ledgerCategory');
+      const categoryFilter = categorySelect.value;
+      const allItems = buildTransactions(s);
+      const categories = [...new Set(allItems.map(item=>item.category))].sort();
+      categorySelect.innerHTML = '<option value="all">全部栏目</option>' + categories.map(category=>`<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+      categorySelect.value = categories.includes(categoryFilter) ? categoryFilter : 'all';
+      const activeCategory = categorySelect.value;
+      const events = allItems.filter(event =>
+        (yearFilter === 'all' || event.date.startsWith(yearFilter)) &&
+        (directionFilter === 'all' || event.direction === directionFilter) &&
+        (activeCategory === 'all' || event.category === activeCategory)
+      );
+      const directionText={income:'收入',expense:'支出',equity:'非现金权益'};
+      const body = document.getElementById('ledgerRows');
+      body.innerHTML = events.length ? events.map(event => `<tr>
+        <td><input type="date" value="${escapeHtml(event.date)}" data-ledger-date="${event.id}" aria-label="${escapeHtml(event.category)}到账日期"></td>
+        <td><span style="color:${event.direction==='expense'?'var(--red)':event.direction==='equity'?'var(--muted)':'var(--green-2)'}">${directionText[event.direction]}</span></td>
+        <td><span class="ledger-category">${escapeHtml(event.category)}</span></td>
+        <td class="amount-${event.direction}">${money(event.defaultAmount)}</td>
+        <td><input class="amount-${event.direction}" type="number" min="0" step="100" value="${event.amount.toFixed(2)}" data-ledger-amount="${event.id}" aria-label="${escapeHtml(event.category)}计划金额"></td>
+        <td>${event.pastPaid ? `<span style="color:var(--green-2);font-size:10px">历史已支付</span>${event.overridden ? ` <button class="ledger-reset" data-ledger-reset="${event.id}">恢复</button>` : ''}` : event.overridden ? `<span class="override-mark">已单笔校准</span> <button class="ledger-reset" data-ledger-reset="${event.id}">恢复</button>` : '<span style="color:var(--muted);font-size:10px">规则生成</span>'}</td>
+      </tr>`).join('') : '<tr><td colspan="6" style="color:var(--muted);padding:24px;text-align:center">当前筛选下没有未来收支记录</td></tr>';
+      body.querySelectorAll('[data-ledger-date]').forEach(input => input.addEventListener('change', () => {
+        const event = buildTransactions(s).find(item => item.id === input.dataset.ledgerDate);
+        if (!event || !input.value) return;
+        overrides[event.id] = { date:input.value, amount:event.amount }; update();
+      }));
+      body.querySelectorAll('[data-ledger-amount]').forEach(input => input.addEventListener('change', () => {
+        const event = buildTransactions(s).find(item => item.id === input.dataset.ledgerAmount);
+        if (!event || !Number.isFinite(Number(input.value))) return;
+        overrides[event.id] = { date:event.date, amount:Math.max(0,Number(input.value)) }; update();
+      }));
+      body.querySelectorAll('[data-ledger-reset]').forEach(button => button.addEventListener('click', () => { delete overrides[button.dataset.ledgerReset]; update(); }));
+    }
+
+    function renderLoan(s, latest) {
+      const asOf = latest ? parseDate(latest.date) : new Date();
+      const schedule = loanSchedule(s.loanDay);
+      const paid = schedule.filter(date => date <= asOf).length;
+      const paidAmount = paid * s.loanMonthly;
+      const remaining = Math.max(0, s.loanMonthly * (LOAN_COUNT - paid));
+      document.getElementById('loanProgress').style.width = `${s.loan ? paid / LOAN_COUNT * 100 : 0}%`;
+      document.getElementById('loanStatus').textContent = s.loan ? `截至 ${ymd(asOf)} · ${paid} / ${LOAN_COUNT} 期` : '当前情景未计入车贷';
+      document.getElementById('loanPaid').textContent = s.loan ? `已还 ${money(paidAmount)}` : '已还 —';
+      document.getElementById('loanRemaining').textContent = s.loan ? `剩余 ${money(remaining)}` : '剩余 —';
+    }
+
+    let chartState = null;
+    function drawChart(forecast, actualRecords) {
+      const canvas = document.getElementById('cashChart');
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, rect.width * dpr); canvas.height = Math.max(1, rect.height * dpr);
+      const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+      const W = rect.width, H = rect.height, pad = { l: 54, r: 14, t: 14, b: 34 };
+      const actual = [...actualRecords].sort((a,b) => a.date.localeCompare(b.date)).map(r => ({ date: parseDate(r.date), cash: Number(r.balance) }));
+      const all = [...forecast, ...actual];
+      if (!all.length) return;
+      const minDate = Math.min(...all.map(d => +d.date)), maxDate = Math.max(+MODEL_END, ...all.map(d => +d.date));
+      let min = Math.min(0, ...all.map(d => d.cash)), max = Math.max(...all.map(d => d.cash));
+      const range = Math.max(1, max - min); min -= range * .08; max += range * .08;
+      const x = date => pad.l + (+date - minDate) / Math.max(1, maxDate - minDate) * (W - pad.l - pad.r);
+      const y = value => pad.t + (max - value) / (max - min) * (H - pad.t - pad.b);
+      ctx.clearRect(0, 0, W, H); ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right';
+      for (let i=0;i<=4;i++) { const value=min+(max-min)*i/4, py=y(value); ctx.strokeStyle='rgba(23,35,30,.10)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad.l,py); ctx.lineTo(W-pad.r,py); ctx.stroke(); ctx.fillStyle='#7b837e'; ctx.fillText(`${(value/10000).toFixed(0)}万`,pad.l-8,py+3); }
+      ctx.beginPath(); forecast.forEach((d,i) => i ? ctx.lineTo(x(d.date),y(d.cash)) : ctx.moveTo(x(d.date),y(d.cash))); ctx.strokeStyle='#2d7157'; ctx.lineWidth=3.5; ctx.lineJoin='round'; ctx.stroke();
+      if (actual.length) {
+        ctx.beginPath(); actual.forEach((d,i) => i ? ctx.lineTo(x(d.date),y(d.cash)) : ctx.moveTo(x(d.date),y(d.cash))); ctx.setLineDash([5,5]); ctx.strokeStyle='#e7874a'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+        actual.forEach(d => { ctx.beginPath(); ctx.arc(x(d.date),y(d.cash),5,0,Math.PI*2); ctx.fillStyle='#e7874a'; ctx.fill(); ctx.strokeStyle='#fffdf8'; ctx.lineWidth=2; ctx.stroke(); });
+      }
+      ctx.textAlign='center'; ctx.fillStyle='#7b837e'; ctx.font='10px Inter, sans-serif';
+      [2026,2027,2028,2029,2030,2031].forEach(year => { const date=new Date(year,7,17); if (+date>=minDate && +date<=maxDate) ctx.fillText(String(year),x(date),H-10); });
+      chartState = { forecast, actual, x, y, width:W, height:H };
+    }
+
+    const chartCanvas = document.getElementById('cashChart');
+    const chartTooltip = document.getElementById('chartTooltip');
+    chartCanvas.addEventListener('mousemove', event => {
+      if (!chartState?.forecast.length) return;
+      const rect = chartCanvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const forecastPoint = chartState.forecast.reduce((best,item) => Math.abs(chartState.x(item.date)-mouseX) < Math.abs(chartState.x(best.date)-mouseX) ? item : best);
+      const actualPoint = chartState.actual.reduce((best,item) => !best || Math.abs(chartState.x(item.date)-mouseX) < Math.abs(chartState.x(best.date)-mouseX) ? item : best, null);
+      const useActual = actualPoint && Math.abs(chartState.x(actualPoint.date)-mouseX) < 9;
+      const point = useActual ? actualPoint : forecastPoint;
+      const dateText = ymd(point.date);
+      const sameDayActual = chartState.actual.find(item => ymd(item.date) === dateText);
+      const sameDayForecast = chartState.forecast.find(item => ymd(item.date) === dateText) || forecastPoint;
+      chartTooltip.innerHTML = `<time>${dateText}</time>${sameDayForecast ? `<span>预测现金</span><strong>${money(sameDayForecast.cash)}</strong>` : ''}${sameDayActual ? `<span style="display:block;margin-top:6px;color:#f3b17f">实际现金</span><strong>${money(sameDayActual.cash)}</strong>` : ''}`;
+      chartTooltip.style.left = `${Math.min(rect.width-80,Math.max(80,chartState.x(point.date)))}px`;
+      chartTooltip.style.top = `${Math.max(80,chartState.y(point.cash))}px`;
+      chartTooltip.classList.add('show');
+    });
+    chartCanvas.addEventListener('mouseleave', () => chartTooltip.classList.remove('show'));
+
+    const ledgerTable=document.getElementById('ledgerTable');
+    const ledgerColumns=[...ledgerTable.querySelectorAll('col')];
+    const defaultColumnWidths=[145,80,145,115,135,150];
+    let columnWidths=defaultColumnWidths;
+    try {
+      const savedWidths=JSON.parse(localStorage.getItem(`${STORAGE_KEY}-column-widths`) || 'null');
+      if(Array.isArray(savedWidths) && savedWidths.length===defaultColumnWidths.length) columnWidths=savedWidths.map((value,index)=>Math.max(70,Number(value)||defaultColumnWidths[index]));
+    } catch (_) { columnWidths=defaultColumnWidths; }
+    function applyColumnWidths() {
+      ledgerColumns.forEach((column,index)=>column.style.width=`${columnWidths[index]}px`);
+      ledgerTable.style.width=`${columnWidths.reduce((sum,value)=>sum+value,0)}px`;
+    }
+    applyColumnWidths();
+    document.querySelectorAll('.col-resizer').forEach(resizer=>resizer.addEventListener('pointerdown',event=>{
+      event.preventDefault(); event.stopPropagation();
+      const index=Number(resizer.dataset.column), startX=event.clientX, startWidth=columnWidths[index];
+      document.body.classList.add('resizing-columns'); resizer.setPointerCapture(event.pointerId);
+      const move=moveEvent=>{ columnWidths[index]=Math.max(70,startWidth+moveEvent.clientX-startX); applyColumnWidths(); };
+      const finish=()=>{ document.body.classList.remove('resizing-columns'); localStorage.setItem(`${STORAGE_KEY}-column-widths`,JSON.stringify(columnWidths)); resizer.removeEventListener('pointermove',move); resizer.removeEventListener('pointerup',finish); resizer.removeEventListener('pointercancel',finish); };
+      resizer.addEventListener('pointermove',move); resizer.addEventListener('pointerup',finish); resizer.addEventListener('pointercancel',finish);
+    }));
+
+    let currentModels;
+    function update({ save = true } = {}) {
+      const s = settings();
+      currentModels = buildModels(s);
+      const result = currentModels.remaining;
+      const totals = totalStatistics(s);
+      const anchorCash = currentModels.latest ? Number(currentModels.latest.balance) : s.startCash;
+      document.getElementById('endingCash').innerHTML = `${wan(result.endingCash)}<small>元</small>`;
+      document.getElementById('endingDescription').innerHTML = currentModels.latest
+        ? `已从 ${currentModels.latest.date} 的实际余额校正，预计再${result.endingCash >= anchorCash ? '增加' : '减少'} <strong>${wan(Math.abs(result.endingCash-anchorCash))}</strong>`
+        : `尚未录入实际余额，按初始现金预测净${result.endingCash >= anchorCash ? '增加' : '减少'} <strong>${wan(Math.abs(result.endingCash-anchorCash))}</strong>`;
+      document.getElementById('cashIncome').textContent = wan(totals.cashIncome);
+      document.getElementById('economicIncome').textContent = wan(totals.economic);
+      document.getElementById('totalExpense').textContent = wan(totals.expense);
+      document.getElementById('statsPeriod').textContent = `${totals.startDate} — 2031-07-01 · 包含已实现与未来预计`;
+      const statisticsMonths=Math.max(1,(MODEL_END-parseDate(totals.startDate))/DAY/365.2425*12);
+      document.getElementById('averageIncome').textContent = money(totals.cashIncome/statisticsMonths);
+      document.getElementById('averageExpense').textContent = money(totals.expense/statisticsMonths);
+      document.getElementById('averageIncomeNote').textContent = totals.housing>0 ? `现金口径 · 含住房权益 ${money(totals.economic/statisticsMonths)} / 月` : '现金口径 · 当前未计住房权益';
+      document.getElementById('averagePeriodNote').textContent = `按 ${statisticsMonths.toFixed(1)} 个月的总统计周期折算`;
+      const sources = [s.blux && 'Blux', s.grant && '博士补助', s.ta && '助教', s.taxRefund && s.blux && 'Blux 退税'].filter(Boolean);
+      document.getElementById('incomeMix').textContent = sources.length ? sources.join(' + ') : '未选择现金收入';
+      const expenseLabels={'日常生活费':'生活','用车成本':'用车','停车费':'停车','保险':'保险','车贷':'车贷','博士学费':'学费','公寓住宿费':'住宿'};
+      const expenseOrder=['日常生活费','用车成本','停车费','保险','车贷','博士学费','公寓住宿费'];
+      const expenseParts=[...expenseOrder,...Object.keys(totals.expenseByCategory).filter(name=>!expenseOrder.includes(name))].filter(name=>(totals.expenseByCategory[name]||0)>0).map(name=>`${expenseLabels[name]||name} ${wan(totals.expenseByCategory[name])}`);
+      document.getElementById('expenseMix').textContent = expenseParts.length?expenseParts.join(' · '):'当前情景没有现金支出';
+      document.getElementById('bluxSummary').textContent = `${money(s.salaryAmount)} / 月 · ${s.salaryDay} 日发放 · 至 ${s.bluxEndDate}`;
+      document.getElementById('grantSummary').textContent = `${s.grantStartDate} 首次 · ${money(s.grantBefore)} → ${money(s.grantAfter)}`;
+      document.getElementById('taSummary').textContent = `${s.taYears.length?s.taYears.map(year=>`博${'一二三四五'[year-1]}`).join('、'):'未选学年'} · ${s.taStartDate} 首次`;
+      document.getElementById('housingSummary').textContent = `${money(s.housingMonthly)} / 月 · 每月 19 日计入`;
+      document.getElementById('loanSummary').textContent = `剩余 58 期 · ${money(s.loanMonthly)} / 月 · 每月 ${s.loanDay} 日支出`;
+      document.getElementById('livingSummary').textContent = `${money(s.living)} / 月`;
+      document.getElementById('parkingSummary').textContent = `${money(s.parking)} / 月 · ${s.parkingDay} 日扣款`;
+      document.getElementById('carCostSummary').textContent = `${money(s.carCost)} / 月 · ${s.carCostDay} 日支出`;
+      document.getElementById('tuitionSummary').textContent = `${money(s.tuition)} / 年 · 共 5 次`;
+      document.getElementById('lodgingSummary').textContent = `${money(s.lodging)} / 年 · 共 5 次`;
+      document.getElementById('insuranceSummary').textContent = `${money(s.insuranceAmount)} / 年 · ${String(s.insuranceMonth).padStart(2,'0')}-${String(s.insuranceDay).padStart(2,'0')} 支出`;
+      document.querySelectorAll('[data-cost]').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.cost) === s.living));
+      renderLedger(s); renderStages(currentModels.baseline); renderRecords(); renderSalaryChanges(); renderLoan(s, currentModels.latest);
+      requestAnimationFrame(() => drawChart(currentModels.forecast, records));
+      if (save) persist();
+    }
+
+    function applyDefaults() {
+      Object.entries(controlDefaults).forEach(([id,value]) => { if (el[id].type === 'checkbox') el[id].checked=value; else el[id].value=value; });
+      [1,2,3,4,5].forEach(year=>el[`taYear${year}`].checked=year!==1);
+      applyDecisionOrder({income:DEFAULT_INCOME_ORDER,expense:DEFAULT_EXPENSE_ORDER});
+      YEARS.forEach(year => {
+        document.getElementById(`refund-${year}`).value=annualDefaults[year].refund;
+        document.getElementById(`refundDate-${year}`).value=annualDefaults[year].refundDate;
+      });
+    }
+    Object.keys(controlDefaults).forEach(id => el[id].addEventListener('input', () => update()));
+    [1,2,3,4,5].forEach(year=>el[`taYear${year}`].addEventListener('input',()=>update()));
+    document.querySelectorAll('.annual-input').forEach(node => node.addEventListener('input', () => update()));
+    document.querySelectorAll('[data-cost]').forEach(btn => btn.addEventListener('click', () => { el.living.value=btn.dataset.cost; update(); }));
+    document.querySelectorAll('[data-blux-end]').forEach(btn=>btn.addEventListener('click',()=>{ el.bluxEndDate.value=btn.dataset.bluxEnd; update(); }));
+    document.getElementById('addSalaryChange').addEventListener('click',()=>{
+      const date=el.salaryChangeDate.value, amount=Number(el.salaryChangeAmount.value);
+      if (!date) { el.salaryChangeDate.focus(); return; }
+      if (!Number.isFinite(amount) || amount<0) { el.salaryChangeAmount.focus(); return; }
+      salaryChanges=salaryChanges.filter(item=>item.date!==date);
+      salaryChanges.push({date,amount}); salaryChanges.sort((a,b)=>a.date.localeCompare(b.date));
+      el.salaryChangeDate.value=''; el.salaryChangeAmount.value=''; update();
+    });
+    document.getElementById('ledgerYear').innerHTML += YEARS.map(year=>`<option value="${year}">${year} 年</option>`).join('');
+    ['ledgerYear','ledgerDirection','ledgerCategory'].forEach(id => document.getElementById(id).addEventListener('change', () => renderLedger(settings())));
+    document.getElementById('saveActual').addEventListener('click', () => {
+      const date=el.actualDate.value, balance=Number(el.actualBalance.value);
+      if (!date || !Number.isFinite(balance)) { el.actualBalance.focus(); return; }
+      records = records.filter(r => r.date !== date);
+      records.push({ date, balance, note: el.actualNote.value.trim() });
+      records.sort((a,b) => a.date.localeCompare(b.date));
+      el.actualBalance.value=''; el.actualNote.value=''; persist(); update({save:false});
+    });
+    document.querySelectorAll('[data-edit-card]').forEach(button=>button.addEventListener('click',()=>{
+      const details=document.getElementById(button.dataset.editCard);
+      details.hidden=!details.hidden; button.classList.toggle('active',!details.hidden); button.textContent=details.hidden?'编辑':'收起';
+    }));
+    let draggedCard = null;
+    decisionLists.forEach(list=>{
+      list.querySelectorAll('.decision-card').forEach(card => {
+        card.querySelector('.drag-grip').addEventListener('mousedown',()=>card.dataset.dragReady='1');
+        card.addEventListener('dragstart', event => { if(card.dataset.dragReady!=='1'){ event.preventDefault(); return; } draggedCard=card; card.classList.add('dragging'); event.dataTransfer.effectAllowed='move'; event.dataTransfer.setData('text/plain',card.dataset.decision); });
+        card.addEventListener('dragend', () => { delete card.dataset.dragReady; card.classList.remove('dragging'); draggedCard=null; persist(); });
+      });
+      list.addEventListener('dragover', event => {
+        event.preventDefault();
+        if (!draggedCard || draggedCard.parentElement!==list) return;
+        const cards=[...list.querySelectorAll('.decision-card:not(.dragging)')];
+        const next=cards.find(card => event.clientY < card.getBoundingClientRect().top + card.getBoundingClientRect().height/2);
+        if (next) list.insertBefore(draggedCard,next); else list.appendChild(draggedCard);
+      });
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => { salaryChanges=[]; applyDefaults(); update(); });
+    let resizeTimer;
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer=setTimeout(() => currentModels && drawChart(currentModels.forecast,records),80); });
+    applyDefaults();
+    const localSnapshot = readStored();
+    const cloudTemplate = Object.keys(localSnapshot).length ? localSnapshot : currentData();
+    restore();
+    if (window.SzyCloud) window.SzyCloud.init({
+      documentType:'phd-cashflow', legacyStorageKey:STORAGE_KEY, template:cloudTemplate,
+      getData:currentData, applyData
+    });
+  </script>
 </body>
 </html>
