@@ -92,7 +92,12 @@ Device 页面支持全量导入/导出。真实源文件当前位于：
 C:\Users\szy\iCloudDrive\PhD\all_assets_2026-07-02_13_38_22.json
 ```
 
-导入前必须先执行更新后的 `supabase-setup.sql`，否则旧数据库约束只允许 `money` 和 `tax`，Device 保存会失败。
+导入前必须先执行更新后的 `supabase-setup.sql`，否则旧数据库约束可能不允许 Device 或 PhD 现金流页面使用的文档类型，同步会失败。
+
+## 启用 PhD 现金流同步
+
+已有数据库需要在 Supabase SQL Editor 执行一次 `supabase-add-phd-cashflow.sql`。它只会把
+`phd-cashflow` 加入 `document_type` 的允许值，不会修改或删除已有的 Money、Tax、Device 数据。
 
 Device 恢复步骤：登录 `AWSzyAI` → 确认右下角已同步 → 点击“加载全部”并选择源 JSON → 等待已同步 → 刷新核对 → 再导出一份新的私人备份。源 JSON 不得提交到 Git。
 
