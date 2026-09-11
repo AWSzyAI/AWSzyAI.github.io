@@ -1,8 +1,13 @@
 # 时子延的简历
-!!! note "最近更新"
-    2024/08/14: 更新为最新版简历
-    2024/06/05: 将简历部署在MkDocs
 
-- [完整版简历](https://awszyai.github.io/obsidian/Resume/Szy-CV.html)
+最新更新：2026-09-11
 
-![](./img/szy_CV_240814.png)
+时子延（Ziyan Shi），Blux 全栈工程师，西湖大学与深圳医学科学院（SMART）联合培养博士生。
+
+关注动物行为追踪、数字孪生、脑机接口、神经动力学与学习记忆。
+
+- [查看当前简历](https://awszyai.github.io/resume.html)
+- [合作方向与联系方式](https://awszyai.github.io/#collaborate)
+- Email: [shiziyan@westlake.edu.cn](mailto:shiziyan@westlake.edu.cn)
+
+![时子延的当前简历](./img/szy_CV_240814.png)

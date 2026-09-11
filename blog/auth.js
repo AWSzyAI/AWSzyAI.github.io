@@ -559,7 +559,7 @@ class BlogAuth {
             id: 123456789,
             login: 'AWSzyAI',
             name: 'Ziyan Shi',
-            email: 'szy@nnu.edu.cn',
+            email: 'shiziyan@westlake.edu.cn',
             avatar_url: 'https://avatars.githubusercontent.com/AWSzyAI?v=4',
             bio: '时子延的个人主页',
             public_repos: 10,
