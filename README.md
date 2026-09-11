@@ -7,13 +7,14 @@
 
 ## 当前状态
 
-主页采用浅色、墨绿色点缀的简约设计。Money、Tax 与 Device 页面使用 GitHub OAuth 登录和 Supabase 云同步；未登录访客及新用户只能看到脱敏模板。
+主页采用浅色、墨绿色点缀的简约设计，优先展示科研与工程合作方向。内容更新于 2026-09-11；当前邮箱为 `shiziyan@westlake.edu.cn`。Money、Tax 与 Device 页面使用 GitHub OAuth 登录和 Supabase 云同步；未登录访客及新用户只能看到脱敏模板。
 
 ## 主要入口
 
 | 页面 | 文件 | 用途 |
 | --- | --- | --- |
-| 主页 | `index.html` | 个人介绍、研究方向、项目和笔记入口 |
+| 主页 | `index.html` | Now、合作方向、工程实践、已发表论文与联系方式 |
+| 当前简历 | `resume.html` | 当前身份、教育、工程经历与论文 |
 | Money | `money.html` | 资产、未来收入、预算、情景和贷款模拟 |
 | Tax | `tax.html` | 年度综合所得、预缴税额和退补税测算 |
 | Device | `device.html` | 设备、订阅、租赁、打卡、里程与收支记录 |
