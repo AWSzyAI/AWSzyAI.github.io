@@ -25,8 +25,9 @@
 - `index.html`：公开合作主页；共享样式与移动导航在 `assets/site.css`、`assets/site.js`，仅主页加载的视觉增强在 `assets/motion.css`、`assets/motion.js`。
 - `resume.html`：当前中英文简历；`assets/current-cv.png` 为网页渲染快照。
 - `device.html`：设备、订阅、租赁、打卡、里程和收支记录，并接入云同步。
-- `PhD.html`：长期情景建模。
-- `blog.html`、`blog/`：博客入口和旧博客系统。
+- `PhD.html`：长期情景建模，云端文档类型为 `phd-cashflow`。
+- `blog.html`：写作入口说明页；`blog/` 保留文章阅读、评论与预留入口，旧编辑器/后台已删除。
+- `blog/security.js`：博客 Markdown 白名单过滤与 HTML 转义工具。
 - `obsidian/`、`MkDocs/site/`、`Archive/`：静态内容与历史归档。
 
 ### 财务页面
@@ -169,7 +170,7 @@ Tax 数据 key：`szy_tax_refund_planner_v2`。列宽仅保存在本机 `szy_tax
 2. 未登录时应用脱敏模板。
 3. 点击“GitHub 登录”后，经 GitHub OAuth 返回 Supabase callback。
 4. Supabase 恢复会话后按当前用户 ID 查询数据。
-5. Money、Tax、Device 分别使用 `document_type = money`、`tax`、`device`。
+5. Money、Tax、Device 与 PhD 分别使用 `document_type = money`、`tax`、`device`、`phd-cashflow`。
 
 ### 数据表
 
@@ -209,9 +210,15 @@ RLS 强制所有 select/insert/update/delete 都满足 `auth.uid() = user_id`。
 
 历史重置后，原来写在旧版 Tax 默认值中的个人账本不再出现在远端可达历史中，但本机 Git 对象仍可恢复。旧数据在本机旧提交 `cb50d4b` 的 `tax.html` 中被找回。
 
-首次云端初始化出现了一个重要问题：如果云端已经存在模板行，`cloud-sync.js` 会优先读取远端 payload，不再尝试迁移旧 localStorage。因此模板可能覆盖用户对“数据已迁移”的预期。
+首次云端初始化的迁移规则（`cloud-sync.js`）：
 
-Money 还有额外风险：当前 `legacyStorageKey` 是新的脱敏 key，而不是旧版真实数据使用的 key，因此不能假定旧 Money localStorage 会自动迁移。
+- 远端没有行：使用所有者本机旧 localStorage（若存在），写入后删除旧 key。
+- 远端有真实数据：直接使用远端，不弹窗、不删除本机旧数据。
+- 远端只有模板、本机有非模板旧数据、当前是所有者：弹出确认，选择“导入本机数据”或“保留云端模板”，不会静默覆盖；只有导入成功后才删除旧 key。
+
+Money 的 `legacyStorageKey` 是新的脱敏 key，而不是旧版真实数据使用的 key，因此不能假定旧 Money localStorage 会自动迁移。
+
+PhD 页面不再把现金流写入 localStorage：`persist()` 只在已登录时调用 `scheduleSave`；localStorage 仅保留列宽偏好与旧 key 供一次性迁移。
 
 ### 当前恢复状态
 
@@ -228,7 +235,7 @@ Money 还有额外风险：当前 `legacyStorageKey` 是新的脱敏 key，而�
 1. 完成 Tax 恢复：用 `AWSzyAI` 登录 Tax 页面，导入临时恢复 JSON，检查 2026/2027 年份和汇总结果，等待云端同步。
 2. 立刻从 Tax 页“导出 JSON”保存新的私有备份。
 3. 检查 Money 是否仍能在原浏览器找到旧数据；不要在未备份前反复刷新或清理浏览器数据。
-4. 改进首次迁移策略：当远端只有模板时，提供明确的“导入旧本机数据/保留云端模板”选择，禁止静默覆盖。
+4. ~~改进首次迁移策略~~：已在 `cloud-sync.js` 实现显式确认迁移；后续如需更细粒度选择，再考虑三选项对话框。
 5. 为 Money 与 Tax 增加可见的“最近云端保存时间”和手动导出提醒。
 6. 在 Supabase 执行更新后的 `supabase-setup.sql`，启用 `document_type = device`，再用所有者账号导入 Device 私有 JSON。
 
@@ -239,6 +246,8 @@ Money 还有额外风险：当前 `legacyStorageKey` 是新的脱敏 key，而�
 - `cloud-config.js` 只允许 Project URL 和 Publishable key。
 - 修改 `supabase-setup.sql` 后必须重新验证匿名读取被拒绝、不同账号互相不可见。
 - 在删除 localStorage 前，必须确认云端写入成功并能在刷新后重新读取。
+- `blog/` 不得恢复浏览器端 OAuth 或前端作者权限；作者判定必须来自服务端会话。
+- 博客内容渲染必须走 `blog/security.js`；禁止 `sanitize: false`、未转义的 `innerHTML`，以及 `polyfill.io` 等已被接管或不可信的第三方脚本。
 - 历史重写只用于清除已公开的敏感信息；执行前要保留本地恢复点。
 
 ## 11. 开发与验证流程

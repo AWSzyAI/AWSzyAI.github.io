@@ -74,6 +74,16 @@ class BlogComments {
             </div>
         `;
 
+        document.querySelectorAll('#comments-container [data-comment-action]').forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.dataset.commentAction;
+                const commentId = button.dataset.commentId;
+                if (action === 'delete') this.deleteComment(commentId);
+                else if (action === 'like') this.likeComment(commentId);
+                else if (action === 'reply') this.replyComment(commentId);
+            });
+        });
+
         if (blogAuth.isLoggedIn()) {
             this.setupCommentForm();
         }
@@ -145,46 +155,33 @@ class BlogComments {
         const isAuthor = currentUser && currentUser.username === comment.username;
         const canDelete = isAuthor || (currentUser && currentUser.isAuthor);
 
+        const commentId = BlogSecurity.escapeHtml(comment.id);
+        const name = BlogSecurity.escapeHtml(comment.name);
+        const username = BlogSecurity.escapeHtml(comment.username);
+        const avatar = BlogSecurity.escapeHtml(comment.avatar);
+        const time = BlogSecurity.escapeHtml(this.formatTime(comment.timestamp));
+        const likes = Number.isFinite(Number(comment.likes)) ? Number(comment.likes) : 0;
         return `
-            <div class="comment" data-comment-id="${comment.id}">
-                <div class="comment-avatar">
-                    <img src="${comment.avatar}" alt="${comment.name}">
-                </div>
+            <div class="comment" data-comment-id="${commentId}">
+                <div class="comment-avatar"><img src="${avatar}" alt="${name}"></div>
                 <div class="comment-content">
                     <div class="comment-header">
                         <div class="comment-author">
-                            <span class="author-name">${comment.name}</span>
-                            <span class="author-github">@${comment.username}</span>
+                            <span class="author-name">${name}</span>
+                            <span class="author-github">@${username}</span>
                             ${comment.username === 'AWSzyAI' ? '<span class="author-badge">作者</span>' : ''}
                         </div>
                         <div class="comment-meta">
-                            <span class="comment-time">${this.formatTime(comment.timestamp)}</span>
-                            ${canDelete ? `
-                                <button class="delete-comment" onclick="blogComments.deleteComment('${comment.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            ` : ''}
+                            <span class="comment-time">${time}</span>
+                            ${canDelete ? `<button class="delete-comment" data-comment-action="delete" data-comment-id="${commentId}" aria-label="删除评论"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
                     </div>
-                    <div class="comment-body">
-                        ${this.parseCommentContent(comment.content)}
-                    </div>
+                    <div class="comment-body">${this.parseCommentContent(comment.content)}</div>
                     <div class="comment-actions">
-                        <button class="comment-action ${comment.liked ? 'liked' : ''}"
-                                onclick="blogComments.likeComment('${comment.id}')">
-                            <i class="fas fa-heart"></i>
-                            <span>${comment.likes || 0}</span>
-                        </button>
-                        <button class="comment-action" onclick="blogComments.replyComment('${comment.id}')">
-                            <i class="fas fa-reply"></i>
-                            回复
-                        </button>
+                        <button class="comment-action ${comment.liked ? 'liked' : ''}" data-comment-action="like" data-comment-id="${commentId}"><i class="fas fa-heart"></i><span>${likes}</span></button>
+                        <button class="comment-action" data-comment-action="reply" data-comment-id="${commentId}"><i class="fas fa-reply"></i>回复</button>
                     </div>
-                    ${comment.replies && comment.replies.length > 0 ? `
-                        <div class="comment-replies">
-                            ${comment.replies.map(reply => this.renderComment(reply)).join('')}
-                        </div>
-                    ` : ''}
+                    ${comment.replies && comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => this.renderComment(reply)).join('')}</div>` : ''}
                 </div>
             </div>
         `;
@@ -194,17 +191,12 @@ class BlogComments {
      * 解析评论内容
      */
     parseCommentContent(content) {
-        // 简单的markdown解析
-        return content
-            // 处理代码块
+        const safeContent = BlogSecurity.escapeHtml(content);
+        return safeContent
             .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-            // 处理行内代码
             .replace(/`([^`]+)`/g, '<code>$1</code>')
-            // 处理链接
-            .replace(/https?:\/\/([^\s]+)/g, '<a href="https://$1" target="_blank">https://$1</a>')
-            // 处理@提及
+            .replace(/https?:\/\/([^\s]+)/g, '<a href="https://$1" target="_blank" rel="noopener noreferrer">https://$1</a>')
             .replace(/@(\w+)/g, '<span class="mention">@$1</span>')
-            // 处理换行
             .replace(/\n/g, '<br>');
     }
 

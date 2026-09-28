@@ -7,7 +7,7 @@
 
 ## 当前状态
 
-主页采用浅色、墨绿色点缀的简约设计，优先展示科研与工程合作方向。内容更新于 2026-09-11；当前邮箱为 `shiziyan@westlake.edu.cn`。Money、Tax 与 Device 页面使用 GitHub OAuth 登录和 Supabase 云同步；未登录访客及新用户只能看到脱敏模板。
+主页采用浅色、墨绿色点缀的简约设计，优先展示科研与工程合作方向。内容更新于 2026-09-11；当前邮箱为 `shiziyan@westlake.edu.cn`。Money、Tax、Device 与 PhD 页面使用 GitHub OAuth 登录和 Supabase 云同步；未登录访客及新用户只能看到脱敏模板。旧博客系统的前端模拟登录与编辑器已停用，`blog/` 只保留阅读与预留入口。
 
 ## 主要入口
 
@@ -56,3 +56,5 @@ gh run list --limit 5
 - 不要把个人 Money/Tax/Device JSON、GitHub Client Secret、Supabase `service_role` key 提交到仓库。
 - `cloud-config.js` 中的 Project URL 与 Publishable key 是公开客户端配置；真正的数据隔离由 Supabase RLS 完成。
 - 修改云同步逻辑前先阅读 `PROJECT_MEMORY.md` 中的“数据事故与恢复状态”。
+- `blog/` 旧系统的浏览器端 OAuth 与前端作者权限不可信，已停用；不要在没有服务端鉴权的情况下恢复作者功能。
+- 文章与评论渲染必须经过 `blog/security.js` 的白名单过滤，不要重新引入 `sanitize: false` 或未转义的 `innerHTML`。

@@ -120,8 +120,7 @@
         </div>
     </div>
 
-    <script src="github-oauth-config.js"></script>
-<script src="auth.js"></script>
+    <script src="auth.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -167,11 +166,7 @@
                 errorState.style.display = 'block';
 
                 const errorMessage = document.getElementById('error-message');
-                errorMessage.innerHTML = `
-                    <strong>登录失败</strong><br>
-                    ${error.message}<br>
-                    <small>请稍后重试或联系网站管理员</small>
-                `;
+                errorMessage.textContent = `登录失败：${error.message}`;
             }
         });
 

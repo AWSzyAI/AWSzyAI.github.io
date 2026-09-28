@@ -83,6 +83,14 @@
         return true;
     }
 
+    function isSamePayload(left, right) {
+        try {
+            return JSON.stringify(left) === JSON.stringify(right);
+        } catch (_) {
+            return false;
+        }
+    }
+
     async function loadForSession(nextSession) {
         session = nextSession;
         if (!session) {
@@ -93,18 +101,32 @@
         setStatus('正在读取云端数据…', 'idle', true);
         try {
             const remote = await readDocument();
+            const isOwner = githubLogin(session.user) === String(config.ownerGithubLogin || '').toLowerCase();
+            const legacyRaw = isOwner ? localStorage.getItem(context.legacyStorageKey) : null;
+            let localData = null;
+            if (legacyRaw) {
+                try { localData = JSON.parse(legacyRaw); } catch (_) { /* ignore corrupt legacy data */ }
+            }
+
             if (remote?.payload) {
-                context.applyData(remote.payload);
-            } else {
-                const isOwner = githubLogin(session.user) === String(config.ownerGithubLogin || '').toLowerCase();
-                const legacyRaw = isOwner ? localStorage.getItem(context.legacyStorageKey) : null;
-                let initial = clone(context.template);
-                if (legacyRaw) {
-                    try { initial = JSON.parse(legacyRaw); } catch (error) { /* use template */ }
+                const remoteIsTemplate = isSamePayload(remote.payload, context.template);
+                const localIsMeaningful = localData && !isSamePayload(localData, context.template);
+                const shouldOfferMigration = isOwner && localIsMeaningful && remoteIsTemplate;
+                const importLocal = shouldOfferMigration && window.confirm(
+                    '检测到本机有未迁移的数据，而云端目前是模板。点击“确定”导入本机数据，点击“取消”保留云端模板。'
+                );
+                if (importLocal) {
+                    context.applyData(localData);
+                    await writeDocument(context.getData());
+                    localStorage.removeItem(context.legacyStorageKey);
+                } else {
+                    context.applyData(remote.payload);
                 }
+            } else {
+                const initial = localData || clone(context.template);
                 context.applyData(initial);
                 await writeDocument(context.getData());
-                if (legacyRaw) localStorage.removeItem(context.legacyStorageKey);
+                if (localData) localStorage.removeItem(context.legacyStorageKey);
             }
             setStatus(`${githubLogin(session.user) || 'GitHub 用户'} · 已同步`, 'online', true);
         } catch (error) {
