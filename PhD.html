@@ -497,9 +497,6 @@
     let records = [];
     let overrides = {};
     let salaryChanges = [];
-    function readStored() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (_) { return {}; }
-    }
     function annualSettings() {
       return Object.fromEntries(YEARS.map(year => [year, {
         refund: inputNumber(document.getElementById(`refund-${year}`)),
@@ -525,8 +522,7 @@
     }
     function persist() {
       const data = currentData();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      if (window.SzyCloud) window.SzyCloud.scheduleSave(data);
+      if (window.SzyCloud?.isSignedIn()) window.SzyCloud.scheduleSave(data);
     }
     function applyData(stored) {
       stored = stored && typeof stored === 'object' ? stored : {};
@@ -552,7 +548,6 @@
       if (el.actualDate) el.actualDate.value = todayYmd();
       update({save:false});
     }
-    function restore() { applyData(readStored()); }
 
     function applyDecisionOrder(order) {
       const legacy=Array.isArray(order)?order:null;
@@ -954,9 +949,7 @@
     let resizeTimer;
     window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer=setTimeout(() => currentModels && drawChart(currentModels.forecast,records),80); });
     applyDefaults();
-    const localSnapshot = readStored();
-    const cloudTemplate = Object.keys(localSnapshot).length ? localSnapshot : currentData();
-    restore();
+    const cloudTemplate = currentData();
     if (window.SzyCloud) window.SzyCloud.init({
       documentType:'phd-cashflow', legacyStorageKey:STORAGE_KEY, template:cloudTemplate,
       getData:currentData, applyData
