@@ -1,6 +1,6 @@
 # 项目记忆与维护手册
 
-最后更新：2026-09-13
+最后更新：2026-09-29
 工作目录：`/Users/szy/Downloads/AWSzyAI.github.io`
 正式站点：<https://awszyai.github.io/>
 
@@ -24,6 +24,7 @@
 
 - `index.html`：公开合作主页；共享样式与移动导航在 `assets/site.css`、`assets/site.js`，仅主页加载的视觉增强在 `assets/motion.css`、`assets/motion.js`。
 - `resume.html`：当前中英文简历；`assets/current-cv.png` 为网页渲染快照。
+- `card.html`：个人双语名片，墨绿 / 米白配色；`assets/business-card.css`、`assets/business-card.js` 独立管理排版与 PNG 导出。`assets/card-qr.svg` 编码个人主页 `https://awszyai.github.io/`，使用本机 CoreImage 生成并保留完整静区。
 - `device.html`：设备、订阅、租赁、打卡、里程和收支记录，并接入云同步。
 - `PhD.html`：长期情景建模，云端文档类型为 `phd-cashflow`。
 - `blog.html`：写作入口说明页；`blog/` 保留文章阅读、评论与预留入口，旧编辑器/后台已删除。
@@ -68,6 +69,14 @@
 - 提供暂停/播放按钮；遵循 prefers-reduced-motion。Canvas 在离屏、页面隐藏和用户暂停时停止绘制。手机降低节点数，粗指针设备禁用视差交互。
 - 样式与脚本单独加载，只影响主页；简历、财务工具及云同步逻辑不受影响。
 - 当前身份横栏中各展示一次西湖大学、深圳医学科学院和 Blux 官方 logo，保留原色与比例；素材在 `assets/logos/`，来源见该目录 README。联合培养两家机构并列，Blux 与工程身份对应。按用户反馈去掉 Currently / 持续探索 / 2026 及向下探索，身份栏采用两个明确分隔的区块，每组身份文字在左、官方标识在右并排一行，取消 logo 在文字上方的排列，避免四列布局造成空白。
+
+### 2026-09-15 个人名片
+
+- 身份和联系方式以当前 `resume.html` 为依据；名片只展示姓名、博士生及工程师身份、研究方向与公开联系方式。更新身份时需同步简历与名片。
+- 主页关于区、联系区与简历顶部联系区提供入口。
+- 名片学校 Logo 位于联合培养身份下方，学校与公司标识统一为 42 SVG 单位高，公司标识按原比例显示为 36.37×42，搭配「Blux 畴明科技」与「全栈工程师 + 架构师」职位（用户 2026-09-15 明确要求用于名片）；公司重点为「光学脑机接口 · 动物行为数字孪生」，依据用户 2026-09-15 明确补充。按用户反馈移除姓名下方重复的「研究兴趣 · 意识与记忆」一行，仅调整展示，不代表研究方向变化。三项联系方式在同一行。米白版保留标识原色；绿色版使用比 #006400 更深的 #00451b 底色，叠加增强对比的细颗粒磨砂纹理，学校标识为浅色、公司标识保留蓝色层次并提亮，脑模型沿用上一版效果；右上角使用主页 `BrainMesh` 从同一 `human-brain.json` 渲染的固定视角 MRI 三维表面图片 `assets/brain/card-mri.png`，透明背景，保留来源与 CC BY-SA 3.0 标注。导出前将全部本地 Logo 与模型图片内嵌，避免 SVG 栅格化遗漏外部图片。
+- 内联 SVG 同时用于网页预览与 1800 × 1080 PNG 导出；无第三方截图库或二维码服务。二维码载入后嵌入 SVG，避免导出时跨域污染 Canvas。提供导出图片预览及下载链接，便于手机长按保存。
+- 验收：Chrome 实测两种配色与重复下载、320–1440px 无横向溢出、二维码失败重试、PNG 编码失败恢复、无 JavaScript 静态信息；两张导出图片经系统二维码识别器解码为正确主页地址。现有 SEO 检查通过。
 
 ## 4. Money 页面模型
 
@@ -238,6 +247,30 @@ PhD 页面不再把现金流写入 localStorage：`persist()` 只在已登录时
 4. ~~改进首次迁移策略~~：已在 `cloud-sync.js` 实现显式确认迁移；后续如需更细粒度选择，再考虑三选项对话框。
 5. 为 Money 与 Tax 增加可见的“最近云端保存时间”和手动导出提醒。
 6. 在 Supabase 执行更新后的 `supabase-setup.sql`，启用 `document_type = device`，再用所有者账号导入 Device 私有 JSON。
+
+### 后续全托管架构迁移（未实施）
+
+目标：后续个人工具和小型出海产品不自购云服务器，不自行维护操作系统、运行环境、Nginx、数据库端口、磁盘和邮件服务器；优先采用按量、免运维、可在免费额度内运行的托管服务。
+
+目标架构：
+
+1. 静态前端部署到 Cloudflare Pages，连接 GitHub；`main` 自动部署，Pull Request 使用预览环境，静态资源由全球 CDN 分发。
+2. 后端接口部署到 Cloudflare Workers；私钥只使用 Worker Secrets/Bindings，不进入前端、仓库或构建日志。
+3. 结构化业务数据使用 Cloudflare D1；通过版本化 migration 管理 schema，不开放数据库公网端口。
+4. 用户上传的文件和图片使用 Cloudflare R2；由 Worker 鉴权并签发受限上传/下载请求，禁止公开暴露私有对象。
+5. 验证码和通知邮件由 Worker 调用 Resend；API Key 只保存在 Secret 中，并实现发件域名验证、频率限制、防滥用和退信处理。
+6. 登录从当前 Supabase 浏览器端流程迁移前，先在 Worker 实现服务端 GitHub OAuth、HttpOnly/Secure/SameSite 会话和逐用户授权；不得退回前端作者判定。
+
+实施 TODO：
+
+1. 盘点 GitHub Pages、Supabase Auth/Postgres/RLS、静态路径和现有数据，确认 Pages/Workers/D1/R2/Resend 的对应边界。
+2. 核对上线时各平台的免费额度、计费项、地区可用性和超额保护；免费层是成本目标，不承诺永久零账单。
+3. 建立 Cloudflare 预览环境、生产环境、Wrangler 配置、D1 migrations、R2 bucket 和 Secrets 清单；生产密钥不得提交。
+4. 先迁移无状态 API 与静态站，在预览域名完成桌面/移动端、缓存、404、OAuth 回调和安全头验证。
+5. 导出并加密备份 Supabase 数据，编写可校验、可重复执行的 D1 迁移；按行数、用户数、文档类型和哈希核对，不迁移公开仓库禁止保存的私密备份。
+6. 迁移上传文件到 R2并验证权限、内容类型、大小限制和删除流程；接入 Resend 后验证 SPF、DKIM、DMARC、限流和失败重试。
+7. 完成匿名隔离、跨账号隔离、会话失效、CSRF、XSS、上传滥用和邮件滥用检查，再切换正式域名。
+8. 保留可回滚窗口；线上读写和备份恢复验证通过后，再删除 GitHub Pages/Supabase 的旧部署、旧回调、旧密钥和兼容代码，保持单一路径。
 
 ## 10. 安全操作规则
 
