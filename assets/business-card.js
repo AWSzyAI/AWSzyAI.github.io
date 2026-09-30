@@ -44,6 +44,14 @@
     resultUrl = null;
   }
 
+  function applyQrTheme() {
+    const background = card.querySelector('[data-qr-background]');
+    const modules = card.querySelector('[data-qr-modules]');
+    if (!background || !modules) return;
+    background.setAttribute('fill', theme === 'forest' ? 'none' : '#ffffff');
+    modules.setAttribute('fill', theme === 'forest' ? palettes.forest.ink : '#153d34');
+  }
+
   function selectTheme(nextTheme) {
     if (!palettes[nextTheme] || nextTheme === theme) return;
     theme = nextTheme;
@@ -67,6 +75,7 @@
       }
     });
     card.querySelectorAll('[data-card-grain]').forEach(node => node.setAttribute('opacity', theme === 'forest' ? '0.20' : '0.025'));
+    applyQrTheme();
     themeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === theme)));
     document.getElementById('theme-name').textContent = theme === 'forest' ? '01 — 磨砂绿' : '02 — 米白';
     if (qrReady) announce(`已切换为${theme === 'forest' ? '磨砂绿' : '米白'}，可保存高清名片。`);
@@ -114,18 +123,29 @@
       if (viewBox.length !== 4 || !viewBox.every(Number.isFinite) || viewBox[2] <= 0 || viewBox[2] !== viewBox[3]) throw new Error('Invalid QR dimensions');
       const group = document.createElementNS(SVG_NS, 'g');
       group.setAttribute('transform', `translate(718 353) scale(${122 / viewBox[2]}) translate(${-viewBox[0]} ${-viewBox[1]})`);
-      group.setAttribute('fill', '#153d34');
       group.setAttribute('shape-rendering', 'crispEdges');
       const background = document.createElementNS(SVG_NS, 'rect');
       background.setAttribute('x', viewBox[0]);
       background.setAttribute('y', viewBox[1]);
       background.setAttribute('width', viewBox[2]);
       background.setAttribute('height', viewBox[3]);
-      background.setAttribute('fill', '#ffffff');
-      group.appendChild(background);
-      copyQrGeometry(root, group);
-      if (group.querySelectorAll('path, rect').length < 2) throw new Error('Empty QR geometry');
+      background.setAttribute('data-qr-background', '');
+      const modules = document.createElementNS(SVG_NS, 'g');
+      modules.setAttribute('data-qr-modules', '');
+      copyQrGeometry(root, modules);
+      const sourceBackground = [...modules.children].find(node =>
+        node.localName === 'rect'
+        && Number(node.getAttribute('x') || 0) === viewBox[0]
+        && Number(node.getAttribute('y') || 0) === viewBox[1]
+        && Number(node.getAttribute('width')) === viewBox[2]
+        && Number(node.getAttribute('height')) === viewBox[3]
+      );
+      if (sourceBackground) sourceBackground.remove();
+      modules.querySelectorAll('[fill]').forEach(node => node.removeAttribute('fill'));
+      group.append(background, modules);
+      if (modules.querySelectorAll('path, rect').length < 1) throw new Error('Empty QR geometry');
       document.getElementById('card-qr').replaceChildren(group);
+      applyQrTheme();
       document.getElementById('qr-loading').setAttribute('display', 'none');
       qrReady = true;
       save.disabled = exporting;
