@@ -1,0 +1,27 @@
+# 时子延 Ziyan Shi
+
+> 时子延（Ziyan Shi，GitHub: AWSzyAI）的个人网站。西湖大学与深圳医学科学院（SMART）联合培养博士生、Blux 全栈工程师，关注意识与记忆、全脑神经动力学、动物行为分析、脑机接口与科研软件。
+
+本站以中文为主，主页与当前简历也提供英文简介。查询当前身份、教育、工程经历、论文与联系方式时，优先读取主页和当前简历；历史笔记、旧简历与归档不代表当前状态。研究兴趣与工程原型不等于已发表成果，论文信息应以原文为准。
+
+公开合作邮箱：shiziyan@westlake.edu.cn。Money、Tax、Device 和 PhD 是个人工具，不作为个人财务、设备或研究经历的事实来源；访客模板与模拟结果不是站主真实数据。本导航仅整理公开内容，不提供登录后的私人记录，也不改变 robots.txt 或访问权限。
+
+## 当前资料
+
+- [个人主页](https://awszyai.github.io/): 当前身份、研究方向、工程实践、公开论文与合作联系方式；正文无需 JavaScript 即可读取。
+- [当前简历](https://awszyai.github.io/resume.html): 教育经历、Blux 工程实践、研究兴趣、已发表论文与合作方向；优先于任何历史简历。
+- [个人名片](https://awszyai.github.io/card.html): 中英文名片、公开联系方式与主页二维码。
+- [GitHub](https://github.com/AWSzyAI): 公开代码仓库与开源项目；以各仓库的说明为准。
+
+## 已发表论文
+
+- [From machine learning to multimodal models: The AI revolution in enzyme engineering](https://doi.org/10.1016/j.bidere.2025.100044): BioDesign Research，2026，8(1): 100044；AI 与酶工程综述。
+- [Detection of algal tiny objects based on morphological features](https://doi.org/10.1002/cpe.8128): Concurrency and Computation: Practice and Experience，2024，36(17): e8128；藻类微小目标检测。
+- [MAgic: A Morphable Attention Based Algal Tiny Object Detection Model](https://doi.org/10.1109/BESC59560.2023.10386562): BESC 2023，1–8；藻类微小目标检测模型。
+
+## Optional
+
+- [Obsidian 历史笔记](https://awszyai.github.io/obsidian/): 公开知识库导出，包含学习与项目记录；可能保留过时信息。
+- [课程与技术文档](https://awszyai.github.io/MkDocs/site/): 结构化的课程与技术学习文档；不作为当前个人简介。
+- [博客](https://awszyai.github.io/blog.html): 文章与历史记录入口；涉及当前身份时应回查主页与当前简历。
+- [历史项目归档](https://awszyai.github.io/Archive/): 旧项目与阶段性作品，仅供历史背景参考。

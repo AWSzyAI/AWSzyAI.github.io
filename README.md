@@ -16,6 +16,7 @@
 | 主页 | `index.html` | Now、合作方向、工程实践、已发表论文与联系方式 |
 | 当前简历 | `resume.html` | 当前身份、教育、工程经历与论文 |
 | 个人名片 | `card.html` | 磨砂绿 / 米白双语名片、主页二维码、高清 PNG 保存 |
+| AI 内容导航 | `llms.txt` | 当前公开资料、论文与历史内容的分类入口 |
 | Money | `money.html` | 资产、未来收入、预算、情景和贷款模拟 |
 | Tax | `tax.html` | 年度综合所得、预缴税额和退补税测算 |
 | Device | `device.html` | 设备、订阅、租赁、打卡、里程与收支记录 |
@@ -29,6 +30,7 @@
 - [项目完整记忆与维护手册](PROJECT_MEMORY.md)
 - [Money / Tax 云同步配置与恢复](CLOUD_SETUP.md)
 - [Supabase 数据库初始化脚本](supabase-setup.sql)
+- [搜索发现与 AI 内容导航维护](SEO.md)
 
 ## 本地预览
 
