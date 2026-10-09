@@ -11,6 +11,7 @@
 - `robots.txt` 开放抓取，包括 Googlebot、Bingbot、Baiduspider，并声明根站点地图。
 - `sitemap.xml` 聚焦首页与当前简历，使用 canonical URL 和真实修改日期；页面锚点、历史重复简历不单独提交。
 - `.nojekyll` 使 GitHub Pages 直接发布本仓库的静态资源。
+- `/llms.txt` 提供面向 AI 的 Markdown 内容导航：当前主页、简历、名片、公开论文与可选历史资料。首页与简历通过 `<link rel="describedby" href="/llms.txt" type="text/plain">` 声明入口，不改变页面视觉或抓取权限。
 - `indexnow-key.txt` 是用于网站所有权验证的公开文件，不是账号登录密钥。`scripts/submit-indexnow.py` 在核对线上 key 和页面内容后，向 IndexNow 提交站点地图中的网址。它不会在网站访客的浏览器里发送通知，也不接触访客信息。
 
 ## 发布后主动通知
@@ -40,6 +41,12 @@ HTTP 200 表示请求已处理；HTTP 202 表示已接收、等待 key 验证。
 ## 维护
 
 修改正文时同步更新站点地图中对应页面的 lastmod，以及 ProfilePage 的 dateModified。保留页面的唯一 canonical 和原有公开联系信息。不要将个人资产、税务数据、平台私密 token 或凭据写入公开仓库。不要为追求索引数量把重定向、旧简历、维护说明或页面内锚点堆入 sitemap。
+
+修改当前身份、联系方式、公开论文或入口 URL 时，同步维护 `llms.txt` 的简介、链接与说明。优先指向当前主页和简历；历史笔记放在 `Optional` 中，并标明其时效性。不要收录登录后的个人记录、内部规划或凭据，也不要将访客模板与模拟结果写成个人事实。`llms.txt` 是内容导航，不是访问控制、抓取许可或收录保证；无需将其加入仅收录公开网页的 sitemap。
+
+本地预览启动后，访问 `/llms.txt`，确认 HTTP 200、UTF-8 正文可读，并逐个检查站内链接。也可用 `curl -i http://127.0.0.1:4173/llms.txt` 检查响应。部署后检查 <https://awszyai.github.io/llms.txt>；只有发布文件并不能证明任何 AI 平台已经采用它。
+
+参考：[llms.txt 提案](https://llmstxt.org/)、[给网站加一份 llms.txt，让 AI 更容易用对你的内容](https://x.com/yscai101/status/2096874822579937378)。
 
 生成分享图使用 `scripts/build-social-card.py`（Pillow），无需重新生成首页的动画素材。
 
