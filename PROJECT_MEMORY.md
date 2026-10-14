@@ -379,3 +379,9 @@ https://awszyai.github.io/?deploy=<commit>
 - 首页和简历保留可直接抓取的静态正文，补齐 WebSite / ProfilePage / Person 身份关联、robots meta、独立 canonical、分享元数据及 1200 × 630 品牌分享图。根 robots.txt 开放抓取，sitemap.xml 聚焦首页与当前简历；.nojekyll 明确静态发布。
 - 新增 `scripts/check-seo.py` 做抓取与元数据检查，`scripts/submit-indexnow.py` 在确认 Pages 线上文件与本地一致后向 IndexNow 通知两页更新。公开 key 位于根目录 `indexnow-key.txt`，不涉及用户登录凭据。
 - 用户已授权 git push 部署，并明确 Google / 百度站长账号验证稍后处理。不得将 IndexNow 接收回执表述为所有搜索引擎已经收录。验证与维护步骤见 `SEO.md`。
+
+### 2026-10-14 Blux 身份更新
+
+- 按用户明确要求，在个人主页、当前简历、电子名片与 AI 内容导航中的 Blux 身份加入准确英文 `Employee #0`；中英文简介与结构化数据同步。
+- 保留现有工程职能描述，名片沿用「全栈工程师 + 架构师」，两种配色及 PNG 导出共用同一 SVG。`Employee #0` 是用户选用的身份表述，不代表官方 HR 工号或联合创始人头衔。
+- 同步更新 `assets/current-cv.png` 简历快照。
