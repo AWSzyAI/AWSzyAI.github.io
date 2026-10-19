@@ -170,6 +170,16 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 - 摊销：`getLedgerRowsForDate` 在按天摊销拆行时会把 `note` 一并带上。
 - 生成与写入的脚本在私有的「支出」项目：`scripts/device_merge.py` / `scripts/device_merge.js`。
 
+### 热力图：没数据 / 有数据但为 0 / 小额（2026-10-19）
+
+用户反馈「小额支出看起来和有数据/没数据分不开」。现在三种状态各有明确的视觉：
+
+- **没记录** = `EMPTY_CELL_CLASS`：白底 + 1px 内描边浅灰（一个看得见的「空格」），不是浅灰实心块。
+- **有记录、当天数值为 0** = `ZERO_DATA_CELL_CLASS`（`bg-gray-300` 实心灰）。
+- **有数值** = 5 档分位色阶；最浅一档也加深到 `bg-red-200` / `bg-emerald-200`，和上面两种区分得开。结余/超支用 `RED5` / `GREEN5`，开支与收入图各一套。
+
+判定顺序在 `buildHeatmap` 里：先按 `colorLevels` 取色阶，取不到且 `detailMap[日期]` 存在就落成实心灰，否则是空格子。
+
 ## 6. Tax 页面模型
 
 `tax.html` 使用年度账本结构：

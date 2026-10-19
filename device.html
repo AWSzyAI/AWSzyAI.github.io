@@ -1334,6 +1334,11 @@
       return ['bg-emerald-100', 'bg-emerald-200', 'bg-emerald-400', 'bg-emerald-600'];
     }
 
+    // 热力图空白格子的样式：没数据的格子画一个浅底细边框的「空格」，
+    // 有记录但当天数值为 0 的格子用实心灰，避免和「几乎没花钱」的最浅一档混在一起（用户 2026-10-19 的要求）。
+    const EMPTY_CELL_CLASS = 'bg-white ring-1 ring-inset ring-gray-200';
+    const ZERO_DATA_CELL_CLASS = 'bg-gray-300';
+
     function getHeatLevelClass(amount, maxAmount, palette) {
       if (!amount || amount <= 0) return 'bg-gray-100';
       const ratio = amount / Math.max(1, maxAmount || 1);
@@ -3561,7 +3566,7 @@
             const dStr = formatDate(d);
             const val = valueMap[dStr] || 0;
             const hasData = !!detailMap[dStr];
-            let levelClass = 'bg-gray-100';
+            let levelClass = EMPTY_CELL_CLASS;
             if (typeof colorLevels === 'function') {
               levelClass = colorLevels(val, maxVal) || levelClass;
             } else {
@@ -3571,6 +3576,8 @@
               else if (ratio > 0.25) levelClass = colorLevels[1];
               else if (val > 0) levelClass = colorLevels[0];
             }
+            // 有记录、但当天的数值是 0：给一个实心灰，和「没有记录」的空格区分开
+            if (hasData && levelClass === EMPTY_CELL_CLASS) levelClass = ZERO_DATA_CELL_CLASS;
             const cell = document.createElement('div');
             const todayRing = dStr === todayStr ? ' outline outline-[1.5px] outline-blue-500 outline-offset-[1px]' : '';
             cell.className = `w-full aspect-square ${levelClass} ${hasData ? 'cursor-pointer' : 'cursor-default'}${todayRing}`;
@@ -3614,8 +3621,8 @@
       }
       resetHover();
       // 分位数色阶（5 档），结余与超支分别分档
-      const RED5 = ['bg-red-100', 'bg-red-200', 'bg-red-300', 'bg-red-500', 'bg-red-700'];
-      const GREEN5 = ['bg-emerald-100', 'bg-emerald-200', 'bg-emerald-300', 'bg-emerald-500', 'bg-emerald-700'];
+      const RED5 = ['bg-red-200', 'bg-red-300', 'bg-red-400', 'bg-red-600', 'bg-red-800'];
+      const GREEN5 = ['bg-emerald-200', 'bg-emerald-300', 'bg-emerald-400', 'bg-emerald-600', 'bg-emerald-800'];
       const balValues = Object.values(balanceMap);
       const surplusScale = buildQuantileScale(balValues.filter((v) => v > 0), GREEN5);
       const deficitScale = buildQuantileScale(balValues.filter((v) => v < 0).map((v) => -v), RED5);
@@ -3625,12 +3632,13 @@
         balanceWrap,
         balanceMap,
         maxBalanceAbs,
-        (val) => (val > 0 ? surplusScale.colorOf(val) : val < 0 ? deficitScale.colorOf(-val) : null) || 'bg-gray-100',
+        (val) => (val > 0 ? surplusScale.colorOf(val) : val < 0 ? deficitScale.colorOf(-val) : null) || EMPTY_CELL_CLASS,
         renderScaleLegend('超支', deficitScale.legend) + renderScaleLegend('结余', surplusScale.legend) +
+          '<div class="mt-0.5 text-[10px] text-gray-400">白底细框＝当天没记录；实心灰＝有记录但当天数值为 0</div>' +
           (costView === 'amortize' ? '<div class="mt-0.5 text-[10px] text-gray-400">颜色按当天实际流水分档，不含车贷、房租、订阅的摊销部分（悬停明细里有）</div>' : '')
       );
-      buildHeatmap(expWrap, expMap, maxExpense, (val) => expScale.colorOf(val) || 'bg-gray-100', renderScaleLegend('', expScale.legend));
-      buildHeatmap(incWrap, incMap, maxIncome, (val) => incScale.colorOf(val) || 'bg-gray-100', renderScaleLegend('', incScale.legend));
+      buildHeatmap(expWrap, expMap, maxExpense, (val) => expScale.colorOf(val) || EMPTY_CELL_CLASS, renderScaleLegend('', expScale.legend));
+      buildHeatmap(incWrap, incMap, maxIncome, (val) => incScale.colorOf(val) || EMPTY_CELL_CLASS, renderScaleLegend('', incScale.legend));
       if (financeHeatmapSelectedDate) {
         updateHover(financeHeatmapSelectedDate);
       }
