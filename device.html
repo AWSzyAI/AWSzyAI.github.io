@@ -3414,9 +3414,13 @@
         };
         const key = formatDate(d);
         detailMap[key] = totals;
-        expMap[key] = expTotal || 0;
+        // 颜色只看当天的实际流水：按天摊销时，车贷、房租、订阅的摊销部分每天几乎一样，会把所有日子压成同一档，
+        // 所以从着色数值里扣掉；按实付日时它们只在付款当天出现，保留。悬停明细仍显示完整金额。
+        const amortizedBase = costView === 'amortize' ? ((rawTotals.auto && rawTotals.auto.total) || 0) : 0;
+        const colorExpense = Math.max(0, (expTotal || 0) - amortizedBase);
+        expMap[key] = colorExpense;
         incMap[key] = incTotal || 0;
-        balanceMap[key] = (totals.income || 0) - (totals.expense || 0);
+        balanceMap[key] = (totals.income || 0) - colorExpense;
       }
 
       const maxExpense = Math.max(1, ...Object.values(expMap), 1);
@@ -3611,7 +3615,8 @@
         balanceMap,
         maxBalanceAbs,
         (val) => (val > 0 ? surplusScale.colorOf(val) : val < 0 ? deficitScale.colorOf(-val) : null) || 'bg-gray-100',
-        renderScaleLegend('超支', deficitScale.legend) + renderScaleLegend('结余', surplusScale.legend)
+        renderScaleLegend('超支', deficitScale.legend) + renderScaleLegend('结余', surplusScale.legend) +
+          (costView === 'amortize' ? '<div class="mt-0.5 text-[10px] text-gray-400">颜色按当天实际流水分档，不含车贷、房租、订阅的摊销部分（悬停明细里有）</div>' : '')
       );
       buildHeatmap(expWrap, expMap, maxExpense, (val) => expScale.colorOf(val) || 'bg-gray-100', renderScaleLegend('', expScale.legend));
       buildHeatmap(incWrap, incMap, maxIncome, (val) => incScale.colorOf(val) || 'bg-gray-100', renderScaleLegend('', incScale.legend));
