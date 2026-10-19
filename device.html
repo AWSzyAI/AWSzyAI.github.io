@@ -187,7 +187,37 @@
           </div>
 
           <div id="form-sub" class="form-section space-y-3">
-            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <div id="loan-section" class="hidden bg-indigo-50 p-3 rounded-lg border border-indigo-100 space-y-2">
+              <label class="flex items-center justify-between text-xs font-bold text-indigo-800">
+                <span>车贷 · 租自己的车</span>
+                <input type="checkbox" id="loan-enabled" onchange="updateLoanFormUI()" class="w-4 h-4" />
+              </label>
+              <div id="loan-fields" class="hidden space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="number" id="loan-total" step="0.01" placeholder="贷款总额 (¥)" oninput="updateLoanFormUI()"
+                    class="border border-indigo-200 rounded px-2 py-1 text-xs" />
+                  <input type="number" id="loan-periods" step="1" min="1" placeholder="期数 (月)" oninput="updateLoanFormUI()"
+                    class="border border-indigo-200 rounded px-2 py-1 text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 mb-1">首次还款日（之后每月同一天）</label>
+                  <input type="date" id="loan-first-date" oninput="updateLoanFormUI()"
+                    class="border border-indigo-200 rounded px-2 py-1 text-xs w-full" />
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                  <label class="flex items-center gap-1 bg-white border border-indigo-200 rounded px-2 py-1 cursor-pointer">
+                    <input type="radio" name="loan-mode" value="amortize" checked class="w-3 h-3" />
+                    <span>按天摊销</span>
+                  </label>
+                  <label class="flex items-center gap-1 bg-white border border-indigo-200 rounded px-2 py-1 cursor-pointer">
+                    <input type="radio" name="loan-mode" value="cashflow" class="w-3 h-3" />
+                    <span>还款日计入</span>
+                  </label>
+                </div>
+                <div id="loan-preview" class="text-[11px] text-indigo-700"></div>
+              </div>
+            </div>
+            <div id="sub-cycle-editor" class="bg-blue-50 p-3 rounded-lg border border-blue-100">
               <h4 class="text-xs font-bold text-blue-800 mb-2">
                 订阅/租赁周期记录 (多段)
                 <span class="ml-1 text-[10px] font-normal text-blue-500">(支持“至今”)</span>
@@ -990,8 +1020,95 @@
       return item && item.name ? item.name : '';
     }
 
+    // ===================== 车贷（租自己的车） =====================
+    // 车贷是 kind = 'loan' 的租赁项目：records 由 loan 参数生成，不手动编辑。
+    // mode: 'amortize' 每期月供摊到这一期的每一天；'cashflow' 还款日当天一次计入。
+    const CAR_LOAN_COLOR = { bg: 'bg-indigo-500', hex: '#5c6bc0' };
+    const CAR_RENTAL_COLOR = { bg: 'bg-orange-400', hex: '#ffa726' };
+    const LOAN_MODE_LABELS = { amortize: '按天摊销', cashflow: '还款日计入' };
+
+    function isCarLoan(item) {
+      return !!(item && item.type === 'rental' && item.kind === 'loan' && item.loan);
+    }
+
+    function isCarItem(item) {
+      return isCarLoan(item) || isCarRental(item);
+    }
+
+    function carColorForName(name) {
+      const item = (items || []).find((i) => i.type === 'rental' && i.name === name);
+      if (isCarLoan(item)) return CAR_LOAN_COLOR.hex;
+      if (isCarRental(item)) return CAR_RENTAL_COLOR.hex;
+      return null;
+    }
+
+    // 第 k 期还款日：首次还款日加 k 个月，月末日期按当月天数截断（1/31 → 2/28）
+    function addMonthsClamped(dateStr, k) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const target = new Date(y, m - 1 + k, 1);
+      const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+      target.setDate(Math.min(d, lastDay));
+      return formatDate(target);
+    }
+
+    function normalizeLoan(raw) {
+      if (!raw) return null;
+      const total = Number(raw.total) || 0;
+      const periods = Math.round(Number(raw.periods) || 0);
+      const firstDate = raw.firstDate || '';
+      if (total <= 0 || periods < 1 || !/^\d{4}-\d{2}-\d{2}$/.test(firstDate)) return null;
+      return {
+        total,
+        periods,
+        firstDate,
+        mode: raw.mode === 'cashflow' ? 'cashflow' : 'amortize'
+      };
+    }
+
+    function getLoanMonthly(loan) {
+      return loan.total / loan.periods;
+    }
+
+    function buildLoanRecords(loan) {
+      const monthly = Math.round(getLoanMonthly(loan) * 100) / 100;
+      const records = [];
+      for (let k = 0; k < loan.periods; k++) {
+        const start = addMonthsClamped(loan.firstDate, k);
+        const end = loan.mode === 'cashflow'
+          ? formatDate(addDays(startOfDay(start), 1))
+          : addMonthsClamped(loan.firstDate, k + 1);
+        records.push({ start, end, price: monthly, note: `第${k + 1}/${loan.periods}期` });
+      }
+      return records;
+    }
+
+    function getLoanProgress(loan, now = new Date()) {
+      const todayStr = formatDate(startOfDay(now));
+      let paid = 0;
+      while (paid < loan.periods && addMonthsClamped(loan.firstDate, paid) <= todayStr) paid++;
+      const monthly = getLoanMonthly(loan);
+      return {
+        paid,
+        remainingPeriods: loan.periods - paid,
+        paidAmount: monthly * paid,
+        remainingAmount: monthly * (loan.periods - paid),
+        nextDate: paid < loan.periods ? addMonthsClamped(loan.firstDate, paid) : '',
+        pct: (paid / loan.periods) * 100,
+        monthly
+      };
+    }
+
+    function toggleLoanMode(id) {
+      const item = items.find((i) => i.id === id);
+      if (!isCarLoan(item)) return;
+      item.loan.mode = item.loan.mode === 'cashflow' ? 'amortize' : 'cashflow';
+      item.records = buildLoanRecords(item.loan);
+      scheduleDeviceSave();
+      render();
+    }
+
     function isCarRental(item) {
-      if (!item || item.type !== 'rental') return false;
+      if (!item || item.type !== 'rental' || item.kind === 'loan') return false;
       const name = (item.name || '').toLowerCase();
       return (
         name.includes('租车') ||
@@ -1368,6 +1485,18 @@
           }))
           .filter((r) => r.start);
         item.projectTags = item.projectTags || '';
+        if (item.type === 'rental' && item.kind === 'loan') {
+          item.loan = normalizeLoan(item.loan);
+          if (item.loan) {
+            item.records = buildLoanRecords(item.loan);
+          } else {
+            delete item.kind;
+            delete item.loan;
+          }
+        } else {
+          delete item.kind;
+          delete item.loan;
+        }
       }
       if (!Array.isArray(item.todos)) item.todos = [];
       if (typeof item.reminderDays !== 'number' || item.reminderDays <= 0) item.reminderDays = 30;
@@ -1834,6 +1963,56 @@
       if (btnCheckin) {
         btnCheckin.className = baseType === 'checkin' ? activeClass : inactiveClass;
       }
+      const loanSection = document.getElementById('loan-section');
+      if (loanSection) {
+        loanSection.classList.toggle('hidden', !(baseType === 'sub' && currentFormKind === 'rental'));
+        updateLoanFormUI();
+      }
+    }
+
+    function isLoanFormActive() {
+      return currentFormKind === 'rental' && document.getElementById('loan-enabled').checked;
+    }
+
+    function readLoanForm() {
+      const modeInput = document.querySelector('input[name="loan-mode"]:checked');
+      return normalizeLoan({
+        total: document.getElementById('loan-total').value,
+        periods: document.getElementById('loan-periods').value,
+        firstDate: document.getElementById('loan-first-date').value,
+        mode: modeInput ? modeInput.value : 'amortize'
+      });
+    }
+
+    function fillLoanForm(loan) {
+      document.getElementById('loan-enabled').checked = !!loan;
+      document.getElementById('loan-total').value = loan ? loan.total : '';
+      document.getElementById('loan-periods').value = loan ? loan.periods : '';
+      document.getElementById('loan-first-date').value = loan ? loan.firstDate : '';
+      const mode = loan ? loan.mode : 'amortize';
+      const modeInput = document.querySelector(`input[name="loan-mode"][value="${mode}"]`);
+      if (modeInput) modeInput.checked = true;
+      updateLoanFormUI();
+    }
+
+    // 开启车贷时隐藏手动周期编辑，周期由贷款参数生成
+    function updateLoanFormUI() {
+      const active = isLoanFormActive();
+      document.getElementById('loan-fields').classList.toggle('hidden', !active);
+      document.getElementById('sub-cycle-editor').classList.toggle('hidden', active);
+      const preview = document.getElementById('loan-preview');
+      if (!active) {
+        preview.textContent = '';
+        return;
+      }
+      const loan = readLoanForm();
+      if (!loan) {
+        preview.textContent = '填写总额、期数和首次还款日后自动生成每期记录';
+        return;
+      }
+      const p = getLoanProgress(loan);
+      const lastDate = addMonthsClamped(loan.firstDate, loan.periods - 1);
+      preview.textContent = `月供 ¥${formatMoney(p.monthly)} · ${loan.firstDate} 至 ${lastDate} · 已还 ${p.paid}/${loan.periods} 期`;
     }
 
     function getSelectedCheckinType() {
@@ -2150,7 +2329,15 @@
         sum.total += m.totalCost;
         if (!isSubLikeTab) sum.days += m.days || 0;
 
-        const base = { ...item, ...m, color: colors[index % colors.length] };
+        const base = {
+          ...item,
+          ...m,
+          color: isCarLoan(item)
+            ? CAR_LOAN_COLOR.bg
+            : isCarRental(item)
+              ? CAR_RENTAL_COLOR.bg
+              : colors[index % colors.length]
+        };
 
         // 计算本年度成本与有效天数（仅统计有覆盖数据的天数）
         let yearCost = 0;
@@ -2243,7 +2430,11 @@
           sumYearCurrent.toFixed(2);
       }
 
+      // 租赁页：车贷（自己的车）与租车放在同一个“用车”分组里，排在最前
+      const carRank = (it) => (isCarLoan(it) ? 0 : isCarRental(it) ? 1 : 2);
+      const showCarGroup = currentTab === 'rental' && computedData.some(isCarItem);
       computedData.sort((a, b) => {
+        if (showCarGroup && carRank(a) !== carRank(b)) return carRank(a) - carRank(b);
         if (isSubLikeTab) {
           return b.realTimeDaily - a.realTimeDaily || b.dailyCost - a.dailyCost;
         } else {
@@ -2258,7 +2449,27 @@
         return;
       }
 
-      computedData.forEach((item) => {
+      if (showCarGroup) {
+        const carItems = computedData.filter(isCarItem);
+        const loanMonth = carItems.filter(isCarLoan).reduce((s, it) => s + (it.monthCurrent || 0), 0);
+        const rentalMonth = carItems.filter(isCarRental).reduce((s, it) => s + (it.monthCurrent || 0), 0);
+        container.insertAdjacentHTML(
+          'beforeend',
+          `<div class="col-span-full flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-gray-500 font-semibold">
+            <span>🚗 用车 · 本月 ¥${formatMoney(loanMonth + rentalMonth)}</span>
+            <span class="flex items-center gap-1 font-normal"><span class="w-2 h-2 rounded-full ${CAR_LOAN_COLOR.bg}"></span>车贷 ¥${formatMoney(loanMonth)}</span>
+            <span class="flex items-center gap-1 font-normal"><span class="w-2 h-2 rounded-full ${CAR_RENTAL_COLOR.bg}"></span>租车 ¥${formatMoney(rentalMonth)}</span>
+          </div>`
+        );
+      }
+
+      computedData.forEach((item, idx) => {
+        if (showCarGroup && idx > 0 && isCarItem(computedData[idx - 1]) && !isCarItem(item)) {
+          container.insertAdjacentHTML(
+            'beforeend',
+            '<div class="col-span-full text-xs text-gray-500 font-semibold pt-2">其他租赁</div>'
+          );
+        }
         const pct = {
           daily: sum.daily > 0 ? (item.dailyCost / sum.daily) * 100 : 0,
           realtime: sum.realtime > 0 ? (item.realTimeDaily / sum.realtime) * 100 : 0,
@@ -2338,6 +2549,59 @@
             </div>
           </div>
         `;
+        } else if (isCarLoan(item)) {
+          const p = getLoanProgress(item.loan);
+          const modeLabel = LOAN_MODE_LABELS[item.loan.mode];
+          const otherLabel = LOAN_MODE_LABELS[item.loan.mode === 'cashflow' ? 'amortize' : 'cashflow'];
+          cardHTML = `
+          <div
+            class="${cardBaseClass} p-4 rounded-xl border border-indigo-100 transition-all duration-200 group flex flex-col justify-between min-h-32 cursor-pointer"
+            onclick="openDetailModal(${item.id})"
+          >
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-2 h-8 rounded-full ${item.color}"></div>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-gray-800 text-sm leading-snug max-w-[12rem] truncate">${item.name}</h3>
+                  <div class="text-[10px] text-indigo-600 truncate">车贷 · 月供 ¥${formatMoney(p.monthly)}</div>
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button
+                  onclick="event.stopPropagation(); startEdit(${item.id})"
+                  class="px-1.5 py-0.5 text-[11px] text-gray-400 hover:text-blue-600 bg-white/90 rounded shadow-sm"
+                >
+                  ✏️
+                </button>
+              </div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-dashed border-gray-100 text-xs text-gray-500 space-y-1">
+              <div class="flex justify-between items-end gap-2">
+                <div>
+                  <div class="text-xs text-gray-400">今日计入</div>
+                  <div class="text-2xl font-bold ${item.realTimeDaily > 0 ? 'text-indigo-600' : 'text-gray-400'}">¥${item.realTimeDaily.toFixed(2)}</div>
+                </div>
+                <div class="text-right whitespace-nowrap">
+                  <div>已还 ${p.paid}/${item.loan.periods} 期</div>
+                  <div class="text-[10px] text-gray-400">${p.nextDate ? `下次 ${p.nextDate.slice(5)}` : '已还清'}</div>
+                </div>
+              </div>
+              <div class="w-full bg-indigo-50 rounded-full h-1 overflow-hidden">
+                <div class="${CAR_LOAN_COLOR.bg} h-1 rounded-full" style="width:${Math.min(p.pct, 100)}%"></div>
+              </div>
+              <div class="flex justify-between items-center gap-2 text-[10px] text-gray-400">
+                <button
+                  onclick="event.stopPropagation(); toggleLoanMode(${item.id})"
+                  title="当前${modeLabel}，点击切换为${otherLabel}"
+                  class="px-1.5 py-0.5 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded whitespace-nowrap"
+                >
+                  ${modeLabel} ⇄
+                </button>
+                <span class="whitespace-nowrap">剩余 ¥${formatMoney(p.remainingAmount)}</span>
+              </div>
+            </div>
+          </div>
+        `;
         } else if (item.type === 'sub' || item.type === 'rental') {
           const isActive = item.isCurrentlyActive;
           const activePriceColor = isActive ? 'text-blue-600' : 'text-gray-400';
@@ -2352,6 +2616,7 @@
                 <div class="w-2 h-8 rounded-full ${item.color}"></div>
                 <div>
                   <h3 class="font-bold text-gray-800 text-sm leading-snug max-w-[12rem] truncate">${item.name}</h3>
+                  ${isCarRental(item) ? '<div class="text-[10px] text-orange-600">租车</div>' : ''}
                 </div>
               </div>
               <div class="flex flex-col items-end gap-1">
@@ -2932,7 +3197,7 @@
             const div = document.createElement('div');
             div.className = 'h-full';
             div.style.width = `${Math.max(pct, 2)}%`;
-            div.style.background = palette[idx % palette.length];
+            div.style.background = carColorForName(seg.name) || palette[idx % palette.length];
             const tip = `${seg.name}: ¥${formatMoney(seg.amount)} (${pct.toFixed(0)}%)`;
             div.setAttribute('data-fin-tip', tip);
             div.title = tip;
@@ -3154,7 +3419,7 @@
             const seg = document.createElement('div');
             seg.className = 'h-full';
             seg.style.width = `${Math.max(pct, 1)}%`;
-            const color = palette[(colorOffset + idx) % palette.length];
+            const color = carColorForName(item.name) || palette[(colorOffset + idx) % palette.length];
             seg.style.background = color;
             const tip = `${item.name}: ¥${formatMoney(item.amount)} (${pct.toFixed(0)}%)`;
             seg.setAttribute('data-fin-tip', tip);
@@ -3355,6 +3620,7 @@
       ];
       const colorCache = {};
       const pickColor = (name) => {
+        if (carColorForName(name)) return carColorForName(name);
         if (colorCache[name]) return colorCache[name];
         const idx = Object.keys(colorCache).length % palette.length;
         colorCache[name] = palette[idx];
@@ -3914,7 +4180,7 @@
           .sort((a, b) => b.amount - a.amount)
           .forEach((card, idx) => {
             const pct = totalVal > 0 ? (card.amount / totalVal) * 100 : 0;
-            const color = palette[(paletteOffset + idx) % palette.length];
+            const color = carColorForName(card.name) || palette[(paletteOffset + idx) % palette.length];
             container.insertAdjacentHTML(
               'beforeend',
               `
@@ -4465,6 +4731,7 @@
         document.getElementById('sub-price').value = '';
         document.getElementById('sub-note').value = '';
         renderSubCycles();
+        fillLoanForm(isCarLoan(item) ? item.loan : null);
       } else {
         currentFormKind = 'asset';
         updateFormTypeUI('asset');
@@ -4515,7 +4782,19 @@
         } else {
           newItem.defaultDuration = '';
         }
+      } else if (isLoanFormActive()) {
+        const loan = readLoanForm();
+        if (!loan) {
+          alert('请填写车贷总额、期数和首次还款日');
+          return;
+        }
+        newItem.type = 'rental';
+        newItem.kind = 'loan';
+        newItem.loan = loan;
+        newItem.records = buildLoanRecords(loan);
       } else if (currentFormKind === 'sub' || currentFormKind === 'rental') {
+        newItem.kind = undefined;
+        newItem.loan = undefined;
         if (tempSubRecords.length === 0) {
           alert('请至少添加一个订阅/租赁周期');
           return;
@@ -5499,6 +5778,10 @@
       const itemId = window._detailItemId;
       const item = items.find((i) => i.id === itemId);
       if (!item || (item.type !== 'sub' && item.type !== 'rental')) return;
+      if (isCarLoan(item)) {
+        alert('车贷的每期记录由贷款参数自动生成，请点 ✏️ 修改总额、期数或还款日');
+        return;
+      }
       const idx = findRecordIndexForDate(item, dateStr);
       if (idx < 0) return;
       cycleModalCtx = { itemId, idx };
