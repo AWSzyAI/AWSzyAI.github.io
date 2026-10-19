@@ -3936,6 +3936,9 @@
     function expenseStackToArray(map) {
       return Object.entries(map)
         .map(([name, amount]) => ({ name, amount }))
+        // 金额为 0 的项（年费订阅在没摊销到、已过期订阅等）不占卡片位置；
+        // 负数（退款/冲抵）保留。用户 2026-10-19 的要求：「这些 0 的项目应该隐藏」。
+        .filter((item) => Math.abs(Number(item.amount) || 0) > 0.004)
         .sort((a, b) => b.amount - a.amount);
     }
 
