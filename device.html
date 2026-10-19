@@ -457,6 +457,9 @@
               <button onclick="toggleCostView()" class="cost-view-btn px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50" title="一次性付款（年付房租、车贷月供等）的统计口径：按天摊销到使用期，或在实际付款日一次计入。两种数据都保留，只切换显示。">
                 口径：<span class="cost-view-state">按天摊销</span> ⇄
               </button>
+              <button onclick="toggleMonthMode()" class="px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50" title="「本月」按自然月（1 日起）还是按补助周期（每月 24 日起）计算">
+                月份：<span class="month-mode-state">自然月</span> ⇄
+              </button>
             <label class="text-xs font-medium text-gray-500">Cols:</label>
             <select id="column-selector"
               class="bg-white border border-gray-300 text-gray-700 text-xs rounded px-2 py-1 focus:outline-none cursor-pointer">
@@ -488,6 +491,9 @@
               </button>
               <button onclick="toggleCostView()" class="cost-view-btn px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50" title="一次性付款（年付房租、车贷月供等）的统计口径：按天摊销到使用期，或在实际付款日一次计入。两种数据都保留，只切换显示。">
                 口径：<span class="cost-view-state">按天摊销</span> ⇄
+              </button>
+              <button onclick="toggleMonthMode()" class="px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50" title="「本月」按自然月（1 日起）还是按补助周期（每月 24 日起）计算">
+                月份：<span class="month-mode-state">自然月</span> ⇄
               </button>
             </div>
           </div>
@@ -1049,15 +1055,69 @@
     const COST_VIEW_LABELS = { amortize: '按天摊销', cash: '按实付日' };
     let costView = localStorage.getItem('costView') === 'cash' ? 'cash' : 'amortize';
 
+    // ===================== 月份口径：自然月 / 补助周期 =====================
+    // 'calendar'：每月 1 日到月底；'payday'：每月 24 日（补助发放日）到下月 23 日，标签按开始月份，如「9月周期」= 9/24–10/23。
+    const PAYDAY = 24;
+    const MONTH_MODE_LABELS = { calendar: '自然月', payday: `补助周期(${PAYDAY}日)` };
+    let monthMode = localStorage.getItem('monthMode') === 'payday' ? 'payday' : 'calendar';
+
+    // 第 offset 个月份区间：0 = date 所在的区间，-1 = 上一个
+    function getMonthBounds(date, offset = 0) {
+      const d = startOfDay(date);
+      let y = d.getFullYear();
+      let m = d.getMonth();
+      if (monthMode === 'payday' && d.getDate() < PAYDAY) m -= 1;
+      m += offset;
+      const day = monthMode === 'payday' ? PAYDAY : 1;
+      const start = new Date(y, m, day);
+      const endExclusive = new Date(y, m + 1, day);
+      return {
+        start,
+        endExclusive,
+        end: addDays(endExclusive, -1),
+        label: monthMode === 'payday' ? `${start.getMonth() + 1}月周期` : `${start.getMonth() + 1}月`
+      };
+    }
+
+    // 某年的 12 个月份区间（补助周期按开始月份归年）
+    function getYearMonthBounds(year) {
+      return Array.from({ length: 12 }, (_, m) => getMonthBounds(new Date(year, m, monthMode === 'payday' ? PAYDAY : 1)));
+    }
+
+    function updateMonthModeUI() {
+      document.querySelectorAll('.month-mode-state').forEach((el) => {
+        el.textContent = MONTH_MODE_LABELS[monthMode];
+      });
+    }
+
+    function toggleMonthMode() {
+      monthMode = monthMode === 'payday' ? 'calendar' : 'payday';
+      localStorage.setItem('monthMode', monthMode);
+      // 车贷每期记录对齐到月份区间，切换后重新生成
+      items.forEach((item) => {
+        if (isCarLoan(item)) item.records = buildLoanRecords(item.loan);
+      });
+      updateMonthModeUI();
+      if (currentTab === 'finance') renderLedgerCalendar();
+      render();
+    }
+
     function recordPaidDate(rec) {
       return rec.paid || rec.start;
     }
 
     // 账本行可带 until（覆盖期的结束日，不含当天），如月度补助 9/24 发放、覆盖到 10/24。
     // 按实付日：整笔记在发生日；按天摊销：平摊到 [发生日, until) 的每一天。
-    function ledgerRowUntil(dateStr, row) {
+    // 补助类收入（#补助 标签，或名称含 津贴/助学金/补助）默认覆盖领取后的一个月，无需手动填 until
+    function isStipendIncome(row) {
+      return !!(row && typeof row.name === 'string' && /补助|津贴|助学金/.test(row.name));
+    }
+
+    function ledgerRowUntil(dateStr, row, isIncome = false) {
       const until = row && row.until;
-      return typeof until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(until) && until > dateStr ? until : '';
+      if (typeof until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(until) && until > dateStr) return until;
+      if (isIncome && isStipendIncome(row)) return addMonthsClamped(dateStr, 1);
+      return '';
     }
 
     function getLedgerRowsForDate(dateStr) {
@@ -1065,7 +1125,7 @@
       const result = { expenses: [], incomes: [] };
       ['expenses', 'incomes'].forEach((key) => {
         (Array.isArray(own[key]) ? own[key] : []).forEach((row) => {
-          if (costView === 'amortize' && ledgerRowUntil(dateStr, row)) return;
+          if (costView === 'amortize' && ledgerRowUntil(dateStr, row, key === 'incomes')) return;
           result[key].push(row);
         });
       });
@@ -1074,7 +1134,7 @@
         if (fromStr > dateStr || !entry) return;
         ['expenses', 'incomes'].forEach((key) => {
           (Array.isArray(entry[key]) ? entry[key] : []).forEach((row) => {
-            const until = ledgerRowUntil(fromStr, row);
+            const until = ledgerRowUntil(fromStr, row, key === 'incomes');
             if (!until || dateStr >= until) return;
             const days = Math.max(1, Math.round((startOfDay(until) - startOfDay(fromStr)) / DAY_MS));
             result[key].push({ name: row.name, amount: (Number(row.amount) || 0) / days });
@@ -1139,13 +1199,18 @@
       return loan.total / loan.periods;
     }
 
+    // 每期月供整笔归入还款日所在的月份区间（自然月或补助周期），按天摊销时每个月正好一期月供；
+    // paid 为实际还款日，按实付日时记在当天。
     function buildLoanRecords(loan) {
       const monthly = Math.round(getLoanMonthly(loan) * 100) / 100;
       const records = [];
       for (let k = 0; k < loan.periods; k++) {
-        const start = addMonthsClamped(loan.firstDate, k);
-        const end = addMonthsClamped(loan.firstDate, k + 1);
-        records.push({ start, end, price: monthly, note: `第${k + 1}/${loan.periods}期` });
+        const payDate = addMonthsClamped(loan.firstDate, k);
+        const bounds = getMonthBounds(startOfDay(payDate));
+        const start = formatDate(bounds.start);
+        const rec = { start, end: formatDate(bounds.endExclusive), price: monthly, note: `第${k + 1}/${loan.periods}期 · ${payDate} 还款` };
+        if (payDate !== start) rec.paid = payDate;
+        records.push(rec);
       }
       return records;
     }
@@ -1987,6 +2052,7 @@
 
       updateTagToggleUI();
       updateCostViewUI();
+      updateMonthModeUI();
 
       const ledgerModal = document.getElementById('ledger-modal');
       if (ledgerModal) {
@@ -2444,12 +2510,13 @@
       let sumYearDaysAll = 0;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      const thisMonthBounds = getMonthBounds(today);
+      const thisMonthStart = thisMonthBounds.start;
+      const nextMonthStart = thisMonthBounds.endExclusive;
       const thisYearStart = new Date(today.getFullYear(), 0, 1);
       const nextYearStart = new Date(today.getFullYear() + 1, 0, 1);
 
-      const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastMonthStart = getMonthBounds(today, -1).start;
       const lastMonthEndExclusive = thisMonthStart;
 
       visibleItems.forEach((item, index) => {
@@ -4089,8 +4156,9 @@
     function buildMonthWeekDataForDate(dateStr) {
       const target = startOfDay(new Date(dateStr));
       const today = startOfDay(new Date());
-      const monthStart = startOfDay(new Date(target.getFullYear(), target.getMonth(), 1));
-      const monthEnd = startOfDay(new Date(target.getFullYear(), target.getMonth() + 1, 0));
+      const targetMonth = getMonthBounds(target);
+      const monthStart = targetMonth.start;
+      const monthEnd = targetMonth.end;
       const rangeEnd = monthEnd < today ? monthEnd : today;
       let cursor = startOfISOWeek(monthStart);
       const weeks = [];
@@ -4155,11 +4223,12 @@
       const data = [];
       let expenseTotal = 0;
       let incomeTotal = 0;
+      const yearMonths = getYearMonthBounds(year);
       for (let m = 0; m < 12; m++) {
-        const monthStart = startOfDay(new Date(year, m, 1));
-        const monthEnd = startOfDay(new Date(year, m + 1, 0));
+        const monthStart = yearMonths[m].start;
+        const monthEnd = yearMonths[m].end;
         if (monthStart > today) {
-          data.push({ label: `${m + 1}月`, expense: 0, income: 0, expenseStack: [], incomeStack: [] });
+          data.push({ label: yearMonths[m].label, expense: 0, income: 0, expenseStack: [], incomeStack: [] });
           continue;
         }
         const rangeEnd = monthEnd > today ? today : monthEnd;
@@ -4181,7 +4250,7 @@
         expenseTotal += expense;
         incomeTotal += income;
         data.push({
-          label: `${m + 1}月`,
+          label: yearMonths[m].label,
           expense,
           income,
           expenseStack: expenseStackToArray(expenseStack),
@@ -4219,11 +4288,12 @@
       
       const monthLabelEl = document.getElementById('fin-sum-month-label');
       if (monthLabelEl) {
-        const selectedDate = new Date(selected);
-        const currentDate = new Date();
-        const isSameMonth = selectedDate.getFullYear() === currentDate.getFullYear() && 
-                           selectedDate.getMonth() === currentDate.getMonth();
-        monthLabelEl.textContent = isSameMonth ? '本月' : `${selectedDate.getMonth() + 1}月`;
+        const selectedMonth = getMonthBounds(new Date(selected));
+        const isSameMonth = selectedMonth.start.getTime() === getMonthBounds(new Date()).start.getTime();
+        const monthName = isSameMonth ? '本月' : selectedMonth.label;
+        monthLabelEl.textContent = monthMode === 'payday'
+          ? `${monthName}（${selectedMonth.start.getMonth() + 1}/${PAYDAY}起）`
+          : monthName;
       }
       
       const yearLabelEl = document.getElementById('fin-sum-year-label');
@@ -5139,9 +5209,8 @@
         detailRealWrapper.classList.remove('hidden');
         document.getElementById('detail-real-daily').textContent =
           metrics.realTimeDaily.toFixed(2);
-        const monthStart = startOfDay(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-        const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1);
-        const monthCost = calcSubCostInRange(item, monthStart, nextMonth);
+        const detailMonth = getMonthBounds(new Date());
+        const monthCost = calcSubCostInRange(item, detailMonth.start, detailMonth.endExclusive);
         monthWrap.classList.remove('hidden');
         document.getElementById('detail-month-amount').textContent = formatMoney(monthCost);
       } else {
@@ -5517,7 +5586,9 @@
           const daily = totalVal / duration;
           const note = (rec.note || '').trim();
           let cursor = new Date(Math.max(rs.getTime(), start.getTime()));
-          const effectiveEnd = new Date(Math.min(re.getTime(), today.getTime(), yearEnd.getTime()));
+          // 结束日不含当天（与其他统计一致），否则相邻两期在交界日会重复计算
+          const lastDay = rec.end ? (re > rs ? addDays(re, -1) : rs) : re;
+          const effectiveEnd = new Date(Math.min(lastDay.getTime(), today.getTime(), yearEnd.getTime()));
           while (cursor <= effectiveEnd) {
             const key = formatDate(cursor);
             amountMap[key] = (amountMap[key] || 0) + daily;
