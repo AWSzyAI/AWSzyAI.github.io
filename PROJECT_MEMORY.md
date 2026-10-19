@@ -196,6 +196,7 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 - 过滤放在 `expenseStackToArray()` 这个出口：`Math.abs(amount) > 0.004` 才保留，**负数（退款/冲抵）不会误删**。
 - 一处改动同时覆盖分类卡片、本月横条、本周按周 / 本年按月的堆叠条和 `aggregateCategoriesFromStack`，口径保持一致。
 - 金额合计用的是原始 map，不受过滤影响。
+- 百分比用 `formatPct()`：非零但不足 1% 显示「<1%」，否则 `¥0.99 / 0%` 还会被当成零项。
 
 ## 6. Tax 页面模型
 

@@ -3262,6 +3262,13 @@
       return (Number(val) || 0).toFixed(2);
     }
 
+    // 占比文案：金额不为 0 但不足 1% 时写「<1%」，避免看起来像「零项」
+    function formatPct(pct) {
+      const v = Number(pct) || 0;
+      if (v > 0 && v < 1) return '<1%';
+      return `${v.toFixed(0)}%`;
+    }
+
     function escapeHtml(text) {
       if (text === null || text === undefined) return '';
       return String(text)
@@ -3764,7 +3771,7 @@
             const color = carColorForName(item.name) || palette[(colorOffset + idx) % palette.length];
             seg.style.background = color;
             const noteTip = item.notes && item.notes.length ? ` · ${item.notes.join(' / ')}` : '';
-            const tip = `${item.name}: ¥${formatMoney(item.amount)} (${pct.toFixed(0)}%)${noteTip}`;
+            const tip = `${item.name}: ¥${formatMoney(item.amount)} (${formatPct(pct)})${noteTip}`;
             seg.setAttribute('data-fin-tip', tip);
             seg.title = tip;
             wrapper.appendChild(seg);
@@ -4580,7 +4587,7 @@
               </div>
               <div class="flex items-baseline gap-2">
                 <span class="text-xl font-bold ${type === 'expense' ? 'text-red-500' : 'text-emerald-600'}">¥${formatMoney(card.amount)}</span>
-                <span class="text-[11px] text-gray-400">${pct.toFixed(0)}%</span>
+                <span class="text-[11px] text-gray-400">${formatPct(pct)}</span>
               </div>
               <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-full" style="width:${Math.min(pct, 100)}%; background:${color}"></div>
