@@ -3676,6 +3676,42 @@
       };
     }
 
+    // 条内标签：底色深用白字、浅用深字，保证在任何配色下都看得清
+    function textColorOn(hex) {
+      const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+      if (!m) return '#1f2937';
+      const n = parseInt(m[1], 16);
+      const r = (n >> 16) & 255;
+      const g = (n >> 8) & 255;
+      const b = n & 255;
+      const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return lum > 0.62 ? '#1f2937' : '#ffffff';
+    }
+
+    // 量出这段文字在条内标签的字号下有多宽（用离屏探针，避免被裁切影响读数）
+    function measureBarLabel(text) {
+      const probe = document.createElement('span');
+      probe.style.cssText =
+        'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;font-size:10px;font-weight:500;font-family:inherit';
+      probe.textContent = text;
+      document.body.appendChild(probe);
+      const w = probe.offsetWidth;
+      probe.remove();
+      return w;
+    }
+
+    // 段够宽就把名字写进条里，写不下才只留悬停提示
+    function fillSegmentLabel(seg, text, color) {
+      if (!seg.isConnected) return;
+      const room = seg.clientWidth - 10;
+      if (room <= 0 || room < measureBarLabel(text)) return;
+      const label = document.createElement('span');
+      label.className = 'text-[10px] font-medium leading-none px-1 pointer-events-none select-none';
+      label.style.color = textColorOn(color);
+      label.textContent = text;
+      seg.appendChild(label);
+    }
+
     function renderMonthSummaryBars(monthAgg, rangeText) {
       const expBar = document.getElementById('finance-month-bar-exp');
       const incBar = document.getElementById('finance-month-bar-inc');
@@ -3723,7 +3759,7 @@
           .forEach((item, idx) => {
             const pct = total > 0 ? (item.amount / total) * 100 : 0;
             const seg = document.createElement('div');
-            seg.className = 'h-full';
+            seg.className = 'h-full flex items-center justify-center overflow-hidden';
             seg.style.width = `${Math.max(pct, 1)}%`;
             const color = carColorForName(item.name) || palette[(colorOffset + idx) % palette.length];
             seg.style.background = color;
@@ -3732,6 +3768,7 @@
             seg.setAttribute('data-fin-tip', tip);
             seg.title = tip;
             wrapper.appendChild(seg);
+            fillSegmentLabel(seg, item.name, color);
           });
         return colorOffset + list.length;
       };

@@ -180,6 +180,15 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 
 判定顺序在 `buildHeatmap` 里：先按 `colorLevels` 取色阶，取不到且 `detailMap[日期]` 存在就落成实心灰，否则是空格子。
 
+### 本月收支概览的条内标签（2026-10-19）
+
+用户要求：宽得下的段直接写出名字，不要什么都靠悬停。
+
+- `fillSegmentLabel(seg, text, color)`：先量 `seg.clientWidth - 10` 能放多宽，再用离屏探针 `measureBarLabel()` 量出文字在 10px/500 下的实际宽度，**放得下才**插入标签，放不下就只留 `data-fin-tip` 悬停提示。
+- 段本身改成 `flex items-center justify-center overflow-hidden`，标签 `pointer-events-none`，不影响悬停。
+- 文字颜色由 `textColorOn(hex)` 按亮度决定（深底白字、浅底深字），避免落在浅色段上看不清。
+- 同一套色板与 `carColorForName` 的固定色保持一致。
+
 ## 6. Tax 页面模型
 
 `tax.html` 使用年度账本结构：
