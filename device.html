@@ -1334,6 +1334,47 @@
       return palette[0];
     }
 
+    // 分位数色阶：把有数值的日子按金额排序后等分成 levels 组，每种深浅覆盖差不多同样多的天数。
+    // 线性色阶会被补助、车贷这类极端值压扁（11 元和 200 元都落在最浅一档）；人眼对单一色相大约能稳定分辨 5–7 档明度，这里用 5 档。
+    function buildQuantileScale(values, palette) {
+      const sorted = values.filter((v) => v > 0).sort((a, b) => a - b);
+      const levels = palette.length;
+      const cuts = [];
+      for (let k = 1; k < levels; k++) {
+        if (!sorted.length) break;
+        const cut = sorted[Math.min(sorted.length - 1, Math.floor((k * sorted.length) / levels))];
+        // 下限必须大于最小值且递增，数据很少时不会切出空档
+        if (cut > sorted[0] && (!cuts.length || cut > cuts[cuts.length - 1])) cuts.push(cut);
+      }
+      // cuts[i] 是第 i+1 档的下限；数据少时档数会自动变少
+      const colorOf = (v) => {
+        if (!v || v <= 0) return null;
+        let idx = 0;
+        while (idx < cuts.length && v >= cuts[idx]) idx++;
+        return cuts.length ? palette[Math.round((idx / cuts.length) * (levels - 1))] : palette[levels - 2];
+      };
+      const fmt = (v) => `¥${v >= 100 ? Math.round(v) : formatMoney(v)}`;
+      const legend = [];
+      if (sorted.length) {
+        const bounds = [sorted[0], ...cuts, sorted[sorted.length - 1]];
+        for (let i = 0; i <= cuts.length; i++) {
+          const lo = bounds[i];
+          const hi = bounds[i + 1];
+          const label = cuts.length === 0 ? (lo === hi ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`) : i === 0 ? `<${fmt(cuts[0])}` : i === cuts.length ? `≥${fmt(lo)}` : `${fmt(lo)}–${fmt(hi)}`;
+          legend.push({ cls: cuts.length ? palette[Math.round((i / cuts.length) * (levels - 1))] : palette[levels - 2], label });
+        }
+      }
+      return { colorOf, legend };
+    }
+
+    function renderScaleLegend(title, legend) {
+      if (!legend.length) return '';
+      const chips = legend
+        .map((l) => `<span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm ${l.cls}"></span>${l.label}</span>`)
+        .join('');
+      return `<div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-gray-500">${title ? `<span>${title}</span>` : ''}${chips}</div>`;
+    }
+
     function formatCheckinAggregateValue(item, value) {
       const checkinType = getCheckinType(item);
       if (checkinType === 'duration') return formatDurationFromSeconds(value);
@@ -3467,7 +3508,7 @@
         renderHoverBar(incBarEl, incList, incTotal, scaleMax);
       };
 
-      const buildHeatmap = (container, valueMap, maxVal, colorLevels) => {
+      const buildHeatmap = (container, valueMap, maxVal, colorLevels, legendHtml = '') => {
         container.innerHTML = '';
         const days = [];
         for (let d = new Date(displayStart); d <= displayEnd; d = addDays(d, 1)) {
@@ -3546,6 +3587,7 @@
 
         wrapper.appendChild(gridRow);
         container.appendChild(wrapper);
+        if (legendHtml) container.insertAdjacentHTML('beforeend', legendHtml);
       };
 
       if (!financeHeatmapSelectedDate) {
@@ -3556,27 +3598,23 @@
         financeHeatmapSelectedDate = null;
       }
       resetHover();
+      // 分位数色阶（5 档），结余与超支分别分档
+      const RED5 = ['bg-red-100', 'bg-red-200', 'bg-red-300', 'bg-red-500', 'bg-red-700'];
+      const GREEN5 = ['bg-emerald-100', 'bg-emerald-200', 'bg-emerald-300', 'bg-emerald-500', 'bg-emerald-700'];
+      const balValues = Object.values(balanceMap);
+      const surplusScale = buildQuantileScale(balValues.filter((v) => v > 0), GREEN5);
+      const deficitScale = buildQuantileScale(balValues.filter((v) => v < 0).map((v) => -v), RED5);
+      const expScale = buildQuantileScale(Object.values(expMap), RED5);
+      const incScale = buildQuantileScale(Object.values(incMap), GREEN5);
       buildHeatmap(
         balanceWrap,
         balanceMap,
         maxBalanceAbs,
-        (val, maxAbs) => {
-          if (!val) return 'bg-gray-100';
-          const ratio = maxAbs > 0 ? Math.abs(val) / maxAbs : 0;
-          if (val > 0) {
-            if (ratio > 0.75) return 'bg-emerald-600';
-            if (ratio > 0.5) return 'bg-emerald-400';
-            if (ratio > 0.25) return 'bg-emerald-200';
-            return 'bg-emerald-100';
-          }
-          if (ratio > 0.75) return 'bg-red-600';
-          if (ratio > 0.5) return 'bg-red-400';
-          if (ratio > 0.25) return 'bg-red-200';
-          return 'bg-red-100';
-        }
+        (val) => (val > 0 ? surplusScale.colorOf(val) : val < 0 ? deficitScale.colorOf(-val) : null) || 'bg-gray-100',
+        renderScaleLegend('超支', deficitScale.legend) + renderScaleLegend('结余', surplusScale.legend)
       );
-      buildHeatmap(expWrap, expMap, maxExpense, ['bg-red-100', 'bg-red-200', 'bg-red-400', 'bg-red-600']);
-      buildHeatmap(incWrap, incMap, maxIncome, ['bg-emerald-100', 'bg-emerald-200', 'bg-emerald-400', 'bg-emerald-600']);
+      buildHeatmap(expWrap, expMap, maxExpense, (val) => expScale.colorOf(val) || 'bg-gray-100', renderScaleLegend('', expScale.legend));
+      buildHeatmap(incWrap, incMap, maxIncome, (val) => incScale.colorOf(val) || 'bg-gray-100', renderScaleLegend('', incScale.legend));
       if (financeHeatmapSelectedDate) {
         updateHover(financeHeatmapSelectedDate);
       }
