@@ -204,6 +204,11 @@
                   <input type="date" id="loan-first-date" oninput="updateLoanFormUI()"
                     class="border border-indigo-200 rounded px-2 py-1 text-xs w-full" />
                 </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 mb-1">开始计算日（提车日，可选；之前不计入车贷）</label>
+                  <input type="date" id="loan-start-date" oninput="updateLoanFormUI()"
+                    class="border border-indigo-200 rounded px-2 py-1 text-xs w-full" />
+                </div>
                 <div class="text-[10px] text-indigo-600">按天摊销 / 还款日计入用页面顶部的「口径」开关切换。</div>
                 <div id="loan-preview" class="text-[11px] text-indigo-700"></div>
               </div>
@@ -1183,11 +1188,10 @@
       const periods = Math.round(Number(raw.periods) || 0);
       const firstDate = raw.firstDate || '';
       if (total <= 0 || periods < 1 || !/^\d{4}-\d{2}-\d{2}$/.test(firstDate)) return null;
-      return {
-        total,
-        periods,
-        firstDate
-      };
+      const loan = { total, periods, firstDate };
+      // 开始计算日（如提车日）：第一期只从这天起计入，不能晚于首次还款日
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw.startDate || '') && raw.startDate <= firstDate) loan.startDate = raw.startDate;
+      return loan;
     }
 
     function getLoanMonthly(loan) {
@@ -1202,7 +1206,8 @@
       for (let k = 0; k < loan.periods; k++) {
         const payDate = addMonthsClamped(loan.firstDate, k);
         const bounds = getMonthBounds(startOfDay(payDate));
-        const start = formatDate(bounds.start);
+        let start = formatDate(bounds.start);
+        if (loan.startDate && start < loan.startDate) start = loan.startDate; // 提车前不计入
         const rec = { start, end: formatDate(bounds.endExclusive), price: monthly, note: `第${k + 1}/${loan.periods}期 · ${payDate} 还款` };
         if (payDate !== start) rec.paid = payDate;
         records.push(rec);
@@ -2230,7 +2235,8 @@
       return normalizeLoan({
         total: document.getElementById('loan-total').value,
         periods: document.getElementById('loan-periods').value,
-        firstDate: document.getElementById('loan-first-date').value
+        firstDate: document.getElementById('loan-first-date').value,
+        startDate: document.getElementById('loan-start-date').value
       });
     }
 
@@ -2239,6 +2245,7 @@
       document.getElementById('loan-total').value = loan ? loan.total : '';
       document.getElementById('loan-periods').value = loan ? loan.periods : '';
       document.getElementById('loan-first-date').value = loan ? loan.firstDate : '';
+      document.getElementById('loan-start-date').value = loan && loan.startDate ? loan.startDate : '';
       updateLoanFormUI();
     }
 
@@ -2259,7 +2266,7 @@
       }
       const p = getLoanProgress(loan);
       const lastDate = addMonthsClamped(loan.firstDate, loan.periods - 1);
-      preview.textContent = `月供 ¥${formatMoney(p.monthly)} · ${loan.firstDate} 至 ${lastDate} · 已还 ${p.paid}/${loan.periods} 期`;
+      preview.textContent = `月供 ¥${formatMoney(p.monthly)} · ${loan.firstDate} 至 ${lastDate} · 已还 ${p.paid}/${loan.periods} 期${loan.startDate ? ` · ${loan.startDate} 起计入` : ''}`;
     }
 
     function getSelectedCheckinType() {
