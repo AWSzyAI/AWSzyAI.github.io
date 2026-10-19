@@ -33,7 +33,12 @@
         body.classList.toggle('immersive-header', scrollY < document.querySelector('.hero').offsetHeight - 70);
         document.documentElement.style.setProperty('--reading-progress', String(max > 0 ? Math.min(1, scrollY / max) : 0));
         let current = -1;
-        sections.forEach((section, index) => { if (section && section.getBoundingClientRect().top < innerHeight * .4) current = index; });
+        sections.forEach((section, index) => {
+            if (!section) return;
+            const rect = section.getBoundingClientRect();
+            // Only mark a section while it crosses the reading line, so the nav clears below the tracked sections.
+            if (rect.top < innerHeight * .4 && rect.bottom > innerHeight * .4) current = index;
+        });
         navLinks.forEach((link, index) => {
             if (index === current) link.setAttribute('aria-current', 'location');
             else link.removeAttribute('aria-current');

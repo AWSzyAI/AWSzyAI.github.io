@@ -203,3 +203,19 @@
 .neural-stage[data-mode="behavior"] .field-viewport{top:20px;height:calc(100% - 130px)}
 @media(min-width:1100px){.neural-stage[data-mode="behavior"] .field-viewport{top:22px;height:calc(100% - 130px)}}
 @media(max-width:720px){.neural-stage[data-mode="behavior"] .field-viewport{top:16px;height:calc(100% - 177px)}}
+
+/* Clip full-bleed 100vw sections so a vertical scrollbar never adds sideways scroll. */
+body.home{overflow-x:clip}
+
+/* Publications: year, title, then authors and venue. */
+.home .citation-cards li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:28px;align-items:baseline;padding-block:26px;color:var(--muted);transition:background-color .25s}
+.citation-year{font:400 26px/1 "LXGWWenKai",Georgia,serif;color:var(--green);letter-spacing:.02em}
+.home .citation-cards .citation-title{display:block;font:500 18px/1.5 Georgia,"Times New Roman","LXGWWenKai",serif;color:var(--ink);text-decoration:none;max-width:780px}
+.home .citation-cards .citation-title::after{content:" ↗";font-size:13px;color:var(--green);opacity:0;transition:opacity .2s}
+.home .citation-cards .citation-title:hover{color:var(--green)}
+.home .citation-cards .citation-title:hover::after{opacity:1}
+.citation-cards p{margin:8px 0 0;font-size:13px;line-height:1.7}
+.citation-cards .citation-venue{margin-top:2px;font-size:12px}
+.citation-type{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);border:1px solid #184d3640;border-radius:999px;padding:3px 10px;white-space:nowrap}
+@media(max-width:720px){.home .citation-cards li{grid-template-columns:1fr;gap:8px;padding-block:22px}.citation-year{font-size:20px}.home .citation-cards .citation-title{font-size:16px}.citation-type{display:none}}
+.home h2,.home h3{text-wrap:balance}
