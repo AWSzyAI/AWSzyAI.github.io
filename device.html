@@ -856,6 +856,8 @@
                 <span id="detail-usage-year-label"></span>
               </div>
               <div class="w-full h-3 bg-gray-100 rounded relative overflow-hidden" id="detail-usage-bar"></div>
+              <div class="hidden w-full h-3 mt-1 bg-gray-100 rounded relative overflow-hidden" id="detail-usage-bar-cmp"></div>
+              <div id="detail-usage-cmp-stats" class="hidden mt-1 text-[10px] text-gray-600"></div>
             </div>
             <div id="detail-usage-all-wrapper" class="bg-gray-50 rounded-xl border border-gray-100 p-3 hidden">
               <div class="flex justify-between items-center mb-2">
@@ -865,6 +867,8 @@
                 <span id="detail-usage-all-label"></span>
               </div>
               <div class="w-full h-3 bg-gray-100 rounded relative overflow-hidden" id="detail-usage-all-bar"></div>
+              <div class="hidden w-full h-3 mt-1 bg-gray-100 rounded relative overflow-hidden" id="detail-usage-all-bar-cmp"></div>
+              <div id="detail-usage-all-cmp-stats" class="hidden mt-1 text-[10px] text-gray-600"></div>
             </div>
           </div>
         </div>
@@ -5386,7 +5390,10 @@
     function toggleDetailCompare() {
       detailCompareOn = !detailCompareOn;
       const item = items.find((i) => i.id === window._detailItemId);
-      if (item) renderHeatmap(item, window._detailHeatmapYear || null);
+      if (item) {
+        renderHeatmap(item, window._detailHeatmapYear || null);
+        renderUsageTimeline(item, window._detailHeatmapYear || null);
+      }
     }
 
     // ===================== 年使用时间热力图（订阅 / 租赁） =====================
@@ -6514,6 +6521,98 @@
           usageAllTitle.textContent = `${baseAllTitle}（${allStats.subscribedDays}/${allStats.totalDays}=${allPct}%）`;
         }
       }
+      renderCarCompareUsage(item, thisYear);
+    }
+
+    // ===================== 车贷 ⇄ 租车：使用时间分布对比 =====================
+    // 打开「对比」后，在本年 / 总使用时间分布里，当前项目和对方各占一行，共用时间轴，不合并数据；
+    // 统计列出：自己的天数、对方的天数、两者按日期去重后的合计天数。总分布截至今天（车贷会延续到很多年后）。
+    function collectRecordDaySet(records, startBase, endExclusive) {
+      const days = new Set();
+      (records || []).forEach((rec) => {
+        const rs = startOfDay(rec.start);
+        const re = rec.end ? startOfDay(rec.end) : endExclusive;
+        let cursor = new Date(Math.max(rs.getTime(), startBase.getTime()));
+        const stop = new Date(Math.min(re.getTime(), endExclusive.getTime()));
+        while (cursor < stop) {
+          days.add(formatDate(cursor));
+          cursor = addDays(cursor, 1);
+        }
+      });
+      return days;
+    }
+
+    function drawRecordSegments(bar, records, startBase, endExclusive, colorClass, label) {
+      bar.innerHTML = '';
+      const totalDays = Math.max(1, Math.round((endExclusive - startBase) / DAY_MS));
+      (records || []).forEach((rec) => {
+        const rs = startOfDay(rec.start);
+        const re = rec.end ? startOfDay(rec.end) : endExclusive;
+        const start = new Date(Math.max(rs.getTime(), startBase.getTime()));
+        const end = new Date(Math.min(re.getTime(), endExclusive.getTime()));
+        if (end <= start) return;
+        const seg = document.createElement('div');
+        seg.className = `absolute top-0 bottom-0 ${colorClass} hover:brightness-90 cursor-pointer`;
+        seg.style.left = `${((start - startBase) / DAY_MS / totalDays) * 100}%`;
+        seg.style.width = `${Math.max(0.2, ((end - start) / DAY_MS / totalDays) * 100)}%`;
+        const note = (rec.note || '').trim();
+        seg.title = `${label} · ${formatDate(start)} 至 ${formatDate(end)} · 总额¥${(Number(rec.price) || 0).toFixed(2)}${note ? ` · 备注: ${note}` : ''}`;
+        bar.appendChild(seg);
+      });
+      const today = startOfDay(new Date());
+      if (today >= startBase && today < endExclusive) {
+        const line = document.createElement('div');
+        line.className = 'absolute top-0 bottom-0 w-[2px] bg-gray-400/50 pointer-events-none';
+        line.style.left = `${((today - startBase) / DAY_MS / totalDays) * 100}%`;
+        bar.appendChild(line);
+      }
+    }
+
+    function renderCarCompareUsage(item, year) {
+      const ids = ['detail-usage-bar-cmp', 'detail-usage-cmp-stats', 'detail-usage-all-bar-cmp', 'detail-usage-all-cmp-stats'];
+      const others = item && item.type === 'rental' ? getCompareItems(item) : [];
+      const active = others.length > 0 && detailCompareOn && detailSelectedMetric === 'price';
+      ids.forEach((id) => document.getElementById(id)?.classList.toggle('hidden', !active));
+      if (!active) return;
+
+      const selfIsLoan = isCarLoan(item);
+      const selfLabel = selfIsLoan ? '车贷' : '租车';
+      const otherLabel = selfIsLoan ? '租车' : '车贷';
+      const selfColor = selfIsLoan ? CAR_LOAN_COLOR.bg : CAR_RENTAL_COLOR.bg;
+      const otherColor = selfIsLoan ? CAR_RENTAL_COLOR.bg : CAR_LOAN_COLOR.bg;
+      const otherRecords = others.flatMap((o) => o.records || []);
+      const today = startOfDay(new Date());
+      const tomorrow = addDays(today, 1);
+
+      const render = (startBase, endExclusive, barId, cmpBarId, statsId, titleId, titlePrefix) => {
+        drawRecordSegments(document.getElementById(barId), item.records, startBase, endExclusive, selfColor, selfLabel);
+        drawRecordSegments(document.getElementById(cmpBarId), otherRecords, startBase, endExclusive, otherColor, otherLabel);
+        const selfDays = collectRecordDaySet(item.records, startBase, endExclusive);
+        const otherDays = collectRecordDaySet(otherRecords, startBase, endExclusive);
+        const union = new Set([...selfDays, ...otherDays]);
+        const totalDays = Math.max(1, Math.round((endExclusive - startBase) / DAY_MS));
+        const pct = (n) => ((n / totalDays) * 100).toFixed(2);
+        const dot = (cls) => `<span class="inline-block w-2 h-2 rounded-full ${cls} mr-1 align-middle"></span>`;
+        document.getElementById(statsId).innerHTML =
+          `${dot(selfColor)}${selfLabel} ${selfDays.size} 天（${pct(selfDays.size)}%） · ` +
+          `${dot(otherColor)}${otherLabel} ${otherDays.size} 天（${pct(otherDays.size)}%） · ` +
+          `<span class="font-semibold">合计 ${union.size}/${totalDays} 天（${pct(union.size)}%）</span>`;
+        const title = document.getElementById(titleId);
+        if (title) title.textContent = `${titlePrefix[0]}（${titlePrefix[1]}合计 ${union.size}/${totalDays}=${pct(union.size)}%）`;
+      };
+
+      // 本年
+      const yearStart = startOfDay(new Date(year, 0, 1));
+      render(yearStart, startOfDay(new Date(year + 1, 0, 1)), 'detail-usage-bar', 'detail-usage-bar-cmp', 'detail-usage-cmp-stats', 'detail-usage-title', ['本年使用时间分布', `${year}：`]);
+      document.getElementById('detail-usage-year-label').textContent = `${formatDate(yearStart)} 至 ${year}-12-31`;
+
+      // 总分布：最早一条记录到今天
+      const allRecords = [...(item.records || []), ...otherRecords];
+      const earliest = allRecords.reduce((min, r) => (!min || r.start < min ? r.start : min), '');
+      if (!earliest) return;
+      const allStart = startOfDay(earliest);
+      render(allStart, tomorrow, 'detail-usage-all-bar', 'detail-usage-all-bar-cmp', 'detail-usage-all-cmp-stats', 'detail-usage-all-title', ['总使用时间分布', '截至今天，']);
+      document.getElementById('detail-usage-all-label').textContent = `${formatDate(allStart)} 至 ${formatDate(today)}`;
     }
 
     function renderUsageBar(item, year, barId, labelId, isAll, customStart) {
