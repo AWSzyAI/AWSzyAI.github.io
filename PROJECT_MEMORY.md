@@ -160,6 +160,16 @@ C:\Users\szy\iCloudDrive\PhD\all_assets_2026-07-02_13_38_22.json
 
 Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态下随后自动保存到 `document_type = device`。卡片列数、财务列数与标签拆分开关属于界面偏好，可继续保留在 localStorage；真实资产和账本不再写入 localStorage。
 
+### 账本行的 note：分类名称 + 银行原文（2026-10-19）
+
+每日账目行的名称是**分类**（吃饭 / 肯德基 / 星巴克 / 沃尔玛 / 购物 / 汽车充电 / 洗车 / 停车费 / 高速费 / 飞机票 / 高铁票 / 医药书 / 转账 / 先用后付还款 / 其他），银行原文放在 `note` 里。这是用户的要求：「支出内容要分类，原始信息是 note」；另外要求把美团月付、抖音月付等**几笔还款合并成一条**，让「先用后付还款」的总额一眼看得见。
+
+- 数据：`ledgerData[日期].expenses[] = { name, amount, note?, until?, paid? }`，`note` 可选。
+- 展示：当天收支弹窗里每行有一个虚线框的备注输入框；分类卡片的 `title`、本月/本周横条的 `data-fin-tip` 都会把该分类下的 note 用 ` · ` 串起来。
+- 聚合：`aggregateCategories` 里的 `expenseNoteMap` / `incomeNoteMap` 按分类名收集 note，再由 `attachNotes` 挂到 `expenseList` / `incomeList` 的 `notes` 数组上。
+- 摊销：`getLedgerRowsForDate` 在按天摊销拆行时会把 `note` 一并带上。
+- 生成与写入的脚本在私有的「支出」项目：`scripts/device_merge.py` / `scripts/device_merge.js`。
+
 ## 6. Tax 页面模型
 
 `tax.html` 使用年度账本结构：

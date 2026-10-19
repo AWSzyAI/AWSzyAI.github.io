@@ -1142,7 +1142,7 @@
           const until = ledgerRowUntil(fromStr, row);
           if (!until || dateStr >= until) return;
           const days = Math.max(1, Math.round((startOfDay(until) - startOfDay(fromStr)) / DAY_MS));
-          result.expenses.push({ name: row.name, amount: (Number(row.amount) || 0) / days });
+          result.expenses.push({ name: row.name, amount: (Number(row.amount) || 0) / days, ...(row.note ? { note: row.note } : {}) });
         });
       });
       return result;
@@ -3719,7 +3719,8 @@
             seg.style.width = `${Math.max(pct, 1)}%`;
             const color = carColorForName(item.name) || palette[(colorOffset + idx) % palette.length];
             seg.style.background = color;
-            const tip = `${item.name}: ¥${formatMoney(item.amount)} (${pct.toFixed(0)}%)`;
+            const noteTip = item.notes && item.notes.length ? ` · ${item.notes.join(' / ')}` : '';
+            const tip = `${item.name}: ¥${formatMoney(item.amount)} (${pct.toFixed(0)}%)${noteTip}`;
             seg.setAttribute('data-fin-tip', tip);
             seg.title = tip;
             wrapper.appendChild(seg);
@@ -4010,6 +4011,16 @@
       const incomeMap = {};
       const tagExpenseMap = {};
       const tagIncomeMap = {};
+      // 账本行的 note（银行原文等）：按分类名汇总，用于悬停提示
+      const expenseNoteMap = {};
+      const incomeNoteMap = {};
+      const addNote = (map, name, note) => {
+        if (!note) return;
+        const text = String(note).trim();
+        if (!text) return;
+        if (!map[name]) map[name] = [];
+        if (!map[name].includes(text)) map[name].push(text);
+      };
       const limitEnd = opts.allowFuture ? end : (end > today ? today : end);
       for (let d = startOfDay(start); d <= limitEnd; d = addDays(d, 1)) {
         const dateStr = formatDate(d);
@@ -4021,6 +4032,7 @@
             if (!tagSplitMode || tags.length === 0) {
               expenseMap[base] = (expenseMap[base] || 0) + amount;
             }
+            addNote(expenseNoteMap, base, r.note);
             if (tagSplitMode) {
               tags.forEach((t) => {
                 tagExpenseMap[t] = (tagExpenseMap[t] || 0) + amount;
@@ -4035,6 +4047,7 @@
             if (!tagSplitMode || tags.length === 0) {
               incomeMap[base] = (incomeMap[base] || 0) + amount;
             }
+            addNote(incomeNoteMap, base, r.note);
             if (tagSplitMode) {
               tags.forEach((t) => {
                 tagIncomeMap[t] = (tagIncomeMap[t] || 0) + amount;
@@ -4129,9 +4142,11 @@
         }
       }
 
+      const attachNotes = (list, noteMap) =>
+        list.map((it) => (noteMap[it.name] ? { ...it, notes: noteMap[it.name] } : it));
       return {
-        expenseList: expenseStackToArray(expenseMap),
-        incomeList: expenseStackToArray(incomeMap),
+        expenseList: attachNotes(expenseStackToArray(expenseMap), expenseNoteMap),
+        incomeList: attachNotes(expenseStackToArray(incomeMap), incomeNoteMap),
         tagExpenseList: expenseStackToArray(tagExpenseMap),
         tagIncomeList: expenseStackToArray(tagIncomeMap),
         tagExpenseTotal: Object.values(tagExpenseMap).reduce((a, b) => a + b, 0),
@@ -4504,6 +4519,7 @@
               'beforeend',
               `
             <div class="p-3 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col gap-2 cursor-pointer hover:shadow transition"
+              title="${escapeHtml((card.notes || []).join(' · '))}"
               onclick="openFinanceDetail('${escapeHtml(card.name)}','${type}')">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -4661,11 +4677,11 @@
       ledgerDraft.date = dateStr;
       ledgerDraft.expenses =
         entry && Array.isArray(entry.expenses) && entry.expenses.length > 0
-          ? entry.expenses.map((r) => ({ ...r, name: r.name || '', amount: r.amount ?? '' }))
+          ? entry.expenses.map((r) => ({ ...r, name: r.name || '', amount: r.amount ?? '', note: r.note || '' }))
           : DEFAULT_EXPENSE_PRESETS.map((n) => ({ name: n, amount: '' }));
       ledgerDraft.incomes =
         entry && Array.isArray(entry.incomes)
-          ? entry.incomes.map((r) => ({ ...r, name: r.name || '', amount: r.amount ?? '' }))
+          ? entry.incomes.map((r) => ({ ...r, name: r.name || '', amount: r.amount ?? '', note: r.note || '' }))
           : DEFAULT_INCOME_PRESETS.map((n) => ({ name: n, amount: '' }));
 
       document.getElementById('ledger-modal-date').textContent = dateStr;
@@ -4693,13 +4709,21 @@
         expList.insertAdjacentHTML(
           'beforeend',
           `
-        <div class="flex items-center gap-2">
-          <input
-            class="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
-            placeholder="支出项目"
-            value="${escapeHtml(row.name || '')}"
-            oninput="updateLedgerRow('expenses', ${idx}, 'name', this.value)"
-          />
+        <div class="flex items-start gap-2">
+          <div class="flex-1 flex flex-col gap-1">
+            <input
+              class="text-sm border border-gray-300 rounded px-2 py-1"
+              placeholder="支出分类，如 吃饭 / 汽车充电"
+              value="${escapeHtml(row.name || '')}"
+              oninput="updateLedgerRow('expenses', ${idx}, 'name', this.value)"
+            />
+            <input
+              class="text-[11px] border border-dashed border-gray-300 rounded px-2 py-0.5 text-gray-500"
+              placeholder="备注（银行原文）"
+              value="${escapeHtml(row.note || '')}"
+              oninput="updateLedgerRow('expenses', ${idx}, 'note', this.value)"
+            />
+          </div>
           <input
             type="number"
             step="0.01"
@@ -4723,13 +4747,21 @@
         incList.insertAdjacentHTML(
           'beforeend',
           `
-        <div class="flex items-center gap-2">
-          <input
-            class="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
-            placeholder="收入项目"
-            value="${escapeHtml(row.name || '')}"
-            oninput="updateLedgerRow('incomes', ${idx}, 'name', this.value)"
-          />
+        <div class="flex items-start gap-2">
+          <div class="flex-1 flex flex-col gap-1">
+            <input
+              class="text-sm border border-gray-300 rounded px-2 py-1"
+              placeholder="收入项目"
+              value="${escapeHtml(row.name || '')}"
+              oninput="updateLedgerRow('incomes', ${idx}, 'name', this.value)"
+            />
+            <input
+              class="text-[11px] border border-dashed border-gray-300 rounded px-2 py-0.5 text-gray-500"
+              placeholder="备注（银行原文）"
+              value="${escapeHtml(row.note || '')}"
+              oninput="updateLedgerRow('incomes', ${idx}, 'note', this.value)"
+            />
+          </div>
           <input
             type="number"
             step="0.01"
@@ -4800,12 +4832,20 @@
 
     function saveLedgerDraft() {
       if (!ledgerDraft.date) return;
-      const expenses = (ledgerDraft.expenses || []).filter(
-        (r) => (r.name && r.name.trim()) || Number(r.amount)
-      );
-      const incomes = (ledgerDraft.incomes || []).filter(
-        (r) => (r.name && r.name.trim()) || Number(r.amount)
-      );
+      const clean = (r) => {
+        const row = { name: r.name || '', amount: r.amount ?? '' };
+        const note = (r.note || '').trim();
+        if (note) row.note = note;
+        if (r.until) row.until = r.until;
+        if (r.paid) row.paid = r.paid;
+        return row;
+      };
+      const expenses = (ledgerDraft.expenses || [])
+        .filter((r) => (r.name && r.name.trim()) || Number(r.amount))
+        .map(clean);
+      const incomes = (ledgerDraft.incomes || [])
+        .filter((r) => (r.name && r.name.trim()) || Number(r.amount))
+        .map(clean);
 
       if (expenses.length === 0 && incomes.length === 0) {
         delete ledgerData[ledgerDraft.date];
