@@ -1108,39 +1108,32 @@
       return rec.paid || rec.start;
     }
 
-    // 账本行可带 until（覆盖期的结束日，不含当天），如月度补助 9/24 发放、覆盖到 10/24。
+    // 账本支出行可带 until（覆盖期的结束日，不含当天），如提前付了一段时间的费用。
     // 按实付日：整笔记在发生日；按天摊销：平摊到 [发生日, until) 的每一天。
-    // 补助类收入（#补助 标签，或名称含 津贴/助学金/补助）默认覆盖领取后的一个月，无需手动填 until
-    function isStipendIncome(row) {
-      return !!(row && typeof row.name === 'string' && /补助|津贴|助学金/.test(row.name));
-    }
-
-    function ledgerRowUntil(dateStr, row, isIncome = false) {
+    // 摊销只针对支出（提前付过款、覆盖未来一段时间的钱，避免忘记它们）；收入（含补助）永远按到账日整笔计入，until 对收入无效。
+    function ledgerRowUntil(dateStr, row) {
       const until = row && row.until;
-      if (typeof until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(until) && until > dateStr) return until;
-      if (isIncome && isStipendIncome(row)) return addMonthsClamped(dateStr, 1);
-      return '';
+      return typeof until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(until) && until > dateStr ? until : '';
     }
 
     function getLedgerRowsForDate(dateStr) {
       const own = ledgerData[dateStr] || {};
-      const result = { expenses: [], incomes: [] };
-      ['expenses', 'incomes'].forEach((key) => {
-        (Array.isArray(own[key]) ? own[key] : []).forEach((row) => {
-          if (costView === 'amortize' && ledgerRowUntil(dateStr, row, key === 'incomes')) return;
-          result[key].push(row);
-        });
+      const result = {
+        expenses: [],
+        incomes: Array.isArray(own.incomes) ? own.incomes.slice() : []
+      };
+      (Array.isArray(own.expenses) ? own.expenses : []).forEach((row) => {
+        if (costView === 'amortize' && ledgerRowUntil(dateStr, row)) return;
+        result.expenses.push(row);
       });
       if (costView !== 'amortize') return result;
       Object.entries(ledgerData || {}).forEach(([fromStr, entry]) => {
-        if (fromStr > dateStr || !entry) return;
-        ['expenses', 'incomes'].forEach((key) => {
-          (Array.isArray(entry[key]) ? entry[key] : []).forEach((row) => {
-            const until = ledgerRowUntil(fromStr, row, key === 'incomes');
-            if (!until || dateStr >= until) return;
-            const days = Math.max(1, Math.round((startOfDay(until) - startOfDay(fromStr)) / DAY_MS));
-            result[key].push({ name: row.name, amount: (Number(row.amount) || 0) / days });
-          });
+        if (fromStr > dateStr || !entry || !Array.isArray(entry.expenses)) return;
+        entry.expenses.forEach((row) => {
+          const until = ledgerRowUntil(fromStr, row);
+          if (!until || dateStr >= until) return;
+          const days = Math.max(1, Math.round((startOfDay(until) - startOfDay(fromStr)) / DAY_MS));
+          result.expenses.push({ name: row.name, amount: (Number(row.amount) || 0) / days });
         });
       });
       return result;
