@@ -1053,6 +1053,37 @@
       return rec.paid || rec.start;
     }
 
+    // 账本行可带 until（覆盖期的结束日，不含当天），如月度补助 9/24 发放、覆盖到 10/24。
+    // 按实付日：整笔记在发生日；按天摊销：平摊到 [发生日, until) 的每一天。
+    function ledgerRowUntil(dateStr, row) {
+      const until = row && row.until;
+      return typeof until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(until) && until > dateStr ? until : '';
+    }
+
+    function getLedgerRowsForDate(dateStr) {
+      const own = ledgerData[dateStr] || {};
+      const result = { expenses: [], incomes: [] };
+      ['expenses', 'incomes'].forEach((key) => {
+        (Array.isArray(own[key]) ? own[key] : []).forEach((row) => {
+          if (costView === 'amortize' && ledgerRowUntil(dateStr, row)) return;
+          result[key].push(row);
+        });
+      });
+      if (costView !== 'amortize') return result;
+      Object.entries(ledgerData || {}).forEach(([fromStr, entry]) => {
+        if (fromStr > dateStr || !entry) return;
+        ['expenses', 'incomes'].forEach((key) => {
+          (Array.isArray(entry[key]) ? entry[key] : []).forEach((row) => {
+            const until = ledgerRowUntil(fromStr, row);
+            if (!until || dateStr >= until) return;
+            const days = Math.max(1, Math.round((startOfDay(until) - startOfDay(fromStr)) / DAY_MS));
+            result[key].push({ name: row.name, amount: (Number(row.amount) || 0) / days });
+          });
+        });
+      });
+      return result;
+    }
+
     function updateCostViewUI() {
       document.querySelectorAll('.cost-view-state').forEach((el) => {
         el.textContent = COST_VIEW_LABELS[costView];
@@ -1813,7 +1844,7 @@
       const target = startOfDay(dateObj);
       const today = startOfDay(new Date());
       const dateStr = formatDate(target);
-      const entry = target > today ? {} : (ledgerData[dateStr] || {});
+      const entry = target > today ? {} : getLedgerRowsForDate(dateStr);
       const expenseList = Array.isArray(entry.expenses) ? entry.expenses : [];
       const incomeList = Array.isArray(entry.incomes) ? entry.incomes : [];
       const manualExpense = expenseList.reduce(
@@ -3851,7 +3882,7 @@
       const limitEnd = opts.allowFuture ? end : (end > today ? today : end);
       for (let d = startOfDay(start); d <= limitEnd; d = addDays(d, 1)) {
         const dateStr = formatDate(d);
-        const entry = ledgerData[dateStr];
+        const entry = getLedgerRowsForDate(dateStr);
         if (entry && Array.isArray(entry.expenses)) {
           entry.expenses.forEach((r) => {
             const amount = Number(r.amount) || 0;
@@ -4478,11 +4509,11 @@
       ledgerDraft.date = dateStr;
       ledgerDraft.expenses =
         entry && Array.isArray(entry.expenses) && entry.expenses.length > 0
-          ? entry.expenses.map((r) => ({ name: r.name || '', amount: r.amount ?? '' }))
+          ? entry.expenses.map((r) => ({ ...r, name: r.name || '', amount: r.amount ?? '' }))
           : DEFAULT_EXPENSE_PRESETS.map((n) => ({ name: n, amount: '' }));
       ledgerDraft.incomes =
         entry && Array.isArray(entry.incomes)
-          ? entry.incomes.map((r) => ({ name: r.name || '', amount: r.amount ?? '' }))
+          ? entry.incomes.map((r) => ({ ...r, name: r.name || '', amount: r.amount ?? '' }))
           : DEFAULT_INCOME_PRESETS.map((n) => ({ name: n, amount: '' }));
 
       document.getElementById('ledger-modal-date').textContent = dateStr;
