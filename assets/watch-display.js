@@ -57,7 +57,7 @@ function draw(s,x,y,height){
  }
  rounded(c,92,558,360,92,28,'#18241f');
  const future=M.forecastSignal(Math.min(30,s.hour+2),s.hour,s.plan);
- const next=future.arousal<.24?'睡眠':future.arousal<.50?'困倦':future.attention>.8?'专注':future.attention<.34?'脑雾':'清醒';
+ const next=future.arousal<.24?'睡眠':future.arousal<.50?'困倦':future.attention>.8?'专注':future.attention<.34?'低注意':'清醒';
  text(c,'接下来',115,591,compact?26:23,'#8da898',500);
  text(c,next,115,626,compact?34:30,'#dceadf',500);
  text(c,'+2 h',428,616,compact?27:24,'#9cafa1',400,'right');

@@ -169,8 +169,6 @@
 .neural-stage[data-mode="waves"] .field-viewport{inset:0;width:100%;height:100%}
 .neural-stage[data-mode="waves"] .scene-tools{left:var(--page-gutter);right:var(--page-gutter);bottom:89px;width:auto;display:grid;gap:10px}
 .neural-stage[data-mode="waves"] .scene-tools[hidden]{display:none}
-.state-control-top{display:flex;align-items:center;gap:30px;justify-content:space-between}
-.state-control-top .state-legend{flex:1;gap:19px}.state-control-top .state-scrubber{width:32%;min-width:180px}
 .neural-stage .state-legend .arousal-key{color:#b9eed0}.neural-stage .state-legend .attention-key{color:#e2ba77}.neural-stage .state-legend .state-current,.neural-stage .state-scrubber,.neural-stage .state-scrubber output{color:#b9ceb5}
 .neural-stage .state-scrubber input{accent-color:#b9eed0}
 .day-planner{display:flex;align-items:center;gap:24px;padding:13px 0;border-top:1px solid #a9cba630;border-bottom:1px solid #a9cba630}
@@ -190,7 +188,6 @@
  .home .hero[data-scene="waves"] .hero-manifesto{font-size:26px;line-height:1.3;margin:10px 0}
  .home .hero[data-scene="waves"] .hero-deck{display:none}
  .neural-stage[data-mode="waves"] .scene-tools{bottom:83px;gap:8px}
- .state-control-top{display:block}.state-control-top .state-legend{gap:12px}.state-control-top .state-scrubber{width:100%;margin-top:3px}
  .day-planner{gap:8px;padding:9px 0;justify-content:space-between;flex-wrap:wrap}.planner-heading{width:100%;font-size:10px}
  .day-planner label{font-size:10px;gap:5px}.day-planner select{padding:6px 3px;min-height:32px}
  .plan-note{font-size:9px}
@@ -219,3 +216,25 @@ body.home{overflow-x:clip}
 .citation-type{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);border:1px solid #184d3640;border-radius:999px;padding:3px 10px;white-space:nowrap}
 @media(max-width:720px){.home .citation-cards li{grid-template-columns:1fr;gap:8px;padding-block:22px}.citation-year{font-size:20px}.home .citation-cards .citation-title{font-size:16px}.citation-type{display:none}}
 .home h2,.home h3{text-wrap:balance}
+
+/* State figure: one compact control row under the canvas panels. */
+.home .hero[data-scene="waves"]{min-height:760px}
+.home .hero[data-scene="waves"] .hero-main{top:34px;width:min(34%,460px)}
+.home .hero[data-scene="waves"] .hero-manifesto{font-size:clamp(26px,2.5vw,40px);margin:14px 0}
+.neural-stage[data-mode="waves"] .scene-tools{display:flex;align-items:center;gap:36px;bottom:92px}
+.neural-stage[data-mode="waves"] .state-scrubber{flex:1;max-width:520px}
+.neural-stage[data-mode="waves"] .day-planner{flex:none;border:0;padding:0;gap:20px}
+.neural-stage[data-mode="waves"] .planner-heading{margin-right:4px;font-size:11px;letter-spacing:.06em;color:#b4cdb4}
+@media(max-width:720px){
+ .home .hero[data-scene="waves"]{min-height:800px}
+ .home .hero[data-scene="waves"] .hero-main{top:18px;width:calc(100% - var(--page-gutter)*2)}
+ .home .hero[data-scene="waves"] .hero-manifesto{font-size:24px}
+ .neural-stage[data-mode="waves"] .scene-tools{display:grid;gap:10px;bottom:84px}
+ .neural-stage[data-mode="waves"] .state-scrubber{max-width:none}
+ .neural-stage[data-mode="waves"] .day-planner{gap:8px;justify-content:space-between}
+ .neural-stage[data-mode="waves"] .planner-heading{display:none}
+}
+/* Behavior figure: canvas panels need the full stage below the navigation. */
+.neural-stage[data-mode="behavior"] .field-viewport{top:30px;left:0;width:100%;height:calc(100% - 128px)}
+@media(max-width:720px){.neural-stage[data-mode="behavior"] .field-viewport{top:18px;height:calc(100% - 178px)}}
+.neural-stage[data-mode="behavior"] .field-caption{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}

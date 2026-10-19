@@ -21,7 +21,7 @@
         awake: { label: '清醒', short: '清醒', arousal: .75, attention: .62, aVariation: .04, tVariation: .065, detail: '维持清醒，注意随时间变化' },
         focused: { label: '高度专注', short: '专注', arousal: .84, attention: .93, aVariation: .022, tVariation: .025, detail: '注意保持高位，波动收敛' },
         distracted: { label: '注意游移', short: '游移', arousal: .73, attention: .43, aVariation: .04, tVariation: .19, detail: '保持清醒，注意反复起伏' },
-        fog: { label: '脑雾', short: '脑雾', arousal: .60, attention: .25, aVariation: .055, tVariation: .085, detail: '仍有觉醒，注意低位徘徊' },
+        fog: { label: '低注意清醒', short: '低注意', arousal: .60, attention: .25, aVariation: .055, tVariation: .085, detail: '仍有觉醒，注意低位徘徊' },
         alert: { label: '高度清醒', short: '清醒', arousal: .94, attention: .74, aVariation: .025, tVariation: .075, detail: '觉醒升至高位，注意独立变化' }
     };
     const schedule = [[0,'nrem'],[1.7,'rem'],[2.3,'nrem'],[3.7,'rem'],[4.3,'nrem'],[5.7,'drowsy'],[7,'awake'],[8.5,'focused'],[10.5,'distracted'],[11.8,'fog'],[13,'drowsy'],[14,'awake'],[15.5,'focused'],[17,'alert'],[18.5,'awake'],[20.5,'drowsy'],[22,'nrem']];
@@ -197,10 +197,18 @@
             if (this.sampleClock >= 1/24) {
                 this.sampleClock %= 1/24;
                 this.trail.push({x:this.x,y:this.y,t:this.time});
-                this.history.push({t:this.time,speed:this.speed,calcium:this.cells.reduce((s,c)=>s+c.fluorescence,0)/this.cells.length,action:this.action});
+                this.history.push({t:this.time,speed:this.speed,calcium:this.cells.reduce((s,c)=>s+c.fluorescence,0)/this.cells.length,action:this.investigating?'investigate':this.action,rois:this.cells.slice(0,8).map(c=>c.fluorescence),pose:this.pose()});
                 this.trail=this.trail.filter(p=>p.t>this.time-7);
                 this.history=this.history.filter(p=>p.t>this.time-8);
             }
+        }
+        // Eight top-view keypoints in arena units, as a pose estimator would report them.
+        pose() {
+            const h=this.heading+this.head,ch=Math.cos(this.heading),sh=Math.sin(this.heading),cn=Math.cos(h),sn=Math.sin(h);
+            const neck={x:this.x+ch*.024,y:this.y+sh*.024},nose={x:neck.x+cn*.042,y:neck.y+sn*.042};
+            const ear=side=>({x:neck.x+cn*.012-sn*side*.017,y:neck.y+sn*.012+cn*side*.017});
+            const t=this.tail;
+            return {nose,earL:ear(-1),earR:ear(1),neck,center:{x:this.x-ch*.012,y:this.y-sh*.012},tailBase:t[0],tailMid:t[4],tailTip:t[t.length-1]};
         }
         advance(delta) {
             this.accumulator += Math.max(0,delta);

@@ -7,8 +7,8 @@
         constructor(ctx) {
             this.ctx=ctx; this.time=0; this.hour=9.25; this.stimulusAge=100; this.networkTime=0;this.brainMix=0;this.plan={coffee:14,sleep:23,meal:19};
             this.mouse=new M.BehaviorModel(Math.floor(Math.random()*0xFFFFFFFF));
-            this.mouse.advance(2.5);
-            this.mouseRenderer=new window.MouseRenderer();
+            // Pre-roll so every trace already spans the full 8-second history.
+            this.mouse.advance(9);
             this.fallback=document.querySelector('.field-fallback');
             this.fallback.addEventListener('load',()=>{if(this.mode==='network')this.draw('network',this.w,this.h);});
         }
@@ -24,6 +24,12 @@
         }
         text(t,x,y,size=10,a=.7,align='left',color) {
             const c=this.ctx;c.font=`${size}px -apple-system, BlinkMacSystemFont, "LXGWWenKai", sans-serif`;c.fillStyle=color||this.ink(a);c.textAlign=align;c.fillText(t,x,y);
+        }
+        // Figure-style panel heading: bold lowercase letter, then title.
+        panelLabel(letter,title,x,y,size) {
+            const c=this.ctx;size=size||(this.w<721?11:12);
+            c.font=`700 ${size+1}px -apple-system, BlinkMacSystemFont, sans-serif`;c.fillStyle=this.ink(.95);c.textAlign='left';c.fillText(letter,x,y);
+            const offset=c.measureText(letter).width+8;this.text(title,x+offset,y,size,.82);
         }
         circle(x,y,r,a=1,color) {
             const c=this.ctx;c.beginPath();c.fillStyle=color||this.ink(a);c.arc(x,y,r,0,TAU);c.fill();
@@ -56,151 +62,6 @@
         }
 
         waves() { window.StateExperience.draw(this); }
-        mouseArena(x,y,width,height) {
-            const c=this.ctx,m=this.mouse;
-            const wide=width/height>1.45,yaw=wide?-.17:-.28,cy=Math.cos(yaw),sy=Math.sin(yaw),tilt=wide?.48:.70,lift=Math.sqrt(1-tilt*tilt);
-            const unit=Math.min((width-12)/(cy+Math.abs(sy)+.04),(height-24)/((cy+Math.abs(sy))*tilt+.15));
-            const cx=x+width/2,cyScreen=y+height*.54;
-            const project=p=>{
-                const u=(p.x-.5)*cy-(p.y-.5)*sy,v=(p.x-.5)*sy+(p.y-.5)*cy;
-                return {x:cx+u*unit,y:cyScreen+(v*tilt-p.z*lift)*unit,depth:v*lift+p.z*tilt};
-            };
-            const polygon=(points,fill,stroke)=>{
-                c.beginPath();points.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();
-                c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=.7;c.stroke();}
-            };
-            const floor=[{x:0,y:0,z:0},{x:1,y:0,z:0},{x:1,y:1,z:0},{x:0,y:1,z:0}];
-            const floorPoints=floor.map(project);
-            c.save();c.beginPath();c.rect(x,y,width,height);c.clip();
-            // An oblique floor, raised back rim and front thickness anchor the animal in space.
-            polygon([floorPoints[3],floorPoints[2],project({...floor[2],z:-.045}),project({...floor[3],z:-.045})],'#102e23');
-            polygon([floorPoints[0],floorPoints[3],project({...floor[3],z:-.045}),project({...floor[0],z:-.045})],'#0c291e');
-            const ground=c.createLinearGradient(cx,y,cx,y+height);ground.addColorStop(0,'#285b42');ground.addColorStop(1,'#103b2a');
-            polygon(floorPoints,ground,this.ink(.24));
-            for(let i=1;i<8;i++){
-                for(const pair of [[{x:i/8,y:0,z:.001},{x:i/8,y:1,z:.001}],[{x:0,y:i/8,z:.001},{x:1,y:i/8,z:.001}]]){
-                    const [a,b]=pair.map(project);this.line(a.x,a.y,b.x,b.y,.09,.65);
-                }
-            }
-            for(const [i,j] of [[0,1],[1,2]])polygon([floorPoints[i],floorPoints[j],project({...floor[j],z:.065}),project({...floor[i],z:.065})],'rgba(152,215,163,.08)',this.ink(.2));
-            m.trail.forEach((p,i)=>{if(!i)return;const a=project({...m.trail[i-1],z:.002}),b=project({...p,z:.002});this.line(a.x,a.y,b.x,b.y,.025+i/m.trail.length*.17,.8);});
-            // Sparse light packets follow the actual recent trajectory.
-            m.trail.forEach((p,i)=>{if(i%17)return;const q=project({...p,z:.007});this.circle(q.x,q.y,1.8,.15+i/m.trail.length*.50);});
-            this.mouseAnchor=project({x:m.x,y:m.y,z:.10});
-            const size=M.clamp(12/unit,.067,.095);
-            const moving=Math.min(1,m.speed/.045),bob=Math.abs(Math.sin(m.gait))*.045*moving+Math.sin(m.time*4.3)*.015;
-            const bodyAngle=m.heading,headAngle=m.heading+m.head;
-            const local=(a,b,z,angle=bodyAngle,origin=m)=>({x:origin.x+(a*Math.cos(angle)-b*Math.sin(angle))*size,y:origin.y+(a*Math.sin(angle)+b*Math.cos(angle))*size,z:z*size});
-            // Contact shadow follows the same ground transform as the animal and its path.
-            const silhouette=[];
-            for(let i=0;i<40;i++)silhouette.push(project(local(-.12+Math.cos(i/40*TAU)*1.43,Math.sin(i/40*TAU)*.66,.012)));
-            c.save();c.shadowColor='rgba(36,48,31,.18)';c.shadowBlur=unit*size*.3;
-            polygon(silhouette,'rgba(5,19,13,.24)');c.restore();
-            const contact=[];for(let i=0;i<32;i++)contact.push(project(local(-.2+Math.cos(i/32*TAU)*1.0,Math.sin(i/32*TAU)*.43,.018)));
-            polygon(contact,'rgba(5,19,13,.28)');
-            if(this.mouseRenderer.ready){
-                for(const o of m.obstacles){
-                    const shadow=[];for(let i=0;i<48;i++){const a=i/48*TAU;shadow.push(project({x:o.x+Math.cos(a)*o.r*1.04+.014,y:o.y+Math.sin(a)*o.r*1.03+.02,z:.001}));}
-                    c.save();c.shadowColor='#081c17aa';c.shadowBlur=unit*.016;polygon(shadow,'rgba(4,20,14,.24)');c.restore();
-                }
-                const drawn=this.mouseRenderer.draw(c,{width:this.w,height:this.h,unit,cx,cy:cyScreen,yaw,tilt},m,size);
-                if(drawn){this.line(floorPoints[3].x,floorPoints[3].y,floorPoints[2].x,floorPoints[2].y,.24,1);c.restore();return;}
-            }
-            const faces=[];
-            // Objects share the mouse's projection, lighting, depth ordering and collision coordinates.
-            for(const object of m.obstacles){
-                const count=object.shape==='block'?4:24;
-                const radius=object.r,top=[],base=[];
-                for(let i=0;i<count;i++){
-                    const a=i/count*TAU+(object.shape==='block'?Math.PI/4:0);
-                    const p={x:object.x+Math.cos(a)*radius,y:object.y+Math.sin(a)*radius,z:0};
-                    base.push(project(p));top.push(project({...p,z:object.height}));
-                }
-                c.save();c.shadowColor='rgba(35,58,37,.2)';c.shadowBlur=unit*.018;c.shadowOffsetY=unit*.012;
-                polygon(base,'rgba(36,58,35,.12)');c.restore();
-                const center=project({x:object.x,y:object.y,z:object.height});
-                for(let i=0;i<count;i++){
-                    const j=(i+1)%count,angle=(i+.5)/count*TAU;
-                    const shade=.67+.20*Math.cos(angle+1.8);
-                    const color=object.shape==='block'?[162,170,139]:object.id==='pillar'?[133,158,126]:[192,185,154];
-                    const side=[base[i],base[j],top[j],top[i]];
-                    faces.push({points:side,depth:side.reduce((v,p)=>v+p.depth,0)/4,color:`rgb(${color.map(v=>Math.round(v*shade)).join(',')})`});
-                    const cap=[top[i],top[j],center];
-                    faces.push({points:cap,depth:cap.reduce((v,p)=>v+p.depth,0)/3,color:object.shape==='block'?'#b4bc9b':object.id==='pillar'?'#9ab38e':'#c3bea4'});
-                }
-            }
-
-            const mesh=(center,radii,angle,palette,segments=18,rings=10)=>{
-                if(width<230){segments=Math.max(8,Math.round(segments*.72));rings=Math.max(6,Math.round(rings*.72));}
-                const ca=Math.cos(angle),sa=Math.sin(angle),vertices=[];
-                for(let j=0;j<=rings;j++){
-                    const latitude=-Math.PI/2+j/rings*Math.PI;
-                    for(let i=0;i<=segments;i++){
-                        const longitude=i/segments*TAU;
-                        const nx=Math.cos(latitude)*Math.cos(longitude),ny=Math.cos(latitude)*Math.sin(longitude),nz=Math.sin(latitude);
-                        const dx=nx*radii[0]*size,dy=ny*radii[1]*size;
-                        const p={x:center.x+dx*ca-dy*sa,y:center.y+dx*sa+dy*ca,z:center.z+nz*radii[2]*size};
-                        // Ellipsoid normals produce fixed world lighting as the mouse turns.
-                        let normalX=nx/radii[0],normalY=ny/radii[1],normalZ=nz/radii[2];
-                        const length=Math.hypot(normalX,normalY,normalZ);normalX/=length;normalY/=length;normalZ/=length;
-                        const wx=normalX*ca-normalY*sa,wy=normalX*sa+normalY*ca;
-                        const nu=wx*cy-wy*sy,nv=wx*sy+wy*cy;
-                        vertices.push({...project(p),light:Math.max(0,-nu*.42-nv*.32+normalZ*.85),visible:nv*lift+normalZ*tilt});
-                    }
-                }
-                for(let j=0;j<rings;j++)for(let i=0;i<segments;i++){
-                    const a=j*(segments+1)+i,b=a+1,d=a+segments+1,e=d+1;
-                    for(const ids of [[a,b,e],[a,e,d]]){
-                        const points=ids.map(k=>vertices[k]);if(points.reduce((v,p)=>v+p.visible,0)<=0)continue;
-                        const light=points.reduce((v,p)=>v+p.light,0)/3,shade=.59+light*.41;
-                        faces.push({depth:points.reduce((v,p)=>v+p.depth,0)/3,points,color:`rgb(${palette.map(v=>Math.round(v*shade)).join(',')})`});
-                    }
-                }
-            };
-            const segment=(a,b,color,weight)=>{
-                const p=project(a),q=project(b);faces.push({depth:(p.depth+q.depth)/2,line:[p,q],color,weight});
-            };
-            // Flexible tail retains the physical chain, with a raised root and a tapered tip.
-            const tail=m.tail.map((p,i)=>({x:m.x+(p.x-m.x)*size/.055,y:m.y+(p.y-m.y)*size/.055,z:size*(.35*Math.exp(-i*.52)+.04+Math.sin(m.time*3-i*.7)*.022*i/8)}));
-            tail.slice(1).forEach((p,i)=>{
-                const thickness=Math.max(.65,(1-i/9)*unit*size*.16);
-                segment(tail[i],p,'#978c78',thickness+1);segment({...tail[i],z:tail[i].z+.002},{...p,z:p.z+.002},'#c6b49b',thickness);
-            });
-            // Feet alternate in depth and lift; grooming brings the forepaws toward the snout.
-            for(const side of [-1,1])for(const front of [false,true]){
-                const phase=m.gait+(front?0:Math.PI)+side*Math.PI/2;
-                const stride=Math.sin(phase)*.24*moving;
-                let fx=(front?.48:-.8)+stride,fy=side*.48,fz=.09+Math.max(0,Math.cos(phase))*.17*moving;
-                if(front&&m.action==='groom'){fx=1.0;fy=side*.2;fz=.52+Math.sin(m.time*13)*.09;}
-                mesh(local(fx,fy,fz),[.26,.14,.09],bodyAngle,[188,172,149],12,6);
-                if(!front)mesh(local(fx-.1,fy*.75,.29+bob),[.38,.26,.31],bodyAngle,[206,206,187],14,8);
-            }
-            mesh(local(-.28,0,.57+bob),[1.0,.57,.56],bodyAngle,[225,223,205],24,14);
-            const neck=local(.43,0,0);
-            const head=(a,b,z)=>local(a,b,z,headAngle,neck);
-            mesh(head(.31,0,.68+bob),[.55,.40,.40],headAngle,[233,229,211],20,12);
-            mesh(head(.66,0,.51+bob),[.43,.255,.24],headAngle,[228,220,200],18,10);
-            for(const side of [-1,1]){
-                mesh(head(.06,side*.34,1.03+bob),[.25,.11,.32],headAngle,[205,201,182],18,12);
-                mesh(head(.07,side*.40,1.04+bob),[.175,.046,.225],headAngle,[211,172,156],16,10);
-                mesh(head(.54,side*.303,.78+bob),[.069,.053,.076],headAngle,[43,47,36],12,8);
-                mesh(head(.54,side*.318,.81+bob),[.021,.017,.025],headAngle,[250,250,233],8,6);
-                for(let k=0;k<3;k++){
-                    segment(head(.88,side*.13,.53+bob),head(1.03+(k-1)*.14,side*(.52+k*.075),.54+bob+Math.sin(m.time*8+k)*.025),'rgba(82,91,70,.65)',.55);
-                }
-            }
-            mesh(head(1.06,0,.51+bob),[.09,.10,.08],headAngle,[154,116,99],12,8);
-            // Painter sorting handles every heading: near paws, ears and snout occlude naturally.
-            faces.sort((a,b)=>a.depth-b.depth);
-            c.lineJoin='round';c.lineCap='round';
-            for(const face of faces){
-                if(face.line){const [a,b]=face.line;this.line(a.x,a.y,b.x,b.y,1,face.weight,face.color);}
-                else{polygon(face.points,face.color);c.strokeStyle=face.color;c.lineWidth=.35;c.stroke();}
-            }
-            // A low front rim supplies a foreground depth cue without hiding the animal.
-            this.line(floorPoints[3].x,floorPoints[3].y,floorPoints[2].x,floorPoints[2].y,.24,1);
-            c.restore();
-        }
         cranialWindow(x,y,width,height) {
             const c=this.ctx,m=this.mouse,r=Math.min(width,height)*.46,cx=x+width/2,cy=y+height/2;
             c.save();
@@ -242,65 +103,137 @@
             c.strokeStyle='rgba(10,23,16,.37)';c.lineWidth=.55;vessels.forEach(d=>c.stroke(new Path2D(d)));
             c.restore();c.strokeStyle='#c6d4b395';c.lineWidth=.75;c.stroke(this.mouseCortex);
             c.beginPath();c.moveTo(50,16);c.bezierCurveTo(47,32,52,50,50,69);c.strokeStyle='#c6d4b365';c.lineWidth=.55;c.stroke();
+            // ROI 1–8 outlines match the ΔF/F rows; the remaining domains stay unlabelled.
+            const rois=this.opticalSites.slice(0,8).map(p=>({x:ox+p.x*scale,y:oy+p.y*scale}));
             c.restore();
-            this.text('Ca²⁺',cx+r*.65,cy+r*.82,9,.8,'center','#c9dbb7');
+            const small=r<90;
+            rois.forEach((p,i)=>{
+                const active=Math.min(1,m.cells[i].fluorescence/.45);
+                c.beginPath();c.arc(p.x,p.y,small?4.5:7,0,TAU);c.strokeStyle=`rgba(243,227,176,${.45+active*.5})`;c.lineWidth=.9;c.stroke();
+                if(!small||i<4)this.text(String(i+1),p.x+(small?6:9),p.y-(small?4:6),small?8:9,.85,'left','#f3e3b0');
+            });
+            const bar=r*1.65/100*20;
+            this.line(cx+r*.42-bar/2,cy+r*.86,cx+r*.42+bar/2,cy+r*.86,.85,1.5);
+            this.text('1 mm',cx+r*.42,cy+r*.86+11,small?8:9,.7,'center');
+        }
+        topView(x,y,side) {
+            const c=this.ctx,m=this.mouse,small=side<260;
+            const map=p=>({x:x+p.x*side,y:y+p.y*side});
+            c.save();
+            c.beginPath();c.roundRect(x,y,side,side,4);c.fillStyle='#0d2f21';c.fill();c.strokeStyle=this.ink(.35);c.lineWidth=1;c.stroke();
+            c.clip();
+            for(let i=1;i<4;i++){this.line(x+i*side/4,y,x+i*side/4,y+side,.06,.7);this.line(x,y+i*side/4,x+side,y+i*side/4,.06,.7);}
+            // Objects share collision geometry with the model.
+            m.obstacles.forEach((o,i)=>{
+                const p=map(o);c.beginPath();
+                if(o.shape==='block')c.rect(p.x-o.r*side*.72,p.y-o.r*side*.72,o.r*side*1.44,o.r*side*1.44);else c.arc(p.x,p.y,o.r*side,0,TAU);
+                c.fillStyle=this.ink(.07);c.fill();c.strokeStyle=this.ink(.32);c.lineWidth=.9;c.stroke();
+                this.text('物体 '+'ABC'[i],p.x,p.y+3,small?8:9,.5,'center');
+            });
+            // Trajectory: older samples fade.
+            m.trail.forEach((p,i)=>{if(!i)return;const a=map(m.trail[i-1]),b=map(p);this.line(a.x,a.y,b.x,b.y,.05+i/m.trail.length*.45,1.1,`rgba(185,238,208,${.05+i/m.trail.length*.5})`);});
+            // Top-view silhouette under the pose overlay.
+            const k=m.pose(),P=Object.fromEntries(Object.entries(k).map(([n,v])=>[n,map(v)]));
+            const unit=side,heading=m.heading,headAngle=m.heading+m.head;
+            c.fillStyle='rgba(222,228,212,.82)';
+            c.beginPath();c.ellipse(P.center.x,P.center.y,.05*unit,.029*unit,heading,0,TAU);c.fill();
+            c.beginPath();c.ellipse((P.neck.x+P.nose.x)/2,(P.neck.y+P.nose.y)/2,.03*unit,.019*unit,headAngle,0,TAU);c.fill();
+            for(const ear of [P.earL,P.earR]){c.beginPath();c.arc(ear.x,ear.y,.008*unit,0,TAU);c.fill();}
+            c.beginPath();m.tail.forEach((p,i)=>{const q=map(p);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});
+            c.strokeStyle='rgba(222,228,212,.6)';c.lineWidth=Math.max(1,.0045*unit);c.lineCap='round';c.stroke();
+            // Skeleton and keypoints, as reported by a pose estimator.
+            const bones=[['nose','neck'],['earL','neck'],['earR','neck'],['neck','center'],['center','tailBase'],['tailBase','tailMid'],['tailMid','tailTip']];
+            bones.forEach(([a,b])=>this.line(P[a].x,P[a].y,P[b].x,P[b].y,1,1.1,'rgba(18,52,38,.9)'));
+            bones.forEach(([a,b])=>this.line(P[a].x,P[a].y,P[b].x,P[b].y,1,.8,'#f3e3b0'));
+            const colors={nose:'#f3e3b0',earL:'#8fc3e8',earR:'#8fc3e8',neck:'#b9eed0',center:'#b9eed0',tailBase:'#e2ba77',tailMid:'#e2ba77',tailTip:'#e2ba77'};
+            Object.entries(P).forEach(([n,p])=>{this.circle(p.x,p.y,small?2.2:3,1,'#0d2f21');this.circle(p.x,p.y,small?1.5:2.1,1,colors[n]);});
+            // Detection box with confidence.
+            const xs=Object.values(P).map(p=>p.x),ys=Object.values(P).map(p=>p.y),margin=.018*unit;
+            const bx=Math.min(...xs)-margin,by=Math.min(...ys)-margin,bw=Math.max(...xs)-bx+margin,bh=Math.max(...ys)-by+margin;
+            c.setLineDash([3,3]);c.strokeStyle='#b9eed0aa';c.lineWidth=.9;c.strokeRect(bx,by,bw,bh);c.setLineDash([]);
+            const confidence=(.955+.035*(.5+.5*Math.sin(m.time*1.7))).toFixed(2);
+            const tag=`mouse ${confidence}`;c.font=`${small?8:9}px -apple-system, BlinkMacSystemFont, sans-serif`;const tw=c.measureText(tag).width+8;
+            c.fillStyle='#b9eed0';c.fillRect(bx,by-(small?12:14),tw,small?12:14);this.text(tag,bx+4,by-(small?3:4),small?8:9,1,'left','#0d2f21');
+            c.restore();
+            // 40 cm arena: 10 cm scale bar.
+            this.line(x+side-side/4-8,y+side+12,x+side-8,y+side+12,.8,1.5);
+            this.text('10 cm',x+side-side/8-8,y+side+24,small?8:9,.65,'center');
         }
         behavior() {
             const c=this.ctx,w=this.w,h=this.h,m=this.mouse,mobile=w<721;
-            const pad=mobile?18:Math.max(28,w*.035);
-            const label=m.investigating?'物体嗅探':{pause:'停留',sniff:'嗅探',groom:'梳理',dart:'短跑',explore:'探索'}[m.action];
-            // The arena is the scene. Measurements float around it without splitting it into columns.
-            this.mouseArena(mobile?-12:-w*.01,mobile?h*.11:0,mobile?w+24:w*1.02,mobile?h*.78:h*.99);
-            if(!mobile&&this.mouseAnchor){
-                const a=this.mouseAnchor;
-                c.beginPath();c.ellipse(a.x,a.y+16,Math.min(66,w*.055),Math.min(27,w*.023),-.18,0,TAU);c.setLineDash([3,6]);c.strokeStyle='#b3e8c148';c.lineWidth=.8;c.stroke();c.setLineDash([]);
+            const pad=mobile?16:Math.max(28,w*.035),now=m.time,windowS=8;
+            const names={explore:'探索',dart:'疾跑',sniff:'嗅探',investigate:'物体探究',groom:'理毛',pause:'静止'};
+            const colors={explore:'#9fd8b4',dart:'#e2ba77',sniff:'#8fc3e8',investigate:'#f3e3b0',groom:'#c9a2d6',pause:'#5f8571'};
+            const action=m.investigating?'investigate':m.action;
+            let S,R0,R1,stackTop,D,bx,by;
+            if(mobile){
+                S=Math.min(w*.56,h*.42);R0=pad;R1=w-pad;
+                D=Math.min(R1-(pad+S+12),S*.82);bx=R1-D;by=26;
+                stackTop=26+S+48;
+            }else{
+                S=Math.min(h-58,(w-pad*2)*.4);R0=pad+S+Math.max(40,w*.035);R1=w-pad;
+                D=Math.min(h*.36,(R1-R0)*.36);bx=R0;by=30;stackTop=by+D+56;
             }
-            this.text('行为追踪',pad,28,mobile?16:20,.95);
-            this.circle(pad+4,49,2.5,.65);
-            this.text(label,pad+14,53,mobile?10:12,.7);
-            const diameter=mobile?Math.min(166,w*.43):Math.min(356,w*.36,h*.49);
-            const ix=w-pad-diameter,iy=mobile?12:18;
-            if(!mobile&&this.mouseAnchor){
-                const a=this.mouseAnchor,b={x:ix+diameter*.14,y:iy+diameter*.72};
-                const p={x:a.x+(b.x-a.x)*.28,y:a.y-100},q={x:b.x-95,y:b.y+60};
-                c.beginPath();c.moveTo(a.x,a.y);c.bezierCurveTo(p.x,p.y,q.x,q.y,b.x,b.y);c.strokeStyle='#b9eed038';c.lineWidth=.85;c.stroke();
-                for(let i=0;i<3;i++){const t=(m.time*.16+i/3)%1,u=1-t,px=u*u*u*a.x+3*u*u*t*p.x+3*u*t*t*q.x+t*t*t*b.x,py=u*u*u*a.y+3*u*u*t*p.y+3*u*t*t*q.y+t*t*t*b.y;this.circle(px,py,2,.75);}
+            // a · Top-view camera with pose estimation.
+            this.panelLabel('a','俯视相机 · 姿态估计',pad,16);
+            if(!mobile)this.text('8 keypoints · 30 fps',pad+S,16,10,.5,'right');
+            this.topView(pad,26,S);
+            // b · Widefield calcium imaging through the cranial window.
+            this.panelLabel('b',mobile?'宽场钙成像':'宽场钙成像 · GCaMP',bx,by-10);
+            this.cranialWindow(bx,by,D,D);
+            // Readout of the shared clock.
+            if(!mobile){
+                const active=m.cells.filter(cell=>cell.fluorescence>.15).length;
+                const rows=[['行为状态',names[action]],['速度',`${(m.speed*40).toFixed(1)} cm/s`],['头部角速度',`${Math.round(Math.abs(m.angularSpeed)*180/Math.PI)} °/s`],['活跃 ROI',`${active} / ${m.cells.length}`],['同步时钟',`t = ${now.toFixed(2)} s`]];
+                const rx=bx+D+Math.max(28,w*.025),rowH=Math.min(34,D/6);
+                rows.forEach(([label,value],i)=>{
+                    const y=by+18+i*rowH;
+                    this.text(label,rx,y,11,.55);this.text(value,R1,y,13,.92,'right');
+                    if(i===0){c.font='13px -apple-system, BlinkMacSystemFont, "LXGWWenKai", sans-serif';c.fillStyle=colors[action];c.fillRect(R1-c.measureText(value).width-16,y-9,9,9);}
+                    this.line(rx,y+rowH*.42,R1,y+rowH*.42,.08,.6);
+                });
             }
-            c.save();c.shadowColor='rgba(39,63,44,.15)';c.shadowBlur=22;c.shadowOffsetY=8;
-            this.cranialWindow(ix,iy+20,diameter,diameter);c.restore();
-            this.text('光学颅窗',ix+diameter/2,iy+12,mobile?12:15,.9,'center');
-            // Subtle translucent instruments sit beyond the animal's main activity area.
-            const panel=(x,y,width,height)=>{
-                c.save();c.shadowColor='rgba(30,52,34,.08)';c.shadowBlur=20;c.shadowOffsetY=5;
-                c.beginPath();c.roundRect(x,y,width,height,12);c.fillStyle='rgba(10,40,29,.88)';c.fill();c.restore();
-                c.strokeStyle='rgba(158,212,170,.30)';c.lineWidth=.7;c.stroke();
-            };
-            const rw=mobile?Math.min(176,w*.44):Math.min(350,w*.34),rh=mobile?120:172,rx=pad,ry=mobile?82:101;
-            panel(rx,ry,rw,rh);this.text('神经事件',rx+16,ry+25,mobile?12:15,.9);
-            const rasterX=rx+16,rasterW=rw-32,rasterY=ry+46,rasterH=rh-65;
-            for(let i=0;i<6;i++)this.line(rasterX,rasterY+i*rasterH/5,rasterX+rasterW,rasterY+i*rasterH/5,.10,.6);
-            m.events.forEach(event=>{
-                if(event.cell>=6)return;
-                const px=rasterX+rasterW*(1-(m.time-event.t)/8),py=rasterY+event.cell*rasterH/5;
-                this.line(px,py-3,px,py+3,.8,1.1);
-            });
-            const tw=mobile?w-pad*2:Math.min(610,w*.61),th=mobile?136:186,tx=w-pad-tw,ty=h-th-12;
-            panel(tx,ty,tw,th);this.text('同步时间轴',tx+17,ty+28,mobile?12:15,.9);
-            this.text(`t = ${m.time.toFixed(1)} s`,tx+tw-17,ty+28,mobile?10:12,.75,'right');
-            const x0=tx+(mobile?52:65),x1=tx+tw-18;
-            const rows=[{key:'speed',label:'速度',max:.38,color:'#b9eed0'},{key:'calcium',label:'Ca²⁺',max:.65,color:'#e2ba77'}];
-            rows.forEach((row,i)=>{
-                const base=ty+(mobile?66:83)+i*(mobile?35:53);
-                this.text(row.label,tx+17,base+2,mobile?10:12,.8);this.line(x0,base,x1,base,.12,.7);
-                c.beginPath();c.strokeStyle=row.color;c.lineWidth=1.65;
-                m.history.forEach((p,k)=>{
-                    const px=x0+(x1-x0)*(1-(m.time-p.t)/8),py=base-Math.min(1,p[row.key]/row.max)*(mobile?25:36);
-                    if(!k)c.moveTo(px,py);else c.lineTo(px,py);
-                });c.stroke();
-            });
-            this.text('−8 s',x0,ty+th-12,mobile?9:11,.65);this.text('现在',x1,ty+th-12,mobile?9:11,.65,'right');
+            // c–f share one time axis over the last 8 s.
+            const labelW=mobile?34:52,x0=R0+labelW,x1=R1,tx=t=>x1-(now-t)/windowS*(x1-x0);
+            const roiCount=mobile?6:8,cellCount=mobile?12:24;
+            const avail=h-stackTop-28;
+            const ethoH=mobile?9:11,speedH=avail*.14,roiH=avail*.38,rasterH=avail*.2,gap=(avail-ethoH-speedH-roiH-rasterH)/3;
+            const cY=stackTop,dY=cY+ethoH+gap,eY=dY+speedH+gap,fY=eY+roiH+gap;
+            for(let t=Math.ceil(now-windowS);t<=now;t++){if(t%2)continue;this.line(tx(t),cY-4,tx(t),fY+rasterH,.05,.7);}
+            // c · Ethogram.
+            this.panelLabel('c','行为分期',R0,cY-8);
+            if(!mobile){
+                let lx=x1;c.font='9px -apple-system, BlinkMacSystemFont, "LXGWWenKai", sans-serif';
+                for(const key of ['pause','groom','investigate','sniff','dart','explore']){const tw=c.measureText(names[key]).width;lx-=tw;this.text(names[key],lx,cY-8,9,.65);lx-=12;c.fillStyle=colors[key];c.fillRect(lx,cY-15,8,8);lx-=14;}
+            }
+            m.history.forEach((p,i)=>{const q=m.history[i+1];const xa=tx(p.t),xb=q?tx(q.t):x1;c.fillStyle=colors[p.action];c.fillRect(xa,cY,xb-xa+.5,ethoH);});
+            // d · Speed.
+            this.panelLabel('d','速度',R0,dY-6);
+            const maxSpeed=12,sy=v=>dY+speedH-Math.min(1,v/maxSpeed)*speedH;
+            this.line(x0,dY+speedH,x1,dY+speedH,.2,.7);this.text('12',x0-6,dY+8,8,.5,'right');this.text('0',x0-6,dY+speedH+3,8,.5,'right');
+            if(!mobile)this.text('cm/s',x0-6,dY+speedH*.55,8,.45,'right');
+            c.beginPath();m.history.forEach((p,i)=>{const x=tx(p.t),y=sy(p.speed*40);i?c.lineTo(x,y):c.moveTo(x,y);});c.strokeStyle='#b9eed0';c.lineWidth=1.3;c.stroke();
+            // e · ΔF/F for ROI 1–8, matching the outlines in b.
+            this.panelLabel('e','ΔF/F',R0,eY-6);
+            const rowH=roiH/roiCount;
+            for(let r=0;r<roiCount;r++){
+                const base=eY+rowH*(r+1)-2;
+                this.text(String(r+1),x0-6,base,8,.6,'right','#f3e3b0');
+                c.beginPath();m.history.forEach((p,i)=>{const x=tx(p.t),y=base-Math.min(1,p.rois[r]/.5)*rowH*.78;i?c.lineTo(x,y):c.moveTo(x,y);});
+                c.strokeStyle=r%2?'#e2ba77':'#efcf95';c.lineWidth=1;c.stroke();
+            }
+            const barTop=eY+rowH*.2;this.line(x1+8,barTop,x1+8,barTop+rowH*.9,.7,1.3);
+            if(!mobile)this.text('50%',x1+12,barTop+rowH*.5,8,.6);
+            // f · Event raster for the modelled cells.
+            this.panelLabel('f','神经事件',R0,fY-6);
+            const cellH=rasterH/cellCount;
+            this.text('1',x0-6,fY+cellH,8,.5,'right');this.text(String(cellCount),x0-6,fY+rasterH,8,.5,'right');
+            m.events.forEach(event=>{if(event.cell>=cellCount)return;const x=tx(event.t),y=fY+event.cell*cellH;this.line(x,y+cellH*.1,x,y+cellH*.9,.85,1.1,event.cell<roiCount?'#f3e3b0':null);});
+            // Time axis and cursor at the present sample.
+            const axisY=fY+rasterH+6;
+            for(let t=0;t<=windowS;t+=2){const x=x1-t/windowS*(x1-x0);this.line(x,axisY,x,axisY+4,.5,.8);this.text(t?`−${t} s`:'0 s',x,axisY+15,9,.6,t===windowS?'left':t?'center':'right');}
+            this.line(x1,cY-4,x1,fY+rasterH,.6,1);
         }
-
     }
     window.ResearchScenes=ResearchScenes;
 })();

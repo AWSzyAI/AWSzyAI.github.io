@@ -60,8 +60,8 @@
     const modes = [...stage.querySelectorAll('[data-field]')];
     const captions = {
         network: ['以脑网络建模意识与记忆。', '编码心智过程，通过模型预测与假设检验，探索意识和记忆的机制。', '01'],
-        waves: ['刻画持续变化的意识状态。', '沿同一时间轴追踪觉醒与注意，刻画睡眠、清醒、专注与脑雾之间的连续变化。', '02'],
-        behavior: ['对齐行为与光学神经活动。', '将运动、姿态与钙成像放在同一时间轴上，研究神经活动与行为之间的关系。', '03']
+        waves: ['刻画持续变化的意识状态。', '在同一时间轴上对齐多模态采集、脑电时频、睡眠分期与觉醒/注意潜变量。', '02'],
+        behavior: ['对齐行为与光学神经活动。', '姿态估计、行为分期、速度与宽场钙成像共享同一时钟，研究神经活动与行为之间的关系。', '03']
     };
     if (!window.ResearchScenes || !window.ResearchModels) return;
     const scene = new window.ResearchScenes(ctx);
@@ -100,7 +100,7 @@
             slider.setAttribute('aria-valuetext', `${timeLabel}，${current}，觉醒${levels.arousal}，注意${levels.attention}`);
         }
         if (mode === 'behavior') {
-            const action = scene.mouse.investigating ? '物体嗅探' : { pause: '停留', sniff: '嗅探', groom: '梳理', dart: '短跑', explore: '探索' }[scene.mouse.action];
+            const action = scene.mouse.investigating ? '物体探究' : { pause: '静止', sniff: '嗅探', groom: '理毛', dart: '疾跑', explore: '探索' }[scene.mouse.action];
             const text = `同步 t = ${scene.mouse.time.toFixed(1)} s · ${action}`;
             if (behaviorStatus.textContent !== text) behaviorStatus.textContent = text;
         }
@@ -124,7 +124,13 @@
         draw();
         if (!paused && visible && !document.hidden) frame = requestAnimationFrame(tick);
     }
+    // The state figure lays out around the hero text, measured in canvas coordinates.
+    const measureText = () => {
+        const main = document.querySelector('.hero-main'), box = viewport.getBoundingClientRect(), text = main.getBoundingClientRect();
+        scene.textBox = text.height ? { right: text.right - box.left, bottom: text.bottom - box.top } : null;
+    };
     const resize = () => {
+        measureText();
         const box = viewport.getBoundingClientRect();
         width = box.width; height = box.height;
         const ratio = Math.min(devicePixelRatio || 1, 2);
@@ -162,11 +168,12 @@
         const subtitle = document.createElement('span'); subtitle.textContent = detail; description.append(subtitle);
         indexLabel.textContent = `${number} / 03`;
         Object.entries(tools).forEach(([name, element]) => { element.hidden = name !== mode; });
+        measureText();
         draw();
     }));
     for(const key of ['coffee','meal','sleep'])stage.querySelector(`#plan-${key}`).addEventListener('change',event=>{
         scene.plan[key]=Number(event.target.value);draw();
-        stage.querySelector('#plan-effect').textContent='已更新日程 · 虚线与阴影：未来情景与不确定范围 · 灰线：较晚安排';
+        stage.querySelector('#plan-effect').textContent='已更新情景参数 · 虚线与阴影：未来情景与不确定范围 · 点线：较晚日程';
     });
     stage.querySelector('#perturb-model').addEventListener('click', () => { scene.stimulusAge = 0; draw(); });
     slider.addEventListener('input', () => { scene.hour = Number(slider.value) / 60; draw(); });

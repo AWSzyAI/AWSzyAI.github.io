@@ -34,7 +34,6 @@
 <script src="/assets/brain-mesh.js" defer></script>
 <script src="/assets/watch-display.js" defer></script>
 <script src="/assets/state-experience.js" defer></script>
-<script src="/assets/mouse-renderer.js" defer></script>
 <script src="/assets/research-scenes.js" defer></script>
 <script src="/assets/motion.js" defer></script>
 <script type="application/ld+json">
@@ -60,13 +59,14 @@
 </div>
 <div class="scene-tools" id="network-tools" aria-describedby="brain-structure-summary" hidden><p id="brain-structure-summary" class="visually-hidden">人脑三维表面在网络活动与脑区结构之间自动渐变，展示皮质沟回、海马、杏仁核、小脑与脑干。</p><div class="scene-hint"><span class="brain-phase" id="brain-phase" aria-hidden="true">网络活动</span><small class="visually-hidden">改变局部输入，观察网络响应</small></div><button class="scene-button" id="perturb-model" type="button">扰动模型 <span aria-hidden="true">↗</span></button></div>
 <div class="scene-tools state-tools" id="waves-tools" hidden>
-<div class="state-control-top"><div class="state-legend" aria-label="曲线图例"><span class="arousal-key">觉醒 <output id="arousal-value">—</output></span><span class="attention-key">注意 <output id="attention-value">—</output></span><span class="state-current" id="state-current">清醒</span></div><label class="state-scrubber" for="state-time"><span>查看时间</span><input id="state-time" type="range" min="0" max="1440" step="1" value="840" aria-label="查看连续意识状态"><output id="state-clock" for="state-time">14:00</output></label></div>
-<div class="day-planner" aria-label="调整未来日程">
-<span class="planner-heading">安排下一段状态</span>
-<label>最后一杯咖啡 <select id="plan-coffee" aria-label="最后一杯咖啡时间"><option value="10">10:00</option><option value="14" selected>14:00</option><option value="17">17:00</option></select></label>
+<div class="state-legend visually-hidden" aria-label="当前状态"><span class="arousal-key">觉醒 <output id="arousal-value">—</output></span><span class="attention-key">注意 <output id="attention-value">—</output></span><span class="state-current" id="state-current">清醒</span></div>
+<label class="state-scrubber" for="state-time"><span>查看时间</span><input id="state-time" type="range" min="0" max="1440" step="1" value="840" aria-label="查看连续意识状态"><output id="state-clock" for="state-time">14:00</output></label>
+<div class="day-planner" aria-label="调整情景参数">
+<span class="planner-heading">情景参数</span>
+<label>末次咖啡因 <select id="plan-coffee" aria-label="最后一杯咖啡时间"><option value="10">10:00</option><option value="14" selected>14:00</option><option value="17">17:00</option></select></label>
 <label>晚餐 <select id="plan-meal" aria-label="晚餐时间"><option value="18">18:00</option><option value="19" selected>19:00</option><option value="21">21:00</option></select></label>
 <label>入睡 <select id="plan-sleep" aria-label="计划入睡时间"><option value="22">22:00</option><option value="23" selected>23:00</option><option value="24">00:00</option></select></label>
-</div><p class="plan-note" id="plan-effect" aria-live="polite">虚线与阴影：未来情景与不确定范围 · 灰线：较晚安排</p>
+</div><p class="plan-note visually-hidden" id="plan-effect" aria-live="polite">虚线与阴影：未来情景与不确定范围 · 点线：较晚日程</p>
 </div>
 <div class="scene-tools" id="behavior-tools" hidden><span class="scene-hint">行为视频 × 光学成像<br><small id="behavior-state">共享时间轴 · 探索</small></span><span class="scene-note">钙信号随神经事件<br>上升、衰减</span></div>
 <figcaption><p class="field-caption" id="field-description" aria-live="polite">以脑网络建模意识与记忆。<span>编码心智过程，通过模型预测与假设检验，探索意识和记忆的机制。</span></p>
