@@ -1217,6 +1217,21 @@
       return records;
     }
 
+    // 月份区间里还没计入的车贷（今天之后的部分）：月度概览把整期月供提前算进来，方便看余额
+    function getUpcomingLoanCost(monthStart, monthEndExclusive, cutoffExclusive) {
+      const byName = {};
+      let total = 0;
+      if (cutoffExclusive >= monthEndExclusive) return { total, byName };
+      items.filter(isCarLoan).forEach((loan) => {
+        const rest = calcSubCostInRange(loan, monthStart, monthEndExclusive) - calcSubCostInRange(loan, monthStart, cutoffExclusive);
+        if (rest > 0.005) {
+          byName[loan.name] = (byName[loan.name] || 0) + rest;
+          total += rest;
+        }
+      });
+      return { total, byName };
+    }
+
     function getLoanProgress(loan, now = new Date()) {
       const todayStr = formatDate(startOfDay(now));
       let paid = 0;
@@ -4059,6 +4074,12 @@
             });
           }
         }
+        if (opts.includeUpcomingLoans) {
+          const upcoming = getUpcomingLoanCost(opts.monthStart, opts.monthEndExclusive, effectiveEndExclusive);
+          Object.entries(upcoming.byName).forEach(([name, amount]) => {
+            expenseMap[name] = (expenseMap[name] || 0) + amount;
+          });
+        }
       }
 
       return {
@@ -4199,12 +4220,23 @@
         cursor = addDays(cursor, 7);
         idx += 1;
       }
+      // 车贷：本月整期月供都算进来（还没到还款日的部分记为「本月待还」），方便看余额
+      const upcomingLoan = getUpcomingLoanCost(monthStart, addDays(monthEnd, 1), addDays(rangeEnd, 1));
+      if (upcomingLoan.total > 0 && weeks.length > 0) {
+        const lastWeek = weeks[weeks.length - 1];
+        Object.entries(upcomingLoan.byName).forEach(([name, amount]) => {
+          lastWeek.expenseStack.push({ name: `${name}（本月待还）`, amount });
+        });
+        lastWeek.expense += upcomingLoan.total;
+        expenseTotal += upcomingLoan.total;
+      }
       return {
         data: weeks,
-        range: `${formatDate(monthStart)} — ${formatDate(rangeEnd)}`,
+        range: `${formatDate(monthStart)} — ${formatDate(rangeEnd)}${upcomingLoan.total > 0 ? ` · 含车贷待还 ¥${formatMoney(upcomingLoan.total)}` : ''}`,
         categoryAgg: aggregateCategories(monthStart, rangeEnd, {
           includeAuto: false,
           useSubRentalMonthTotals: true,
+          includeUpcomingLoans: true,
           monthStart,
           monthEndExclusive: addDays(monthEnd, 1),
           allowFuture: false
@@ -4212,6 +4244,7 @@
         expense: expenseTotal,
         income: incomeTotal,
         balance: incomeTotal - expenseTotal,
+        upcomingLoan: upcomingLoan.total,
         start: monthStart,
         end: rangeEnd
       };
