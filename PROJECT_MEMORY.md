@@ -316,6 +316,8 @@ PhD 页面不再把现金流写入 localStorage：`persist()` 只在已登录时
 - `blog/` 不得恢复浏览器端 OAuth 或前端作者权限；作者判定必须来自服务端会话。
 - 博客内容渲染必须走 `blog/security.js`；禁止 `sanitize: false`、未转义的 `innerHTML`，以及 `polyfill.io` 等已被接管或不可信的第三方脚本。
 - 历史重写只用于清除已公开的敏感信息；执行前要保留本地恢复点。
+- 2026-10-19 重写过一次 `main` 历史：`PhD.html` 的车贷占位文字和 `PROJECT_MEMORY.md` 里各有一处真实月供金额，用 `git-filter-repo --replace-text --refs main` 替换为占位符，然后 `--force-with-lease` 推送。重写前的完整备份在本机 `~/Downloads/AWSzyAI.github.io-pre-rewrite-2026-10-19.bundle`（旧 `main` 为 `82a7278`），需要时可用 `git clone <bundle>` 恢复。旧提交在 GitHub 上按 SHA 仍可能访问，要彻底清除需联系 GitHub Support。
+- 写文档和提交信息时同样不能出现真实金额，用「整期月供」「补助」这类描述代替。
 
 ## 11. 开发与验证流程
 
