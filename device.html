@@ -811,6 +811,8 @@
                   <div id="detail-key-select"
                     class="hidden text-xs text-gray-700"></div>
                   <span id="detail-heatmap-summary" class="text-[11px] text-gray-500"></span>
+                  <button id="detail-compare-btn" type="button" onclick="toggleDetailCompare()"
+                    class="hidden px-2 py-0.5 text-[11px] border rounded-lg bg-white transition"></button>
                 </div>
               </div>
               <div id="detail-heatmap" class="text-[10px] text-gray-500 w-full"></div>
@@ -5248,6 +5250,69 @@
       modal.classList.remove('flex');
     }
 
+    // 订阅/租赁记录按天展开：[start, end) 内每天的金额或里程（结束日不含当天）
+    function buildRecordDayMap(item, start, yearEnd, today, metric = 'price') {
+      const amountMap = {};
+      const noteMap = {};
+      const detailSelectedMetric = metric;
+      (item.records || []).forEach((rec) => {
+          const rs = startOfDay(rec.start);
+          const re = rec.end ? startOfDay(rec.end) : today;
+          const actualEnd = rec.end ? startOfDay(rec.end) : today;
+          const duration = Math.max(1, (actualEnd - rs) / DAY_MS);
+          let totalVal;
+          if (detailSelectedMetric === 'price') {
+            totalVal = Number(rec.price) || 0;
+          } else {
+            const rawM = rec.mileage;
+            const hasMileage = rawM !== '' && rawM !== undefined && rawM !== null && !isNaN(Number(rawM));
+            if (!hasMileage) return; // 跳过无里程的记录
+            totalVal = Number(rawM);
+          }
+          const daily = totalVal / duration;
+          const note = (rec.note || '').trim();
+          let cursor = new Date(Math.max(rs.getTime(), start.getTime()));
+          // 结束日不含当天（与其他统计一致），否则相邻两期在交界日会重复计算
+          const lastDay = rec.end ? (re > rs ? addDays(re, -1) : rs) : re;
+          const effectiveEnd = new Date(Math.min(lastDay.getTime(), today.getTime(), yearEnd.getTime()));
+          while (cursor <= effectiveEnd) {
+            const key = formatDate(cursor);
+            amountMap[key] = (amountMap[key] || 0) + daily;
+            if (note) {
+              if (!noteMap[key]) noteMap[key] = [];
+              if (!noteMap[key].includes(note)) noteMap[key].push(note);
+            }
+            cursor = addDays(cursor, 1);
+          }
+        });
+      return { amountMap, noteMap };
+    }
+
+    // ===================== 车贷 ⇄ 租车 对比叠加 =====================
+    let detailCompareOn = false;
+    const CAR_LOAN_HEAT = ['bg-indigo-200', 'bg-indigo-300', 'bg-indigo-500', 'bg-indigo-700'];
+    const CAR_RENTAL_HEAT = ['bg-orange-200', 'bg-orange-300', 'bg-orange-500', 'bg-orange-700'];
+
+    function getCompareItems(item) {
+      if (isCarLoan(item)) return items.filter(isCarRental);
+      if (isCarRental(item)) return items.filter(isCarLoan);
+      return [];
+    }
+
+    function heatLevel(amount, max, palette) {
+      const ratio = amount / max;
+      if (ratio > 0.75) return palette[3];
+      if (ratio > 0.5) return palette[2];
+      if (ratio > 0.25) return palette[1];
+      return palette[0];
+    }
+
+    function toggleDetailCompare() {
+      detailCompareOn = !detailCompareOn;
+      const item = items.find((i) => i.id === window._detailItemId);
+      if (item) renderHeatmap(item, window._detailHeatmapYear || null);
+    }
+
     // ===================== 年使用时间热力图（订阅 / 租赁） =====================
     function renderHeatmap(item, forcedYear = null) {
       const container = document.getElementById('detail-heatmap');
@@ -5569,36 +5634,34 @@
           }
         });
       } else {
-        (item.records || []).forEach((rec) => {
-          const rs = startOfDay(rec.start);
-          const re = rec.end ? startOfDay(rec.end) : today;
-          const actualEnd = rec.end ? startOfDay(rec.end) : today;
-          const duration = Math.max(1, (actualEnd - rs) / DAY_MS);
-          let totalVal;
-          if (detailSelectedMetric === 'price') {
-            totalVal = Number(rec.price) || 0;
-          } else {
-            const rawM = rec.mileage;
-            const hasMileage = rawM !== '' && rawM !== undefined && rawM !== null && !isNaN(Number(rawM));
-            if (!hasMileage) return; // 跳过无里程的记录
-            totalVal = Number(rawM);
-          }
-          const daily = totalVal / duration;
-          const note = (rec.note || '').trim();
-          let cursor = new Date(Math.max(rs.getTime(), start.getTime()));
-          // 结束日不含当天（与其他统计一致），否则相邻两期在交界日会重复计算
-          const lastDay = rec.end ? (re > rs ? addDays(re, -1) : rs) : re;
-          const effectiveEnd = new Date(Math.min(lastDay.getTime(), today.getTime(), yearEnd.getTime()));
-          while (cursor <= effectiveEnd) {
-            const key = formatDate(cursor);
-            amountMap[key] = (amountMap[key] || 0) + daily;
-            if (note) {
-              if (!noteMap[key]) noteMap[key] = [];
-              if (!noteMap[key].includes(note)) noteMap[key].push(note);
-            }
-            cursor = addDays(cursor, 1);
-          }
+        const built = buildRecordDayMap(item, start, yearEnd, today, detailSelectedMetric);
+        Object.assign(amountMap, built.amountMap);
+        Object.assign(noteMap, built.noteMap);
+      }
+
+      // 车贷 / 租车详情：可叠加对方的每日金额，用各自的颜色区分
+      window._detailHeatmapYear = year;
+      const compareItems = item.type === 'rental' ? getCompareItems(item) : [];
+      const compareBtn = document.getElementById('detail-compare-btn');
+      const canCompare = compareItems.length > 0 && detailSelectedMetric === 'price';
+      const compareActive = canCompare && detailCompareOn;
+      const selfPalette = isCarLoan(item) ? CAR_LOAN_HEAT : CAR_RENTAL_HEAT;
+      const otherPalette = isCarLoan(item) ? CAR_RENTAL_HEAT : CAR_LOAN_HEAT;
+      const otherLabel = isCarLoan(item) ? '租车' : '车贷';
+      const selfLabel = isCarLoan(item) ? '车贷' : '租车';
+      const compareMap = {};
+      if (compareActive) {
+        compareItems.forEach((other) => {
+          const built = buildRecordDayMap(other, start, yearEnd, today, 'price');
+          Object.entries(built.amountMap).forEach(([k, v]) => { compareMap[k] = (compareMap[k] || 0) + v; });
         });
+      }
+      if (compareBtn) {
+        compareBtn.classList.toggle('hidden', !canCompare);
+        compareBtn.textContent = compareActive ? `对比：${otherLabel} ✓` : `对比：${otherLabel}`;
+        compareBtn.className = `${canCompare ? '' : 'hidden '}px-2 py-0.5 text-[11px] border rounded-lg transition ${compareActive
+          ? (isCarLoan(item) ? 'bg-orange-50 border-orange-300 text-orange-700' : 'bg-indigo-50 border-indigo-300 text-indigo-700')
+          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`;
       }
 
       const days = [];
@@ -5642,7 +5705,7 @@
         info.textContent = `悬停查看当日${metricLabel}`;
       }
 
-      const maxAmount = Math.max(1, ...Object.values(amountMap));
+      const maxAmount = Math.max(1, ...Object.values(amountMap), ...Object.values(compareMap));
       weeks.forEach((week) => {
         const col = document.createElement('div');
         col.className = 'flex flex-col gap-px flex-1';
@@ -5661,7 +5724,21 @@
           const cell = document.createElement('div');
           const isToday = dStr === todayStr;
           const todayRing = isToday ? ' outline outline-[1.5px] outline-blue-500 outline-offset-[1px]' : '';
+          const otherAmt = compareActive ? (compareMap[dStr] || 0) : 0;
+          if (compareActive) {
+            levelClass = amt > 0 ? heatLevel(amt, maxAmount, selfPalette) : otherAmt > 0 ? heatLevel(otherAmt, maxAmount, otherPalette) : 'bg-gray-100';
+          }
           cell.className = 'w-full aspect-square ' + levelClass + todayRing + ' cursor-pointer flex-shrink-0';
+          if (compareActive && amt > 0 && otherAmt > 0) {
+            // 同一天两者都有：左半自己、右半对方
+            cell.className = 'w-full aspect-square grid grid-cols-2 overflow-hidden' + todayRing + ' cursor-pointer flex-shrink-0';
+            [heatLevel(amt, maxAmount, selfPalette), heatLevel(otherAmt, maxAmount, otherPalette)].forEach((cls) => {
+              const half = document.createElement('div');
+              half.className = cls;
+              cell.appendChild(half);
+            });
+          }
+          const compareSuffix = compareActive && otherAmt > 0 ? ` · ${otherLabel} ¥${otherAmt.toFixed(2)}` : '';
           let cellTitle = dStr;
           if (item.type === 'checkin') {
             const checkinType = getCheckinType(item);
@@ -5678,7 +5755,7 @@
             cellTitle = `${dStr}\n${valTitle}${notes ? `\n备注: ${notes}` : ''}`;
           } else {
             const valTitle = unit === 'km' ? `${amt.toFixed(2)}${unit}` : `${unit}${amt.toFixed(2)}`;
-            cellTitle = `${dStr}\n${valTitle}${notes ? `\n备注: ${notes}` : ''}`;
+            cellTitle = `${dStr}\n${compareActive ? `${selfLabel} ` : ''}${valTitle}${compareSuffix}${notes ? `\n备注: ${notes}` : ''}`;
           }
           cell.title = cellTitle;
           cell.addEventListener('mouseenter', () => {
@@ -5699,7 +5776,7 @@
             } else {
               const noteSuffix = notes ? ` · ${notes}` : '';
               const valStr = unit === 'km' ? `${amt.toFixed(2)}${unit}` : `${unit}${amt.toFixed(2)}`;
-              info.textContent = ` ${dStr}：${valStr}${noteSuffix}`;
+              info.textContent = ` ${dStr}：${compareActive ? `${selfLabel} ` : ''}${valStr}${compareSuffix}${noteSuffix}`;
             }
           });
           cell.addEventListener('dblclick', () => {
@@ -5727,6 +5804,12 @@
       const totalDays = Math.round((displayEnd - start) / DAY_MS) + 1;
       if (summary) {
         summary.textContent = `${year} 已记录 ${usedDays} / ${totalDays} 天`;
+        if (compareActive) {
+          const sum = (m) => Object.values(m).reduce((a, b) => a + b, 0);
+          const selfColor = isCarLoan(item) ? '紫' : '橙';
+          const otherColor = isCarLoan(item) ? '橙' : '紫';
+          summary.textContent += ` · ${selfColor}=${selfLabel} ¥${formatMoney(sum(amountMap))} / ${otherColor}=${otherLabel} ¥${formatMoney(sum(compareMap))}（已发生部分）`;
+        }
       }
     }
 
