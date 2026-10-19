@@ -1148,6 +1148,15 @@
       return item && item.currency === 'USD' ? 'USD' : 'CNY';
     }
 
+    // 卡片悬停提示：当前周期的备注；没有进行中的周期时取最近一期
+    function currentRecordNote(item) {
+      const records = item.records || [];
+      const todayStr = formatDate(startOfDay(new Date()));
+      const active = records.find((r) => r.start <= todayStr && (!r.end || todayStr < r.end));
+      const latest = records.slice().sort((a, b) => a.start.localeCompare(b.start)).filter((r) => r.start <= todayStr).pop();
+      return ((active || latest || {}).note || '').trim();
+    }
+
     function currencySymbol(item) {
       return getSubCurrency(item) === 'USD' ? '$' : '¥';
     }
@@ -2725,6 +2734,7 @@
           const subBadge = item.type === 'sub' && !countsInPersonalCny(item)
             ? `<div class="text-[10px] ${getSubPayer(item) === 'company' ? 'text-sky-700' : 'text-emerald-700'}">${PAYER_LABELS[getSubPayer(item)]} · ${getSubCurrency(item)}</div>`
             : '';
+          const hoverNote = currentRecordNote(item);
           const accountLine = item.type === 'sub' && item.account
             ? `<div class="text-[10px] text-gray-400 truncate max-w-[12rem]" title="${escapeHtml(item.account)}">${escapeHtml(item.account)}</div>`
             : '';
@@ -2733,6 +2743,7 @@
           <div
             class="${cardBaseClass} p-4 rounded-xl border border-gray-100 transition-all duration-200 group flex flex-col justify-between min-h-32 cursor-pointer"
             onclick="openDetailModal(${item.id})"
+            ${hoverNote ? `title="${escapeHtml(hoverNote)}"` : ''}
           >
             <div class="flex justify-between items-start">
               <div class="flex items-center gap-2 min-w-0">
