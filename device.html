@@ -204,18 +204,25 @@
                   <input type="date" id="loan-first-date" oninput="updateLoanFormUI()"
                     class="border border-indigo-200 rounded px-2 py-1 text-xs w-full" />
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-[11px]">
-                  <label class="flex items-center gap-1 bg-white border border-indigo-200 rounded px-2 py-1 cursor-pointer">
-                    <input type="radio" name="loan-mode" value="amortize" checked class="w-3 h-3" />
-                    <span>按天摊销</span>
-                  </label>
-                  <label class="flex items-center gap-1 bg-white border border-indigo-200 rounded px-2 py-1 cursor-pointer">
-                    <input type="radio" name="loan-mode" value="cashflow" class="w-3 h-3" />
-                    <span>还款日计入</span>
-                  </label>
-                </div>
+                <div class="text-[10px] text-indigo-600">按天摊销 / 还款日计入用页面顶部的「口径」开关切换。</div>
                 <div id="loan-preview" class="text-[11px] text-indigo-700"></div>
               </div>
+            </div>
+            <div id="sub-account-section" class="hidden bg-sky-50 p-3 rounded-lg border border-sky-100 space-y-2">
+              <h4 class="text-xs font-bold text-sky-800">付款账户</h4>
+              <div class="grid grid-cols-2 gap-2">
+                <select id="sub-payer" class="border border-sky-200 rounded px-2 py-1 text-xs bg-white">
+                  <option value="personal">个人</option>
+                  <option value="company">公司账户</option>
+                </select>
+                <select id="sub-currency" class="border border-sky-200 rounded px-2 py-1 text-xs bg-white">
+                  <option value="CNY">人民币 ¥</option>
+                  <option value="USD">美元 $</option>
+                </select>
+              </div>
+              <input type="text" id="sub-account" placeholder="登录账号（邮箱或平台账号，不填密码）"
+                class="border border-sky-200 rounded px-2 py-1 text-xs w-full" />
+              <div class="text-[10px] text-sky-700">只有「个人 · 人民币」计入收支总览；公司和美元订阅在订阅页单独合计。</div>
             </div>
             <div id="sub-cycle-editor" class="bg-blue-50 p-3 rounded-lg border border-blue-100">
               <h4 class="text-xs font-bold text-blue-800 mb-2">
@@ -247,6 +254,10 @@
               <div class="mt-2">
                 <input type="text" id="sub-note" class="border border-blue-200 rounded px-2 py-1 text-xs w-full"
                   placeholder="备注/用途；含 # 识别为项目标签，留空仅作提示" />
+              </div>
+              <div class="mt-2">
+                <input type="text" id="sub-paid" inputmode="numeric" class="border border-blue-200 rounded px-2 py-1 text-xs w-full"
+                  placeholder="实际付款日（留空 = 开始日），如年付房租提前付款" />
               </div>
             </div>
           </div>
@@ -443,6 +454,9 @@
           </div>
 
           <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+              <button onclick="toggleCostView()" class="cost-view-btn px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50" title="一次性付款（年付房租、车贷月供等）的统计口径：按天摊销到使用期，或在实际付款日一次计入。两种数据都保留，只切换显示。">
+                口径：<span class="cost-view-state">按天摊销</span> ⇄
+              </button>
             <label class="text-xs font-medium text-gray-500">Cols:</label>
             <select id="column-selector"
               class="bg-white border border-gray-300 text-gray-700 text-xs rounded px-2 py-1 focus:outline-none cursor-pointer">
@@ -471,6 +485,9 @@
               </button>
               <button id="btn-tag-toggle" onclick="toggleTagSplit()" class="px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-gray-700 hover:bg-gray-50 border-blue-200 text-blue-700" title="将带 #tag 的项目单独统计/并入原类别">
                 标签分组：<span id="tag-toggle-state">关</span>
+              </button>
+              <button onclick="toggleCostView()" class="cost-view-btn px-3 py-1.5 text-xs border rounded-lg shadow-sm transition bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50" title="一次性付款（年付房租、车贷月供等）的统计口径：按天摊销到使用期，或在实际付款日一次计入。两种数据都保留，只切换显示。">
+                口径：<span class="cost-view-state">按天摊销</span> ⇄
               </button>
             </div>
           </div>
@@ -1022,10 +1039,33 @@
 
     // ===================== 车贷（租自己的车） =====================
     // 车贷是 kind = 'loan' 的租赁项目：records 由 loan 参数生成，不手动编辑。
-    // mode: 'amortize' 每期月供摊到这一期的每一天；'cashflow' 还款日当天一次计入。
+    // 每期记录覆盖 [第k期还款日, 第k+1期还款日)，付款日 = 开始日；按天摊销还是还款日计入由全局口径决定。
     const CAR_LOAN_COLOR = { bg: 'bg-indigo-500', hex: '#5c6bc0' };
     const CAR_RENTAL_COLOR = { bg: 'bg-orange-400', hex: '#ffa726' };
-    const LOAN_MODE_LABELS = { amortize: '按天摊销', cashflow: '还款日计入' };
+
+    // ===================== 统计口径 =====================
+    // 订阅/租赁每条记录同时保存使用期 [start, end) 和实际付款日 paid（默认 start）。
+    // 'amortize'：金额摊到使用期每一天；'cash'：实际付款日一次计入。只切换显示，数据都保留。
+    const COST_VIEW_LABELS = { amortize: '按天摊销', cash: '按实付日' };
+    let costView = localStorage.getItem('costView') === 'cash' ? 'cash' : 'amortize';
+
+    function recordPaidDate(rec) {
+      return rec.paid || rec.start;
+    }
+
+    function updateCostViewUI() {
+      document.querySelectorAll('.cost-view-state').forEach((el) => {
+        el.textContent = COST_VIEW_LABELS[costView];
+      });
+    }
+
+    function toggleCostView() {
+      costView = costView === 'cash' ? 'amortize' : 'cash';
+      localStorage.setItem('costView', costView);
+      updateCostViewUI();
+      if (currentTab === 'finance') renderLedgerCalendar();
+      render();
+    }
 
     function isCarLoan(item) {
       return !!(item && item.type === 'rental' && item.kind === 'loan' && item.loan);
@@ -1060,8 +1100,7 @@
       return {
         total,
         periods,
-        firstDate,
-        mode: raw.mode === 'cashflow' ? 'cashflow' : 'amortize'
+        firstDate
       };
     }
 
@@ -1074,9 +1113,7 @@
       const records = [];
       for (let k = 0; k < loan.periods; k++) {
         const start = addMonthsClamped(loan.firstDate, k);
-        const end = loan.mode === 'cashflow'
-          ? formatDate(addDays(startOfDay(start), 1))
-          : addMonthsClamped(loan.firstDate, k + 1);
+        const end = addMonthsClamped(loan.firstDate, k + 1);
         records.push({ start, end, price: monthly, note: `第${k + 1}/${loan.periods}期` });
       }
       return records;
@@ -1098,14 +1135,40 @@
       };
     }
 
-    function toggleLoanMode(id) {
-      const item = items.find((i) => i.id === id);
-      if (!isCarLoan(item)) return;
-      item.loan.mode = item.loan.mode === 'cashflow' ? 'amortize' : 'cashflow';
-      item.records = buildLoanRecords(item.loan);
-      scheduleDeviceSave();
-      render();
+    // ===================== 订阅付款账户与币种 =====================
+    // payer: 'personal' 个人 | 'company' 公司美元账户；currency: 'CNY' | 'USD'
+    // 只有个人人民币订阅计入收支总览和人民币合计；其余按分组单独合计，不换算汇率。
+    const PAYER_LABELS = { personal: '个人', company: '公司' };
+
+    function getSubPayer(item) {
+      return item && item.payer === 'company' ? 'company' : 'personal';
     }
+
+    function getSubCurrency(item) {
+      return item && item.currency === 'USD' ? 'USD' : 'CNY';
+    }
+
+    function currencySymbol(item) {
+      return getSubCurrency(item) === 'USD' ? '$' : '¥';
+    }
+
+    function countsInPersonalCny(item) {
+      if (!item || item.type !== 'sub') return true;
+      return getSubPayer(item) === 'personal' && getSubCurrency(item) === 'CNY';
+    }
+
+    // 订阅分组：个人人民币 → 个人美元 → 公司美元（公司人民币也单列）
+    function subGroupKey(item) {
+      return `${getSubPayer(item)}-${getSubCurrency(item)}`;
+    }
+
+    const SUB_GROUP_ORDER = ['personal-CNY', 'personal-USD', 'company-USD', 'company-CNY'];
+    const SUB_GROUP_LABELS = {
+      'personal-CNY': '个人 · 人民币（计入收支）',
+      'personal-USD': '个人 · 美元（单独合计）',
+      'company-USD': '公司美元账户（不计入个人收支）',
+      'company-CNY': '公司 · 人民币（不计入个人收支）'
+    };
 
     function isCarRental(item) {
       if (!item || item.type !== 'rental' || item.kind === 'loan') return false;
@@ -1479,12 +1542,24 @@
             end: r.end ?? '',
             price: Number(r.price) || 0,
             note: r.note || '',
+            ...(r.paid && r.paid !== r.start && /^\d{4}-\d{2}-\d{2}$/.test(r.paid)
+              ? { paid: r.paid }
+              : {}),
             ...(r.mileage !== undefined
               ? { mileage: Number(r.mileage) || 0 }
               : {})
           }))
           .filter((r) => r.start);
         item.projectTags = item.projectTags || '';
+        if (item.type === 'sub') {
+          item.payer = item.payer === 'company' ? 'company' : 'personal';
+          item.currency = item.currency === 'USD' ? 'USD' : 'CNY';
+          item.account = typeof item.account === 'string' ? item.account : '';
+        } else {
+          delete item.payer;
+          delete item.currency;
+          delete item.account;
+        }
         if (item.type === 'rental' && item.kind === 'loan') {
           item.loan = normalizeLoan(item.loan);
           if (item.loan) {
@@ -1547,6 +1622,15 @@
     // 某个订阅在区间 [rangeStart, rangeEnd) 内的成本
     function calcSubCostInRange(item, rangeStart, rangeEnd) {
       if (!item.records || !Array.isArray(item.records)) return 0;
+      if (costView === 'cash') {
+        // 按实付日：付款日落在 [rangeStart, rangeEnd) 的记录整笔计入
+        const from = formatDate(startOfDay(rangeStart));
+        const to = formatDate(startOfDay(rangeEnd));
+        return item.records.reduce((sum, rec) => {
+          const paid = recordPaidDate(rec);
+          return paid >= from && paid < to ? sum + (Number(rec.price) || 0) : sum;
+        }, 0);
+      }
       let total = 0;
       item.records.forEach((rec) => {
         const start = new Date(rec.start);
@@ -1621,33 +1705,38 @@
 
       items.forEach((item) => {
         if (item.type !== 'sub' && item.type !== 'rental') return;
+        if (!countsInPersonalCny(item)) return;
 
-        const activeRecord = (item.records || []).find((rec) => {
-          const s = startOfDay(rec.start);
-          const e = rec.end ? startOfDay(rec.end) : new Date(9999, 0, 1);
-          if (!rec.end) e.setHours(0, 0, 0, 0);
-          return target >= s && target < e;
-        });
-
-        if (activeRecord) {
-          const s = startOfDay(activeRecord.start);
-          let e;
-          if (activeRecord.end) {
-            e = startOfDay(activeRecord.end);
-          } else {
-            e = today;
+        // 当天计入的金额：按天摊销取当前周期的日均；按实付日取付款日为当天的整笔
+        const contributions = [];
+        if (costView === 'cash') {
+          const dateStr = formatDate(target);
+          (item.records || []).forEach((rec) => {
+            if (recordPaidDate(rec) === dateStr) contributions.push({ rec, amount: Number(rec.price) || 0 });
+          });
+        } else {
+          const activeRecord = (item.records || []).find((rec) => {
+            const s = startOfDay(rec.start);
+            const e = rec.end ? startOfDay(rec.end) : new Date(9999, 0, 1);
+            if (!rec.end) e.setHours(0, 0, 0, 0);
+            return target >= s && target < e;
+          });
+          if (activeRecord) {
+            const s = startOfDay(activeRecord.start);
+            const e = activeRecord.end ? startOfDay(activeRecord.end) : today;
+            const cycleDays = Math.max(1, (e - s) / DAY_MS);
+            contributions.push({ rec: activeRecord, amount: (Number(activeRecord.price) || 0) / cycleDays });
           }
+        }
 
-          const cycleDays = Math.max(1, (e - s) / DAY_MS);
-          const daily = (Number(activeRecord.price) || 0) / cycleDays;
-
+        contributions.forEach(({ rec, amount: daily }) => {
           if (item.type === 'sub') {
             subscription += daily;
             subscriptionDetails[item.name] = (subscriptionDetails[item.name] || 0) + daily;
           } else {
             rental += daily;
             rentalDetailsTotal[item.name] = (rentalDetailsTotal[item.name] || 0) + daily;
-            let tags = extractTags(activeRecord.note || '');
+            let tags = extractTags(rec.note || '');
             if (tags.length === 0) {
               // 兼容把标签写在项目名称里的场景
               tags = extractTags(item.name || '');
@@ -1660,7 +1749,7 @@
               });
             }
           }
-        }
+        });
       });
       return {
         subscription,
@@ -1682,6 +1771,7 @@
       const rentalTagDetails = {}; // 按标签汇总
       items.forEach((item) => {
         if (item.type !== 'sub' && item.type !== 'rental') return;
+        if (!countsInPersonalCny(item)) return;
         const cost = calcSubCostInRange(item, start, endExclusive);
         if (item.type === 'sub') {
           subTotal += cost;
@@ -1856,6 +1946,7 @@
       });
 
       updateTagToggleUI();
+      updateCostViewUI();
 
       const ledgerModal = document.getElementById('ledger-modal');
       if (ledgerModal) {
@@ -1963,6 +2054,10 @@
       if (btnCheckin) {
         btnCheckin.className = baseType === 'checkin' ? activeClass : inactiveClass;
       }
+      const accountSection = document.getElementById('sub-account-section');
+      if (accountSection) {
+        accountSection.classList.toggle('hidden', !(baseType === 'sub' && currentFormKind === 'sub'));
+      }
       const loanSection = document.getElementById('loan-section');
       if (loanSection) {
         loanSection.classList.toggle('hidden', !(baseType === 'sub' && currentFormKind === 'rental'));
@@ -1975,12 +2070,10 @@
     }
 
     function readLoanForm() {
-      const modeInput = document.querySelector('input[name="loan-mode"]:checked');
       return normalizeLoan({
         total: document.getElementById('loan-total').value,
         periods: document.getElementById('loan-periods').value,
-        firstDate: document.getElementById('loan-first-date').value,
-        mode: modeInput ? modeInput.value : 'amortize'
+        firstDate: document.getElementById('loan-first-date').value
       });
     }
 
@@ -1989,9 +2082,6 @@
       document.getElementById('loan-total').value = loan ? loan.total : '';
       document.getElementById('loan-periods').value = loan ? loan.periods : '';
       document.getElementById('loan-first-date').value = loan ? loan.firstDate : '';
-      const mode = loan ? loan.mode : 'amortize';
-      const modeInput = document.querySelector(`input[name="loan-mode"][value="${mode}"]`);
-      if (modeInput) modeInput.checked = true;
       updateLoanFormUI();
     }
 
@@ -2324,10 +2414,14 @@
 
       visibleItems.forEach((item, index) => {
         const m = calculateMetrics(item);
-        sum.daily += m.dailyCost;
-        sum.realtime += m.realTimeDaily;
-        sum.total += m.totalCost;
-        if (!isSubLikeTab) sum.days += m.days || 0;
+        // 公司付款或美元计价的订阅不进人民币合计，只在各自分组里单独合计
+        const inMain = countsInPersonalCny(item);
+        if (inMain) {
+          sum.daily += m.dailyCost;
+          sum.realtime += m.realTimeDaily;
+          sum.total += m.totalCost;
+          if (!isSubLikeTab) sum.days += m.days || 0;
+        }
 
         const base = {
           ...item,
@@ -2371,8 +2465,11 @@
         }
         base.yearCost = yearCost;
         base.yearDaily = yearDays > 0 ? yearCost / yearDays : 0;
-        sumYearCostAll += yearCost;
-        sumYearDaysAll += yearDays;
+        base.inMain = inMain;
+        if (inMain) {
+          sumYearCostAll += yearCost;
+          sumYearDaysAll += yearDays;
+        }
 
         if (isSubLikeTab) {
           // 修改点：This Month 计算逻辑调整为整个自然月 (本月1号到下月1号前)
@@ -2394,9 +2491,11 @@
           base.monthCurrent = thisMonthCost;
           base.monthLast = lastMonthCost;
           base.yearCurrent = thisYearCost;
-          sumMonthCurrent += thisMonthCost;
-          sumMonthLast += lastMonthCost;
-          sumYearCurrent += thisYearCost;
+          if (inMain) {
+            sumMonthCurrent += thisMonthCost;
+            sumMonthLast += lastMonthCost;
+            sumYearCurrent += thisYearCost;
+          }
         }
 
         computedData.push(base);
@@ -2433,8 +2532,11 @@
       // 租赁页：车贷（自己的车）与租车放在同一个“用车”分组里，排在最前
       const carRank = (it) => (isCarLoan(it) ? 0 : isCarRental(it) ? 1 : 2);
       const showCarGroup = currentTab === 'rental' && computedData.some(isCarItem);
+      const showSubGroups = currentTab === 'subscription' && computedData.some((it) => subGroupKey(it) !== 'personal-CNY');
+      const subRank = (it) => SUB_GROUP_ORDER.indexOf(subGroupKey(it));
       computedData.sort((a, b) => {
         if (showCarGroup && carRank(a) !== carRank(b)) return carRank(a) - carRank(b);
+        if (showSubGroups && subRank(a) !== subRank(b)) return subRank(a) - subRank(b);
         if (isSubLikeTab) {
           return b.realTimeDaily - a.realTimeDaily || b.dailyCost - a.dailyCost;
         } else {
@@ -2468,6 +2570,21 @@
           container.insertAdjacentHTML(
             'beforeend',
             '<div class="col-span-full text-xs text-gray-500 font-semibold pt-2">其他租赁</div>'
+          );
+        }
+        if (showSubGroups && (idx === 0 || subGroupKey(computedData[idx - 1]) !== subGroupKey(item))) {
+          const key = subGroupKey(item);
+          const group = computedData.filter((it) => subGroupKey(it) === key);
+          const symbol = currencySymbol(item);
+          const monthTotal = group.reduce((s, it) => s + (it.monthCurrent || 0), 0);
+          const yearTotal = group.reduce((s, it) => s + (it.yearCurrent || 0), 0);
+          const accent = key.startsWith('company') ? 'text-sky-700' : key.endsWith('USD') ? 'text-emerald-700' : 'text-gray-500';
+          container.insertAdjacentHTML(
+            'beforeend',
+            `<div class="col-span-full flex flex-wrap items-baseline gap-x-3 text-xs font-semibold ${accent} ${idx > 0 ? 'pt-2' : ''}">
+              <span>${SUB_GROUP_LABELS[key]}</span>
+              <span class="font-normal text-gray-500">本月 ${symbol}${formatMoney(monthTotal)} · 今年 ${symbol}${formatMoney(yearTotal)}</span>
+            </div>`
           );
         }
         const pct = {
@@ -2551,8 +2668,7 @@
         `;
         } else if (isCarLoan(item)) {
           const p = getLoanProgress(item.loan);
-          const modeLabel = LOAN_MODE_LABELS[item.loan.mode];
-          const otherLabel = LOAN_MODE_LABELS[item.loan.mode === 'cashflow' ? 'amortize' : 'cashflow'];
+          const otherView = costView === 'cash' ? 'amortize' : 'cash';
           cardHTML = `
           <div
             class="${cardBaseClass} p-4 rounded-xl border border-indigo-100 transition-all duration-200 group flex flex-col justify-between min-h-32 cursor-pointer"
@@ -2578,7 +2694,7 @@
             <div class="mt-2 pt-2 border-t border-dashed border-gray-100 text-xs text-gray-500 space-y-1">
               <div class="flex justify-between items-end gap-2">
                 <div>
-                  <div class="text-xs text-gray-400">今日计入</div>
+                  <div class="text-xs text-gray-400">今日日均</div>
                   <div class="text-2xl font-bold ${item.realTimeDaily > 0 ? 'text-indigo-600' : 'text-gray-400'}">¥${item.realTimeDaily.toFixed(2)}</div>
                 </div>
                 <div class="text-right whitespace-nowrap">
@@ -2591,11 +2707,11 @@
               </div>
               <div class="flex justify-between items-center gap-2 text-[10px] text-gray-400">
                 <button
-                  onclick="event.stopPropagation(); toggleLoanMode(${item.id})"
-                  title="当前${modeLabel}，点击切换为${otherLabel}"
+                  onclick="event.stopPropagation(); toggleCostView()"
+                  title="全局口径：当前${COST_VIEW_LABELS[costView]}，点击切换为${COST_VIEW_LABELS[otherView]}"
                   class="px-1.5 py-0.5 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded whitespace-nowrap"
                 >
-                  ${modeLabel} ⇄
+                  ${COST_VIEW_LABELS[costView]} ⇄
                 </button>
                 <span class="whitespace-nowrap">剩余 ¥${formatMoney(p.remainingAmount)}</span>
               </div>
@@ -2605,18 +2721,26 @@
         } else if (item.type === 'sub' || item.type === 'rental') {
           const isActive = item.isCurrentlyActive;
           const activePriceColor = isActive ? 'text-blue-600' : 'text-gray-400';
+          const cur = item.type === 'sub' ? currencySymbol(item) : '¥';
+          const subBadge = item.type === 'sub' && !countsInPersonalCny(item)
+            ? `<div class="text-[10px] ${getSubPayer(item) === 'company' ? 'text-sky-700' : 'text-emerald-700'}">${PAYER_LABELS[getSubPayer(item)]} · ${getSubCurrency(item)}</div>`
+            : '';
+          const accountLine = item.type === 'sub' && item.account
+            ? `<div class="text-[10px] text-gray-400 truncate max-w-[12rem]" title="${escapeHtml(item.account)}">${escapeHtml(item.account)}</div>`
+            : '';
 
           cardHTML = `
           <div
-            class="${cardBaseClass} p-4 rounded-xl border border-gray-100 transition-all duration-200 group flex flex-col justify-between h-32 cursor-pointer"
+            class="${cardBaseClass} p-4 rounded-xl border border-gray-100 transition-all duration-200 group flex flex-col justify-between min-h-32 cursor-pointer"
             onclick="openDetailModal(${item.id})"
           >
             <div class="flex justify-between items-start">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 min-w-0">
                 <div class="w-2 h-8 rounded-full ${item.color}"></div>
-                <div>
+                <div class="min-w-0">
                   <h3 class="font-bold text-gray-800 text-sm leading-snug max-w-[12rem] truncate">${item.name}</h3>
                   ${isCarRental(item) ? '<div class="text-[10px] text-orange-600">租车</div>' : ''}
+                  ${subBadge}${accountLine}
                 </div>
               </div>
               <div class="flex flex-col items-end gap-1">
@@ -2631,11 +2755,11 @@
             <div class="mt-2 pt-2 border-t border-dashed border-gray-100 flex justify-between items-end text-xs text-gray-500">
               <div>
                 <div class="text-xs text-gray-400">今日日均</div>
-                <div class="text-2xl font-bold ${activePriceColor}">¥${item.realTimeDaily.toFixed(2)}</div>
+                <div class="text-2xl font-bold ${activePriceColor}">${cur}${item.realTimeDaily.toFixed(2)}</div>
               </div>
               <div class="text-right">
-                <div>历史日均: ¥${item.dailyCost.toFixed(2)}</div>
-                <div class="text-[10px] text-gray-400">总投入: ¥${item.totalCost.toLocaleString()}</div>
+                <div>历史日均: ${cur}${item.dailyCost.toFixed(2)}</div>
+                <div class="text-[10px] text-gray-400">总投入: ${cur}${item.totalCost.toLocaleString()}</div>
               </div>
             </div>
           </div>
@@ -2701,6 +2825,7 @@
         }
 
         container.insertAdjacentHTML('beforeend', cardHTML);
+        if (!item.inMain) return; // 公司/美元订阅不进人民币占比条
 
         function createBar(pctVal, label, val) {
           if (pctVal <= 0) return null;
@@ -4587,7 +4712,8 @@
             <span class="font-mono text-gray-800">${endLabel}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-blue-600">¥${rec.price}</span>
+            ${rec.paid ? `<span class="text-[10px] text-gray-400">付于 ${rec.paid}</span>` : ''}
+            <span class="font-bold text-blue-600">${currentFormKind === 'sub' && document.getElementById('sub-currency').value === 'USD' ? '$' : '¥'}${rec.price}</span>
             <button
               type="button"
               onclick="editSubCycle(${idx})"
@@ -4616,6 +4742,7 @@
       const price = document.getElementById('sub-price').value;
       const openEnd = document.getElementById('sub-open-end').checked;
       const note = document.getElementById('sub-note').value.trim();
+      const paid = document.getElementById('sub-paid').value.trim();
 
       if (!start || !price || (!endRaw && !openEnd)) {
         alert('请填写完整周期信息');
@@ -4640,12 +4767,22 @@
         end = '';
       }
 
+      if (paid && !paid.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        alert('实际付款日格式应为 YYYY-MM-DD，或留空表示与开始日相同');
+        return;
+      }
+
+      // 编辑时保留原记录的其他字段（如租车里程）
+      const previous = editingCycleIndex !== null ? tempSubRecords[editingCycleIndex] || {} : {};
       const record = {
+        ...previous,
         start,
         end,
         price: parseFloat(price),
         note
       };
+      if (paid && paid !== start) record.paid = paid;
+      else delete record.paid;
 
       if (editingCycleIndex !== null) {
         tempSubRecords[editingCycleIndex] = record;
@@ -4661,6 +4798,7 @@
       document.getElementById('sub-open-end').checked = false;
       document.getElementById('sub-price').value = '';
       document.getElementById('sub-note').value = '';
+      document.getElementById('sub-paid').value = '';
     }
 
     function removeSubCycle(idx) {
@@ -4673,6 +4811,7 @@
         document.getElementById('sub-open-end').checked = false;
         document.getElementById('sub-price').value = '';
         document.getElementById('sub-note').value = '';
+        document.getElementById('sub-paid').value = '';
       } else if (editingCycleIndex !== null && idx < editingCycleIndex) {
         // 删除在当前编辑索引之前的记录，索引左移
         editingCycleIndex -= 1;
@@ -4689,6 +4828,7 @@
       document.getElementById('sub-open-end').checked = !rec.end;
       document.getElementById('sub-price').value = rec.price || '';
       document.getElementById('sub-note').value = rec.note || '';
+      document.getElementById('sub-paid').value = rec.paid || '';
       const addBtn = document.getElementById('sub-add-btn');
       if (addBtn) addBtn.textContent = '保存周期';
     }
@@ -4730,6 +4870,10 @@
         document.getElementById('sub-open-end').checked = false;
         document.getElementById('sub-price').value = '';
         document.getElementById('sub-note').value = '';
+        document.getElementById('sub-paid').value = '';
+        document.getElementById('sub-payer').value = getSubPayer(item);
+        document.getElementById('sub-currency').value = getSubCurrency(item);
+        document.getElementById('sub-account').value = item.account || '';
         renderSubCycles();
         fillLoanForm(isCarLoan(item) ? item.loan : null);
       } else {
@@ -4801,6 +4945,11 @@
         }
         newItem.type = currentFormKind;
         newItem.records = tempSubRecords;
+        if (currentFormKind === 'sub') {
+          newItem.payer = document.getElementById('sub-payer').value;
+          newItem.currency = document.getElementById('sub-currency').value;
+          newItem.account = document.getElementById('sub-account').value.trim();
+        }
       } else {
         newItem.type = 'asset';
         newItem.price =
