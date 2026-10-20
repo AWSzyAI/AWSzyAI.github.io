@@ -198,6 +198,19 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 - 金额合计用的是原始 map，不受过滤影响。
 - 百分比用 `formatPct()`：非零但不足 1% 显示「<1%」，否则 `¥0.99 / 0%` 还会被当成零项。
 
+### 订阅合并成一条「订阅」+ 点开看明细（2026-10-19）
+
+用户要求：PassNAT / iCloud 2T / 爱发电 · Caritas 等订阅在收支总览里**合并成一条「订阅」**，点开能看到每一条。
+
+- 常量 `SUBSCRIPTION_GROUP_NAME = '订阅'`。三处聚合都要合并，否则口径不一致：
+  1. `getDayTotals`（每天的分段，供给周/月堆叠条）；
+  2. `aggregateCategories` 的 `includeAuto` 分支；
+  3. `aggregateCategories` 的 `opts.useSubRentalMonthTotals` 分支（**收支总览的卡片走的是这条**）。
+- 合并时把每个订阅的金额累加进 `subDetailMap[订阅名]`；`tagSplitMode` 打开时带 `#tag` 的订阅仍然单独进标签汇总，不并入。
+- 返回前把明细挂到「订阅」这一项上：`expenseList[i].details = [{name, amount}]`（按金额降序）。
+- 卡片渲染时把 `card.details` 存进 `financeDetailCache[`${kind}|${name}`]`；`openFinanceDetail()` 先查这个缓存，有明细就走 `openBreakdownList()`（一个动态创建、不占静态 HTML 的弹窗），否则维持原来的走势图。
+- 明细弹窗列出每一项的名称、占比（用 `formatPct`）和金额，底部给合计。
+
 ## 6. Tax 页面模型
 
 `tax.html` 使用年度账本结构：

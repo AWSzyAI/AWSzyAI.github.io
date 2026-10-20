@@ -2014,12 +2014,12 @@
           });
         }
       });
-      // 订阅：按项目名称拆分（支持 #tag 分组）
+      // 订阅：合并成一条「订阅」（明细在收支总览的卡片里点开看）
       if (auto.subscriptionDetails && Object.keys(auto.subscriptionDetails).length > 0) {
         Object.entries(auto.subscriptionDetails).forEach(([name, amount]) => {
-          const { base, tags } = parseNameWithTags(name, false);
+          const { tags } = parseNameWithTags(name, false);
           if (!tagSplitMode || tags.length === 0) {
-            expenseStack[base] = (expenseStack[base] || 0) + amount;
+            expenseStack[SUBSCRIPTION_GROUP_NAME] = (expenseStack[SUBSCRIPTION_GROUP_NAME] || 0) + amount;
           }
           if (tagSplitMode) {
             tags.forEach((t) => {
@@ -2028,7 +2028,7 @@
           }
         });
       } else if (auto.subscription) {
-        expenseStack['订阅'] = (expenseStack['订阅'] || 0) + auto.subscription;
+        expenseStack[SUBSCRIPTION_GROUP_NAME] = (expenseStack[SUBSCRIPTION_GROUP_NAME] || 0) + auto.subscription;
       }
       // 租赁：标签分组开关
       if (tagSplitMode) {
@@ -4054,6 +4054,10 @@
       }
     }
 
+    // 收支总览里，所有订阅合并成一条「订阅」；点开卡片能看到每个订阅各自多少钱。
+    // 用户 2026-10-19 的要求：「PassNAT、iCloud 2T、爱发电 · Caritas 都合并到订阅里」。
+    const SUBSCRIPTION_GROUP_NAME = '订阅';
+
     function getDayStacks(day, today) {
       const totals = day <= today ? getDayTotals(day) : { expense: 0, income: 0, expenseStack: {}, incomeStack: {} };
       return totals;
@@ -4069,6 +4073,8 @@
       // 账本行的 note（银行原文等）：按分类名汇总，用于悬停提示
       const expenseNoteMap = {};
       const incomeNoteMap = {};
+      // 订阅合并成「订阅」后，每个订阅各自多少，用来到卡片明细里展开
+      const subDetailMap = {};
       const addNote = (map, name, note) => {
         if (!note) return;
         const text = String(note).trim();
@@ -4112,12 +4118,13 @@
         }
         if (includeAuto) {
           const auto = calcAutoRecurringForDate(d);
-          // 订阅：按项目名称拆分（支持 #tag 分组）
+          // 订阅：合并成一条「订阅」，明细单存，供卡片点开查看
           if (auto.subscriptionDetails && Object.keys(auto.subscriptionDetails).length > 0) {
             Object.entries(auto.subscriptionDetails).forEach(([name, amount]) => {
               const { base, tags } = parseNameWithTags(name, false);
               if (!tagSplitMode || tags.length === 0) {
-                expenseMap[base] = (expenseMap[base] || 0) + amount;
+                expenseMap[SUBSCRIPTION_GROUP_NAME] = (expenseMap[SUBSCRIPTION_GROUP_NAME] || 0) + amount;
+                subDetailMap[base] = (subDetailMap[base] || 0) + amount;
               }
               if (tagSplitMode) {
                 tags.forEach((t) => {
@@ -4126,7 +4133,7 @@
               }
             });
           } else if (auto.subscription) {
-            expenseMap['订阅'] = (expenseMap['订阅'] || 0) + auto.subscription;
+            expenseMap[SUBSCRIPTION_GROUP_NAME] = (expenseMap[SUBSCRIPTION_GROUP_NAME] || 0) + auto.subscription;
           }
           // 租赁：根据标签分组开关
           if (tagSplitMode) {
@@ -4159,7 +4166,8 @@
           Object.entries(subscriptionDetails).forEach(([name, amount]) => {
             const { base, tags } = parseNameWithTags(name, false);
             if (!tagSplitMode || tags.length === 0) {
-              expenseMap[base] = (expenseMap[base] || 0) + amount;
+              expenseMap[SUBSCRIPTION_GROUP_NAME] = (expenseMap[SUBSCRIPTION_GROUP_NAME] || 0) + amount;
+              subDetailMap[base] = (subDetailMap[base] || 0) + amount;
             }
             if (tagSplitMode) {
               tags.forEach((t) => {
@@ -4168,7 +4176,7 @@
             }
           });
         } else {
-          expenseMap['订阅'] = subTotal;
+          expenseMap[SUBSCRIPTION_GROUP_NAME] = (expenseMap[SUBSCRIPTION_GROUP_NAME] || 0) + subTotal;
         }
         // 租赁：无标签进常规，带标签进标签汇总
         if (tagSplitMode) {
@@ -4199,8 +4207,15 @@
 
       const attachNotes = (list, noteMap) =>
         list.map((it) => (noteMap[it.name] ? { ...it, notes: noteMap[it.name] } : it));
+      const subDetails = Object.entries(subDetailMap)
+        .filter(([, amount]) => Math.abs(amount) > 0.004)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, amount]) => ({ name, amount }));
+      const expenseList = attachNotes(expenseStackToArray(expenseMap), expenseNoteMap).map((it) =>
+        it.name === SUBSCRIPTION_GROUP_NAME && subDetails.length ? { ...it, details: subDetails } : it
+      );
       return {
-        expenseList: attachNotes(expenseStackToArray(expenseMap), expenseNoteMap),
+        expenseList,
         incomeList: attachNotes(expenseStackToArray(incomeMap), incomeNoteMap),
         tagExpenseList: expenseStackToArray(tagExpenseMap),
         tagIncomeList: expenseStackToArray(tagIncomeMap),
@@ -4504,7 +4519,65 @@
       return series;
     }
 
+    // 点分类卡片时，如果这个分类有「明细」（目前是合并后的「订阅」），先列明细
+    const financeDetailCache = {};
+
+    function openBreakdownList(title, details, kind) {
+      let el = document.getElementById('breakdown-list-modal');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'breakdown-list-modal';
+        el.className = 'fixed inset-0 z-50 hidden items-center justify-center';
+        document.body.appendChild(el);
+      }
+      const total = details.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const rows = details
+        .slice()
+        .sort((a, b) => b.amount - a.amount)
+        .map((d) => {
+          const pct = total > 0 ? (d.amount / total) * 100 : 0;
+          return `<div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+            <span class="text-sm text-gray-800 truncate">${escapeHtml(d.name)}</span>
+            <span class="flex items-baseline gap-2 shrink-0">
+              <span class="text-[11px] text-gray-400">${formatPct(pct)}</span>
+              <span class="text-sm font-semibold ${kind === 'income' ? 'text-emerald-600' : 'text-red-500'}">¥${formatMoney(d.amount)}</span>
+            </span>
+          </div>`;
+        })
+        .join('');
+      el.innerHTML = `
+        <div class="absolute inset-0 bg-black/30" onclick="closeBreakdownList()"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-[92%] border border-gray-200 p-5 space-y-3 max-h-[80vh] overflow-auto">
+          <div class="flex justify-between items-start gap-3">
+            <div>
+              <div class="text-xs text-gray-500 uppercase">明细</div>
+              <div class="text-lg font-bold text-gray-900">${escapeHtml(title)}</div>
+            </div>
+            <button onclick="closeBreakdownList()" class="text-gray-400 hover:text-gray-700 text-xl px-1" aria-label="关闭">×</button>
+          </div>
+          <div class="space-y-1.5">${rows}</div>
+          <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-sm">
+            <span class="text-gray-600">合计</span>
+            <span class="font-bold ${kind === 'income' ? 'text-emerald-600' : 'text-red-500'}">¥${formatMoney(total)}</span>
+          </div>
+        </div>`;
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    }
+
+    function closeBreakdownList() {
+      const el = document.getElementById('breakdown-list-modal');
+      if (!el) return;
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+
     function openFinanceDetail(name, kind) {
+      const details = financeDetailCache[`${kind}|${name}`];
+      if (details && details.length > 0) {
+        openBreakdownList(name, details, kind);
+        return;
+      }
       const series = buildFinanceSeries(kind, name);
       const records = series.map((row) => {
         const s = startOfDay(row.date);
@@ -4570,6 +4643,9 @@
           .forEach((card, idx) => {
             const pct = totalVal > 0 ? (card.amount / totalVal) * 100 : 0;
             const color = carColorForName(card.name) || palette[(paletteOffset + idx) % palette.length];
+            if (card.details && card.details.length) {
+              financeDetailCache[`${type}|${card.name}`] = card.details;
+            }
             container.insertAdjacentHTML(
               'beforeend',
               `
