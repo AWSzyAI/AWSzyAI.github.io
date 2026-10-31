@@ -7261,6 +7261,25 @@
       openDetailModal(itemId, false, keepYear);
     }
 
+    // 里程合计（租车 / 开车打卡）：区间 [from, to)；租车一单跨区间时按天数摊分。不是车相关项目返回 null
+    function usageKmInRange(item, from = null, to = null) {
+      const inRange = (d) => (!from || d >= from) && (!to || d < to);
+      if (isDrivingCheckin(item)) {
+        return Object.entries(item.records || {}).reduce((t, [d, raw]) => t + (inRange(startOfDay(d)) ? Number(getCheckinRecordValue(raw)) || 0 : 0), 0);
+      }
+      if (!isCarRental(item)) return null;
+      return (item.records || []).reduce((t, r) => {
+        if (!r.mileage) return t;
+        const s0 = startOfDay(r.start), e0 = startOfDay(r.end || r.start);
+        const days = Math.max(1, Math.round((e0 - s0) / DAY_MS));
+        if (!from && !to) return t + Number(r.mileage);
+        const a = from && s0 < from ? from : s0, b = to && e0 > to ? to : e0;
+        const overlap = Math.max(0, Math.round((b - a) / DAY_MS)) || (days === 1 && inRange(s0) ? 1 : 0);
+        return t + Number(r.mileage) * Math.min(overlap, days) / days;
+      }, 0);
+    }
+    const kmSuffix = (km, label) => (km == null ? '' : ` · ${label} ${formatCheckinNumber(Math.round(km * 10) / 10)} km`);
+
     // ===================== 本年使用时间分布（订阅/租赁） =====================
     function renderUsageTimeline(item, forcedYear = null) {
       const wrapper = document.getElementById('detail-usage-wrapper');
@@ -7280,7 +7299,7 @@
         const usageTitle = document.getElementById('detail-usage-title');
         if (usageTitle && yearStats) {
           const pct = yearStats.totalDays > 0 ? (yearStats.subscribedDays / yearStats.totalDays * 100).toFixed(2) : '0.00';
-          usageTitle.textContent = `本年使用时间分布（${thisYear}：${yearStats.subscribedDays}/${yearStats.totalDays}=${pct}%）`;
+          usageTitle.textContent = `本年使用时间分布（${thisYear}：${yearStats.subscribedDays}/${yearStats.totalDays}=${pct}%${kmSuffix(usageKmInRange(item, startOfDay(new Date(thisYear, 0, 1)), startOfDay(new Date(thisYear + 1, 0, 1))), '本年里程')}）`;
         }
 
         const earliest = getEarliestRecordStart(item);
@@ -7289,7 +7308,7 @@
           const usageAllTitle = document.getElementById('detail-usage-all-title');
           if (usageAllTitle && allStats) {
             const allPct = allStats.totalDays > 0 ? (allStats.subscribedDays / allStats.totalDays * 100).toFixed(2) : '0.00';
-            usageAllTitle.textContent = `总使用时间分布（${allStats.subscribedDays}/${allStats.totalDays}=${allPct}%）`;
+            usageAllTitle.textContent = `总使用时间分布（${allStats.subscribedDays}/${allStats.totalDays}=${allPct}%${kmSuffix(usageKmInRange(item), '总里程')}）`;
           }
         } else {
           const allBar = document.getElementById('detail-usage-all-bar');
@@ -7320,7 +7339,7 @@
             ? `本年${item.financeKind === 'income' ? '收入' : '支出'}分布`
             : '本年使用时间分布';
         const pct = yearStats.totalDays > 0 ? (yearStats.subscribedDays / yearStats.totalDays * 100).toFixed(2) : '0.00';
-        usageTitle.textContent = `${baseTitle}（${thisYear}：${yearStats.subscribedDays}/${yearStats.totalDays}=${pct}%）`;
+        usageTitle.textContent = `${baseTitle}（${thisYear}：${yearStats.subscribedDays}/${yearStats.totalDays}=${pct}%${kmSuffix(usageKmInRange(item, startOfDay(new Date(thisYear, 0, 1)), startOfDay(new Date(thisYear + 1, 0, 1))), '本年里程')}）`;
       }
 
       // 总使用时间分布
@@ -7334,7 +7353,7 @@
               ? `总${item.financeKind === 'income' ? '收入' : '支出'}分布`
               : '总使用时间分布';
           const allPct = allStats.totalDays > 0 ? (allStats.subscribedDays / allStats.totalDays * 100).toFixed(2) : '0.00';
-          usageAllTitle.textContent = `${baseAllTitle}（${allStats.subscribedDays}/${allStats.totalDays}=${allPct}%）`;
+          usageAllTitle.textContent = `${baseAllTitle}（${allStats.subscribedDays}/${allStats.totalDays}=${allPct}%${kmSuffix(usageKmInRange(item), '总里程')}）`;
         }
       }
       renderCarCompareUsage(item, thisYear);
