@@ -200,3 +200,31 @@ export function checkins(payload, { name, from, to } = {}) {
                      last: entries[entries.length - 1]?.[0] || null, records: Object.fromEntries(entries) };
         });
 }
+
+// 租车 & 用车日记：租车订单备注 + 打卡「开车」每天的公里数与备注 + TeslaMate 行程摘要（carLog）
+export function carDiary(payload, { from, to, onlyThin = false } = {}) {
+    const inRange = d => (!from || d >= from) && (!to || d <= to);
+    const thin = note => String(note || '').replace(/#\S+/g, '').trim().length < 10;
+    const out = [];
+    for (const item of payload.items || []) {
+        if (item.type !== 'rental' || item.kind === 'loan' || !/租车|汽车|car|vehicle/i.test(item.name || '')) continue;
+        for (const r of records(item)) {
+            if (!inRange(r.start)) continue;
+            out.push({ kind: 'rent', date: r.start, end: r.end, price: r.price, ...(r.mileage ? { km: r.mileage } : {}), note: r.note || '' });
+        }
+    }
+    const drive = (payload.items || []).find(i => i.type === 'checkin' && i.name === '开车');
+    const log = payload.carLog?.days || {};
+    const days = new Set([...Object.keys(drive?.records || {}), ...Object.keys(log)]);
+    for (const d of days) {
+        if (!inRange(d)) continue;
+        const raw = drive?.records?.[d];
+        const rec = raw && typeof raw === 'object' ? raw : { value: raw ?? null, note: '' };
+        out.push({ kind: 'drive', date: d, km: rec.value ?? log[d]?.km ?? null, note: rec.note || '', ...(log[d] ? { log: log[d] } : {}) });
+    }
+    const rows = out.filter(e => !onlyThin || thin(e.note)).sort((a, b) => (a.date < b.date ? -1 : 1));
+    return {
+        entries: rows.length, thin: rows.filter(e => thin(e.note)).length,
+        carLogGeneratedAt: payload.carLog?.generatedAt || null, items: rows,
+    };
+}

@@ -18,6 +18,7 @@
 | `car_loan` | 车贷月供、已还 / 剩余期数和金额、下一次还款 |
 | `ledger` | 按日期和分类列出每日账目 |
 | `spending_summary` | 一段日期的收支汇总，订阅 / 租赁 / 车贷按天摊销 |
+| `car_diary` | 租车 & 用车日记：租车备注、每天开车的公里数和日记、TeslaMate 行程摘要，可只看待补写的 |
 | `checkins` | 打卡记录 |
 
 口径与网页一致：记录使用期是 `[start, end)`；只有「个人 · 人民币」订阅计入收支；收入按到账日计入（见仓库 `PROJECT_MEMORY.md` 第 5 节）。
@@ -37,6 +38,14 @@ claude mcp add --scope user szy-device -e DEVICE_MCP_BACKUP_DIR=<备份目录> -
 3. 会话保存在 `~/.config/szy-device-mcp/auth.json`（权限 0600），access token 过期时自动用 refresh token 续期。`npm run login -- --status` 查看状态，`npm run logout` 删除。
 
 脚本只接收回调里的一次性 code，不经手 GitHub 密码。会话文件和任何导出的数据都不要提交进仓库。
+
+## 推送 TeslaMate 行程摘要（device「日记」页用）
+
+```bash
+DEVICE_MCP_BACKUP_DIR=<备份目录> npm run push-carlog -- <carlog.json> [--dry-run]
+```
+
+`carlog.json` 由本机的 TeslaMate 分析脚本生成（`{generatedAt, source, days: {日期: {km, min, n, route, charge}}}`，不在本仓库）。脚本会先把云端文档备份到 `DEVICE_MCP_BACKUP_DIR`，只替换 `carLog`，并给打卡项目「开车」补上**还没有记录**的日期的公里数，不改已有记录和备注；写入前若发现云端刚被改过就放弃。推送后已经打开的 device 页面要刷新。
 
 ## 测试
 

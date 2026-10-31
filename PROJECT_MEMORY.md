@@ -224,6 +224,17 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 - `rentals` 会跳过起止日期和金额完全相同的重复条目，并在结果里列出。
 - `node_modules/` 已在 `mcp/device/.gitignore` 中。冒烟测试 `npm test` 只打印成功与否和结果长度，不输出真实数据。
 
+### 租车 & 用车日记（2026-10-31）
+
+用户要求：一个界面集中补写 / 修改过去租车的备注（有些写错或太简略，比如只写了城市名），并补上自己的车每天的用车日记。
+
+- 新标签页「日记」（`switchTab('diary')`）。打开时收起左侧栏（`#device-aside`）、统计卡（`#main-card`）和卡片区（`#cards-container`，它带 `grid` 类，`hidden` 压不住，所以用 `style.display`），只显示 `#diary-panel`。`render()` 在日记页直接返回，避免打字时被整页重绘打断。
+- 租车条目：所有 `isCarRental` 项目的每条记录，直接编辑 `note` 和 `mileage`。备注里以 # 开头的词仍按标签参与统计。
+- 用车条目：存在打卡项目「开车」（km 型）当天的记录里，`value` = 当天公里数，`note` = 日记（`packCheckinRecord`）。这样原有的开车热力图、里程统计和「开车 / 租车」使用分布都能用上。没有这个项目时，第一次写会自动新建。公里数默认取 TeslaMate 摘要，可以手动改。
+- `carLog`：payload 新增的顶层字段 `{generatedAt, source, days: {日期: {km, min, n, route[], charge?}}}`，由本机脚本从 TeslaMate 生成后用 `mcp/device` 的 `npm run push-carlog` 写入，页面只读。`getDevicePayload` / `applyDevicePayload` / Export All 都带上它；Import All 时文件里没有 `carLog` 就保留当前的，以免旧备份把它清空。**旧版本页面保存时会丢掉 `carLog`**，所以要先部署新页面再推送。
+- 列表按月倒序，筛选：全部 / 租车 / 用车 / 待补写（去掉 #标签 后不到 10 个字）；可搜索地点、人、日期；「补写这一天」可以给没有 TeslaMate 记录的日子（如提车后第一趟）加日记。输入后 600 ms 自动保存（`scheduleDeviceSave`）。
+- MCP 新增只读工具 `car_diary`。
+
 ## 6. Tax 页面模型
 
 `tax.html` 使用年度账本结构：

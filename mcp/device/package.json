@@ -11,7 +11,8 @@
     "start": "node src/server.mjs",
     "login": "node src/login.mjs",
     "logout": "node src/login.mjs --logout",
-    "test": "node test/smoke.mjs"
+    "test": "node test/smoke.mjs",
+    "push-carlog": "node src/push-carlog.mjs"
   },
   "engines": {
     "node": ">=20"

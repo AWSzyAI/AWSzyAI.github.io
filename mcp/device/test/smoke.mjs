@@ -11,7 +11,7 @@ console.log('tools:', tools.map(t => t.name).join(', '));
 const calls = [
     ['device_status', {}], ['list_items', { type: 'sub', activeOnly: true }], ['get_item', { name: '车贷' }],
     ['rentals', {}], ['car_loan', {}], ['ledger', { from: '2026-10-01', to: '2026-10-31', category: '汽车充电' }],
-    ['spending_summary', { from: '2026-10-01', to: '2026-10-31' }], ['checkins', { name: '上班' }],
+    ['spending_summary', { from: '2026-10-01', to: '2026-10-31' }], ['checkins', { name: '上班' }], ['car_diary', { onlyThin: true }],
     ['get_item', { name: '不存在的项目' }], ['spending_summary', { from: '10/01' }],
 ];
 let failed = 0;

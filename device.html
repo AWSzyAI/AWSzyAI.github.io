@@ -78,7 +78,7 @@
 <body class="text-gray-700 p-4 md:p-6 min-h-screen">
   <div class="max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-6">
 
-    <aside class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4 sticky-sidebar no-scrollbar z-20">
+    <aside id="device-aside" class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4 sticky-sidebar no-scrollbar z-20">
 
       <div id="ledger-panel" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hidden">
         <div class="flex items-center justify-between mb-3">
@@ -361,6 +361,10 @@
             class="tab-btn px-4 py-1.5 text-sm font-medium rounded-md transition-all">
             租赁
           </button>
+          <button onclick="switchTab('diary')" id="tab-diary"
+            class="tab-btn px-4 py-1.5 text-sm font-medium rounded-md transition-all">
+            日记
+          </button>
           <button onclick="switchTab('checkin')" id="tab-checkin"
             class="tab-btn px-4 py-1.5 text-sm font-medium rounded-md transition-all">
             打卡
@@ -392,7 +396,7 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200 relative z-10">
+      <div id="main-card" class="bg-white rounded-xl shadow-sm p-5 border border-gray-200 relative z-10">
       <div id="asset-summary-block"
           class="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 gap-4">
           <div id="asset-summary-metrics">
@@ -729,6 +733,7 @@
       </div>
 
       <div id="cards-container" class="grid gap-3 transition-all duration-300"></div>
+      <section id="diary-panel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-5"></section>
     </main>
   </div>
 
@@ -937,9 +942,11 @@
       items: JSON.parse(JSON.stringify(DEVICE_TEMPLATE_ITEMS)),
       ledger: {},
       mileage: null,
+      carLog: null,
       template: true
     };
     let deviceMileage = null;
+    let carLog = null;   // TeslaMate 每日行程摘要（租车 & 用车日记用）
 
     let currentTab = 'active';
     let editingId = null;
@@ -1759,7 +1766,8 @@
         exportedAt: new Date().toISOString(),
         items: items.map((item) => ({ ...item })),
         ledger: JSON.parse(JSON.stringify(ledgerData || {})),
-        mileage: deviceMileage ? JSON.parse(JSON.stringify(deviceMileage)) : null
+        mileage: deviceMileage ? JSON.parse(JSON.stringify(deviceMileage)) : null,
+        carLog: carLog ? JSON.parse(JSON.stringify(carLog)) : null
       };
     }
 
@@ -1774,6 +1782,7 @@
       deviceMileage = payload && payload.mileage
         ? JSON.parse(JSON.stringify(payload.mileage))
         : null;
+      carLog = payload && payload.carLog ? JSON.parse(JSON.stringify(payload.carLog)) : null;
       FINANCE_DEMO_ENABLED = !(rawItems && rawItems.length) || payload?.template === true;
       editingId = null;
       tempSubRecords = [];
@@ -2138,6 +2147,244 @@
       });
     });
 
+    // ===================== 租车 & 用车日记 =====================
+    // 租车：直接编辑租车项目（isCarRental）每条记录的 note 和 mileage。
+    // 用车：每天一条，存在打卡项目「开车」（km 型）当天的记录里：value = 当天公里数，note = 日记。
+    // carLog：本机脚本从 TeslaMate 生成的每日行程摘要，只读参考（mcp/device/README.md）。
+    let diaryFilter = 'all';
+    let diaryQuery = '';
+    const diaryExtraDays = new Set();   // 「补写某一天」临时加进列表、还没写内容的日期
+    const diarySaveTimers = {};
+    const DIARY_THIN_CHARS = 10;        // 去掉 #标签 后少于这么多字，算「待补写」
+
+    function getDrivingItem(create = false) {
+      let item = items.find((i) => i.type === 'checkin' && i.name === '开车');
+      if (!item && create) {
+        item = normalizeItem({ type: 'checkin', name: '开车', checkinType: 'km', records: {} });
+        items.push(item);
+      }
+      return item || null;
+    }
+
+    function diaryEntries() {
+      const list = [];
+      items.filter(isCarRental).forEach((item) => {
+        item.records.forEach((rec, idx) => {
+          list.push({ kind: 'rent', key: `rent|${item.id}|${idx}`, date: rec.start, item, rec, note: rec.note || '' });
+        });
+      });
+      const drive = getDrivingItem();
+      const days = new Set([
+        ...Object.keys(carLog?.days || {}),
+        ...Object.keys(drive?.records || {}),
+        ...diaryExtraDays
+      ]);
+      days.forEach((date) => {
+        const raw = drive?.records?.[date];
+        const data = raw === undefined ? { value: null, note: '' } : getCheckinRecordData(raw);
+        list.push({ kind: 'drive', key: `drive|${date}`, date, km: data.value, note: data.note, log: carLog?.days?.[date] || null });
+      });
+      return list.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    }
+
+    function isThinNote(note) {
+      return String(note || '').replace(/#\S+/g, '').trim().length < DIARY_THIN_CHARS;
+    }
+
+    function diaryDayLabel(dateStr) {
+      const d = new Date(`${dateStr}T00:00:00`);
+      return `${d.getMonth() + 1}/${d.getDate()} 周${'日一二三四五六'[d.getDay()]}`;
+    }
+
+    function renderDiaryEntry(e) {
+      const textarea = `<textarea data-key="${e.key}" data-field="note" rows="2"
+          class="diary-text w-full text-sm leading-relaxed text-gray-800 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 ${isThinNote(e.note) ? 'bg-amber-50/60' : 'bg-white'}"
+          placeholder="${e.kind === 'rent' ? '这次租车去了哪、和谁、做了什么' : '今天开车去了哪、和谁、做了什么'}">${escapeHtml(e.note)}</textarea>`;
+      const status = `<span data-status="${e.key}" class="text-[11px] text-gray-400"></span>`;
+      const kmInput = (val, placeholder) => `<label class="inline-flex items-center gap-1 text-xs text-gray-500">
+          <input data-key="${e.key}" data-field="km" type="number" min="0" step="0.1" value="${val ?? ''}" placeholder="${placeholder}"
+            class="w-20 text-right font-mono border border-gray-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-200"> km</label>`;
+      if (e.kind === 'rent') {
+        const days = Math.max(1, Math.round((new Date(e.rec.end || e.rec.start) - new Date(e.rec.start)) / 864e5));
+        return `<div class="flex gap-4 py-3 border-b border-gray-100 last:border-0">
+          <div class="w-24 flex-shrink-0 pt-1">
+            <div class="flex items-center gap-1.5 text-sm font-semibold text-gray-800"><span class="w-2 h-2 rounded-full ${CAR_RENTAL_COLOR.bg}"></span>${diaryDayLabel(e.rec.start)}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5">租车 · ${days} 天</div>
+          </div>
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+              <span>${escapeHtml(e.item.name)} · ${e.rec.start.slice(5)} → ${(e.rec.end || '').slice(5)}</span>
+              <span class="font-mono">¥${formatMoney(e.rec.price)}</span>
+              ${kmInput(e.rec.mileage, '公里')}
+              ${status}
+            </div>
+            ${textarea}
+          </div>
+        </div>`;
+      }
+      const log = e.log;
+      const meta = log
+        ? [`${log.km} km`, `${log.min} 分钟`, `${log.n} 段`, log.charge ? `充电 ${log.charge.n} 次 ¥${formatMoney(log.charge.cost)}` : '']
+            .filter(Boolean).join(' · ')
+        : '没有 TeslaMate 记录';
+      const route = log?.route?.length ? escapeHtml(log.route.join(' → ')) : '';
+      return `<div class="flex gap-4 py-3 border-b border-gray-100 last:border-0">
+          <div class="w-24 flex-shrink-0 pt-1">
+            <div class="flex items-center gap-1.5 text-sm font-semibold text-gray-800"><span class="w-2 h-2 rounded-full ${CAR_LOAN_COLOR.bg}"></span>${diaryDayLabel(e.date)}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5">自己的车</div>
+          </div>
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+              <span>${meta}</span>
+              ${kmInput(e.km ?? '', log ? String(log.km) : '公里')}
+              ${status}
+            </div>
+            ${route ? `<div class="text-xs text-gray-400 leading-relaxed">${route}</div>` : ''}
+            ${textarea}
+          </div>
+        </div>`;
+    }
+
+    function renderDiary() {
+      const panel = document.getElementById('diary-panel');
+      if (!panel) return;
+      const all = diaryEntries();
+      const rents = all.filter((e) => e.kind === 'rent');
+      const drives = all.filter((e) => e.kind === 'drive');
+      const q = diaryQuery.trim().toLowerCase();
+      const shown = all.filter((e) => {
+        if (diaryFilter === 'rent' && e.kind !== 'rent') return false;
+        if (diaryFilter === 'drive' && e.kind !== 'drive') return false;
+        if (diaryFilter === 'thin' && !isThinNote(e.note)) return false;
+        if (!q) return true;
+        const hay = [e.date, e.note, e.log?.route?.join(' ') || ''].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+      const months = [];
+      shown.forEach((e) => {
+        const m = e.date.slice(0, 7);
+        if (!months.length || months[months.length - 1].m !== m) months.push({ m, list: [] });
+        months[months.length - 1].list.push(e);
+      });
+      const chip = (val, label, n) => `<button data-diary-filter="${val}"
+          class="px-3 py-1 text-xs rounded-md transition ${diaryFilter === val ? 'bg-white text-gray-800 shadow-sm font-medium' : 'text-gray-500 hover:text-gray-700'}">${label} <span class="text-gray-400">${n}</span></button>`;
+      const signedIn = Boolean(window.SzyCloud?.isSignedIn());
+      const logInfo = carLog?.generatedAt
+        ? `行程摘要来自 TeslaMate，更新于 ${String(carLog.generatedAt).slice(0, 16).replace('T', ' ')}，覆盖 ${Object.keys(carLog.days || {}).length} 天。`
+        : '还没有 TeslaMate 行程摘要，可以先直接写。';
+      panel.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4">
+          <div>
+            <h1 class="text-lg font-bold text-gray-800">租车 &amp; 用车日记</h1>
+            <p class="text-xs text-gray-500 mt-1">租车 ${rents.length} 单（${rents.filter((e) => isThinNote(e.note)).length} 单待补写）· 自己的车 ${drives.length} 天（${drives.filter((e) => isThinNote(e.note)).length} 天待补写）。${logInfo}</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">输入后自动保存。租车备注里以 # 开头的词会被当作标签参与统计；用车日记存在打卡项目「开车」里。</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center bg-gray-100 p-1 rounded-lg">
+              ${chip('all', '全部', all.length)}${chip('rent', '租车', rents.length)}${chip('drive', '用车', drives.length)}${chip('thin', '待补写', all.filter((e) => isThinNote(e.note)).length)}
+            </div>
+            <input id="diary-search" type="search" value="${escapeHtml(diaryQuery)}" placeholder="搜索地点、人、日期"
+              class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 w-40 focus:outline-none focus:ring-2 focus:ring-blue-200">
+            <input id="diary-add-date" type="date" class="text-xs border border-gray-200 rounded-lg px-2 py-1">
+            <button id="diary-add-btn" class="text-xs bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700">补写这一天</button>
+          </div>
+        </div>
+        ${signedIn ? '' : '<div class="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">模板模式：现在看到的是示例数据，登录后编辑才会同步到云端。</div>'}
+        ${months.length ? months.map(({ m, list }) => `
+          <div class="mt-2">
+            <div class="sticky top-0 bg-white/95 backdrop-blur z-10 text-xs font-semibold text-gray-500 py-1.5 border-b border-gray-200">${m.slice(0, 4)} 年 ${Number(m.slice(5))} 月</div>
+            ${list.map(renderDiaryEntry).join('')}
+          </div>`).join('') : '<div class="text-sm text-gray-400 py-10 text-center">没有符合条件的记录</div>'}`;
+      panel.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary);
+    }
+
+    function autoSizeDiary(el) {
+      el.style.height = 'auto';
+      el.style.height = `${Math.max(56, el.scrollHeight + 2)}px`;
+    }
+
+    function commitDiary(key, field, value) {
+      const [kind, a, b] = key.split('|');
+      if (kind === 'rent') {
+        const item = items.find((i) => String(i.id) === a);
+        const rec = item?.records?.[Number(b)];
+        if (!rec) return false;
+        if (field === 'note') {
+          rec.note = value.trim();
+        } else {
+          const n = parseFloat(value);
+          if (isFinite(n) && n > 0) rec.mileage = Math.round(n * 10) / 10;
+          else delete rec.mileage;
+        }
+      } else {
+        const date = a;
+        const drive = getDrivingItem(true);
+        const old = drive.records[date];
+        const prev = old === undefined ? { value: null, note: '' } : getCheckinRecordData(old);
+        let km = prev.value;
+        let note = prev.note;
+        if (field === 'km') {
+          const n = parseFloat(value);
+          km = isFinite(n) && n >= 0 ? Math.round(n * 10) / 10 : null;
+        } else {
+          note = value;
+        }
+        if (km == null) km = carLog?.days?.[date]?.km ?? 0;
+        if (!String(note).trim() && !(km > 0)) delete drive.records[date];
+        else drive.records[date] = packCheckinRecord(km, note);
+      }
+      scheduleDeviceSave();
+      return true;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const panel = document.getElementById('diary-panel');
+      if (!panel) return;
+      panel.addEventListener('input', (ev) => {
+        const el = ev.target;
+        if (el.id === 'diary-search') {
+          diaryQuery = el.value;
+          clearTimeout(diarySaveTimers.__search);
+          diarySaveTimers.__search = setTimeout(() => {
+            renderDiary();
+            const box = document.getElementById('diary-search');
+            box.focus();
+            box.setSelectionRange(box.value.length, box.value.length);
+          }, 250);
+          return;
+        }
+        const key = el.dataset.key;
+        if (!key) return;
+        if (el.tagName === 'TEXTAREA') autoSizeDiary(el);
+        const status = panel.querySelector(`[data-status="${CSS.escape(key)}"]`);
+        if (status) status.textContent = '编辑中…';
+        clearTimeout(diarySaveTimers[key + el.dataset.field]);
+        diarySaveTimers[key + el.dataset.field] = setTimeout(() => {
+          const ok = commitDiary(key, el.dataset.field, el.value);
+          if (status) status.textContent = !ok ? '保存失败：记录已变化，请刷新' : window.SzyCloud?.isSignedIn() ? '已保存' : '模板模式，未同步';
+          if (el.tagName === 'TEXTAREA') el.classList.toggle('bg-amber-50/60', isThinNote(el.value));
+        }, 600);
+      });
+      panel.addEventListener('click', (ev) => {
+        const f = ev.target.closest('[data-diary-filter]');
+        if (f) {
+          diaryFilter = f.dataset.diaryFilter;
+          renderDiary();
+          return;
+        }
+        if (ev.target.id === 'diary-add-btn') {
+          const date = document.getElementById('diary-add-date').value;
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+          diaryExtraDays.add(date);
+          diaryFilter = 'all';
+          diaryQuery = '';
+          renderDiary();
+          const box = panel.querySelector(`textarea[data-key="drive|${date}"]`);
+          if (box) { box.scrollIntoView({ block: 'center' }); box.focus(); }
+        }
+      });
+    });
+
     // ===================== Tab & 表单类型 =====================
     function switchTab(tab) {
       currentTab = tab;
@@ -2151,6 +2398,17 @@
       if (activeBtn) {
         activeBtn.className =
           'tab-btn px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm';
+      }
+
+      // 日记页占满整个宽度，其他面板都收起来
+      const isDiary = tab === 'diary';
+      document.getElementById('device-aside').classList.toggle('hidden', isDiary);
+      document.getElementById('main-card').classList.toggle('hidden', isDiary);
+      document.getElementById('cards-container').style.display = isDiary ? 'none' : '';   // 它带 grid 类，hidden 压不住
+      document.getElementById('diary-panel').classList.toggle('hidden', !isDiary);
+      if (isDiary) {
+        renderDiary();
+        return;
       }
 
       const hideForm = isFinance;
@@ -2467,6 +2725,7 @@
 
     // ===================== 渲染 =====================
     function render() {
+      if (currentTab === 'diary') return;   // 日记页自己渲染，避免打字时被整页重绘打断
       const container = document.getElementById('cards-container');
       const barDaily = document.getElementById('bar-daily');
       const barRealtime = document.getElementById('bar-realtime');
@@ -6961,7 +7220,8 @@
         exportedAt: new Date().toISOString(),
         items: items.map((i) => ({ ...i })),
         ledger: ledgerData,
-        mileage: deviceMileage
+        mileage: deviceMileage,
+        carLog
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: 'application/json'
@@ -6994,6 +7254,8 @@
           deviceMileage = parsed && parsed.mileage
             ? JSON.parse(JSON.stringify(parsed.mileage))
             : null;
+          // 旧备份没有 carLog：保留当前的行程摘要（它由脚本从 TeslaMate 重新生成）
+          if (parsed && parsed.carLog) carLog = JSON.parse(JSON.stringify(parsed.carLog));
           FINANCE_DEMO_ENABLED = false;
           saveLedgerToStorage();
           renderLedgerCalendar();

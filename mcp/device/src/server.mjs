@@ -64,6 +64,11 @@ tool('spending_summary', '区间收支汇总',
     { from: date, to: date },
     ({ payload }, a) => q.spendingSummary(payload, a));
 
+tool('car_diary', '租车 & 用车日记',
+    '租车订单的备注，加上自己的车每天的公里数、日记（打卡项目「开车」）和 TeslaMate 行程摘要（途经地点、充电）。onlyThin=true 只看没写或太简略（去掉 #标签 后不到 10 个字）的。',
+    { from: date.optional(), to: date.optional(), onlyThin: z.boolean().optional() },
+    ({ payload }, a) => q.carDiary(payload, a));
+
 tool('checkins', '打卡记录',
     '打卡项目（如「上班」）在某段时间内的记录。',
     { name: z.string().optional(), from: date.optional(), to: date.optional() },
