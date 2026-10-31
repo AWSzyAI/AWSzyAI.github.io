@@ -1128,17 +1128,51 @@
 
     // 账本支出行可带 until（覆盖期的结束日，不含当天），如提前付了一段时间的费用。
     // 按实付日：整笔记在发生日；按天摊销：平摊到 [发生日, until) 的每一天。
-    // 摊销只针对支出（提前付过款、覆盖未来一段时间的钱，避免忘记它们）；收入（含补助）永远按到账日整笔计入，until 对收入无效。
+    // 摊销只针对支出（提前付过款、覆盖未来一段时间的钱，避免忘记它们）；收入整笔计入、不摊销，until 对收入无效
+    //（补助提前到账时计入所属的那一期，见 incomeCountDate）。
     function ledgerRowUntil(dateStr, row) {
       const until = row && row.until;
       return typeof until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(until) && until > dateStr ? until : '';
+    }
+
+    // 补助（名称带 #补助、写了「N月」）提前或推迟到账时，计入 N 月那一期，不因为早到一天就算进上一期
+    // （用户 2026-10-31：西湖 10 月的 1,250 在 10/23 到账，应算在 10 月周期）。
+    // 到账日本来就在那一期里就不挪；挪的时候记在那一期的第一天。其他收入仍按到账日整笔计入。
+    function incomeCountDate(dateStr, row) {
+      const name = String(row?.name || '');
+      const m = name.includes('#补助') && name.match(/(\d{1,2})月/);
+      if (!m) return dateStr;
+      const month = Number(m[1]);
+      if (month < 1 || month > 12) return dateStr;
+      const d = startOfDay(dateStr);
+      let year = d.getFullYear();
+      const diff = month - (d.getMonth() + 1);
+      if (diff > 6) year -= 1;          // 1 月发的「12月」补助
+      else if (diff < -6) year += 1;    // 12 月提前发的「1月」补助
+      const bounds = getMonthBounds(new Date(year, month - 1, monthMode === 'payday' ? PAYDAY : 1));
+      if (d >= bounds.start && d < bounds.endExclusive) return dateStr;
+      return formatDate(bounds.start);
+    }
+
+    // 计入日 → 收入行；只有被挪了日期的收入需要这张表
+    function shiftedIncomesByDate() {
+      const map = {};
+      Object.entries(ledgerData || {}).forEach(([dateStr, entry]) => {
+        (entry?.incomes || []).forEach((row) => {
+          const at = incomeCountDate(dateStr, row);
+          if (at !== dateStr) (map[at] = map[at] || []).push({ ...row, note: [row.note, `${dateStr.slice(5).replace('-', '/')} ${at > dateStr ? '提前' : '推迟'}到账`].filter(Boolean).join(' · ') });
+        });
+      });
+      return map;
     }
 
     function getLedgerRowsForDate(dateStr) {
       const own = ledgerData[dateStr] || {};
       const result = {
         expenses: [],
-        incomes: Array.isArray(own.incomes) ? own.incomes.slice() : []
+        incomes: (Array.isArray(own.incomes) ? own.incomes : [])
+          .filter((row) => incomeCountDate(dateStr, row) === dateStr)
+          .concat(shiftedIncomesByDate()[dateStr] || [])
       };
       (Array.isArray(own.expenses) ? own.expenses : []).forEach((row) => {
         if (costView === 'amortize' && ledgerRowUntil(dateStr, row)) return;
