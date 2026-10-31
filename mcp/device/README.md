@@ -39,6 +39,10 @@ claude mcp add --scope user szy-device -e DEVICE_MCP_BACKUP_DIR=<备份目录> -
 
 脚本只接收回调里的一次性 code，不经手 GitHub 密码。会话文件和任何导出的数据都不要提交进仓库。
 
+## 导出给本机脚本
+
+`npm run -s dump > device.json`：只读，把 device 文档原样输出（云端优先，退回备份），stderr 打印来源。
+
 ## 推送 TeslaMate 行程摘要（device「日记」页用）
 
 ```bash

@@ -1724,6 +1724,9 @@
               : {}),
             ...(r.mileage !== undefined
               ? { mileage: Number(r.mileage) || 0 }
+              : {}),
+            ...(typeof r.model === 'string' && r.model.trim()
+              ? { model: r.model.trim() }   // 租车车型（日记页填写）
               : {})
           }))
           .filter((r) => r.start);
@@ -2157,6 +2160,17 @@
     const diaryExtraDays = new Set();   // 「补写某一天」临时加进列表、还没写内容的日期
     const diarySaveTimers = {};
     const DIARY_THIN_CHARS = 10;        // 去掉 #标签 后少于这么多字，算「待补写」
+    const CAR_MODEL_SUGGESTIONS = ['特斯拉 Model 3', '特斯拉 Model Y', '本田飞度', '小米 SU7', '小米 YU7', '小鹏 P7+', '蔚来 ET5T', '五菱缤果', '现代'];
+    // 从租车备注里猜车型，只作为输入框的提示，不会自动写进数据
+    const CAR_MODEL_GUESS = [
+      [/model ?y|modely/i, '特斯拉 Model Y'], [/model ?3|磨砂紫/i, '特斯拉 Model 3'], [/特斯拉|tesla/i, '特斯拉'],
+      [/飞度/, '本田飞度'], [/su7/i, '小米 SU7'], [/yu7/i, '小米 YU7'], [/小鹏|p7/i, '小鹏 P7+'],
+      [/et5t/i, '蔚来 ET5T'], [/缤果/, '五菱缤果'], [/现代/, '现代']
+    ];
+    function guessCarModel(note) {
+      const hit = CAR_MODEL_GUESS.find(([re]) => re.test(note || ''));
+      return hit ? hit[1] : '';
+    }
 
     function getDrivingItem(create = false) {
       let item = items.find((i) => i.type === 'checkin' && i.name === '开车');
@@ -2171,7 +2185,7 @@
       const list = [];
       items.filter(isCarRental).forEach((item) => {
         item.records.forEach((rec, idx) => {
-          list.push({ kind: 'rent', key: `rent|${item.id}|${idx}`, date: rec.start, item, rec, note: rec.note || '' });
+          list.push({ kind: 'rent', key: `rent|${item.id}|${idx}`, date: rec.start, item, rec, note: rec.note || '', model: rec.model || '' });
         });
       });
       const drive = getDrivingItem();
@@ -2197,6 +2211,14 @@
       return `${d.getMonth() + 1}/${d.getDate()} 周${'日一二三四五六'[d.getDay()]}`;
     }
 
+    function modelInput(e) {
+      const guess = e.model ? '' : guessCarModel(e.note);
+      return `<label class="inline-flex items-center gap-1 text-xs text-gray-500">车型
+          <input data-key="${e.key}" data-field="model" list="car-model-list" value="${escapeHtml(e.model)}" placeholder="${guess ? `可能是 ${escapeHtml(guess)}` : '没写'}"
+            class="w-36 border ${e.model ? 'border-gray-200' : 'border-amber-300 bg-amber-50/60'} rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-200"></label>
+        ${guess ? `<button data-fill-model="${e.key}" data-model="${escapeHtml(guess)}" class="text-[11px] text-blue-600 hover:underline">填入「${escapeHtml(guess)}」</button>` : ''}`;
+    }
+
     function renderDiaryEntry(e) {
       const textarea = `<textarea data-key="${e.key}" data-field="note" rows="2"
           class="diary-text w-full text-sm leading-relaxed text-gray-800 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 ${isThinNote(e.note) ? 'bg-amber-50/60' : 'bg-white'}"
@@ -2216,6 +2238,7 @@
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
               <span>${escapeHtml(e.item.name)} · ${e.rec.start.slice(5)} → ${(e.rec.end || '').slice(5)}</span>
               <span class="font-mono">¥${formatMoney(e.rec.price)}</span>
+              ${modelInput(e)}
               ${kmInput(e.rec.mileage, '公里')}
               ${status}
             </div>
@@ -2257,8 +2280,9 @@
         if (diaryFilter === 'rent' && e.kind !== 'rent') return false;
         if (diaryFilter === 'drive' && e.kind !== 'drive') return false;
         if (diaryFilter === 'thin' && !isThinNote(e.note)) return false;
+        if (diaryFilter === 'nomodel' && !(e.kind === 'rent' && !e.model)) return false;
         if (!q) return true;
-        const hay = [e.date, e.note, e.log?.route?.join(' ') || ''].join(' ').toLowerCase();
+        const hay = [e.date, e.note, e.model || '', e.log?.route?.join(' ') || ''].join(' ').toLowerCase();
         return hay.includes(q);
       });
       const months = [];
@@ -2278,11 +2302,12 @@
           <div>
             <h1 class="text-lg font-bold text-gray-800">租车 &amp; 用车日记</h1>
             <p class="text-xs text-gray-500 mt-1">租车 ${rents.length} 单（${rents.filter((e) => isThinNote(e.note)).length} 单待补写）· 自己的车 ${drives.length} 天（${drives.filter((e) => isThinNote(e.note)).length} 天待补写）。${logInfo}</p>
-            <p class="text-[11px] text-gray-400 mt-0.5">输入后自动保存。租车备注里以 # 开头的词会被当作标签参与统计；用车日记存在打卡项目「开车」里。</p>
+            <datalist id="car-model-list">${[...new Set([...CAR_MODEL_SUGGESTIONS, ...rents.map((e) => e.model).filter(Boolean)])].map((m) => `<option value="${escapeHtml(m)}">`).join('')}</datalist>
+            <p class="text-[11px] text-gray-400 mt-0.5">输入后自动保存。租车的「车型」可以从下拉里选，也可以直接打字。租车备注里以 # 开头的词会被当作标签参与统计；用车日记存在打卡项目「开车」里。</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <div class="flex items-center bg-gray-100 p-1 rounded-lg">
-              ${chip('all', '全部', all.length)}${chip('rent', '租车', rents.length)}${chip('drive', '用车', drives.length)}${chip('thin', '待补写', all.filter((e) => isThinNote(e.note)).length)}
+              ${chip('all', '全部', all.length)}${chip('rent', '租车', rents.length)}${chip('drive', '用车', drives.length)}${chip('thin', '待补写', all.filter((e) => isThinNote(e.note)).length)}${chip('nomodel', '缺车型', rents.filter((e) => !e.model).length)}
             </div>
             <input id="diary-search" type="search" value="${escapeHtml(diaryQuery)}" placeholder="搜索地点、人、日期"
               class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 w-40 focus:outline-none focus:ring-2 focus:ring-blue-200">
@@ -2452,6 +2477,9 @@
         if (!rec) return false;
         if (field === 'note') {
           rec.note = value.trim();
+        } else if (field === 'model') {
+          if (value.trim()) rec.model = value.trim();
+          else delete rec.model;
         } else {
           const n = parseFloat(value);
           if (isFinite(n) && n > 0) rec.mileage = Math.round(n * 10) / 10;
@@ -2517,6 +2545,17 @@
         if (mv) {
           diaryMonthCursor = new Date(diaryMonthCursor.getFullYear(), diaryMonthCursor.getMonth() + Number(mv.dataset.diaryMonth), 1);
           renderDiary();
+          return;
+        }
+        const fill = ev.target.closest('[data-fill-model]');
+        if (fill) {
+          const input = panel.querySelector(`input[data-field="model"][data-key="${CSS.escape(fill.dataset.fillModel)}"]`);
+          if (input) {
+            input.value = fill.dataset.model;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.classList.remove('border-amber-300', 'bg-amber-50/60');
+            fill.remove();
+          }
           return;
         }
         const dayBtn = ev.target.closest('[data-diary-day]');

@@ -95,6 +95,7 @@ export function rentals(payload, { name = '租车', from, to } = {}) {
             const row = { start: r.start, end: r.end, days: d, price: r.price, perDay: round(r.price / d) };
             if (r.mileage) Object.assign(row, { km: r.mileage, perKm: round(r.price / r.mileage) });
             if (r.paid) row.paid = r.paid;
+            if (r.model) row.model = r.model;
             if (r.note) row.note = r.note;
             return row;
         });
@@ -210,7 +211,8 @@ export function carDiary(payload, { from, to, onlyThin = false } = {}) {
         if (item.type !== 'rental' || item.kind === 'loan' || !/租车|汽车|car|vehicle/i.test(item.name || '')) continue;
         for (const r of records(item)) {
             if (!inRange(r.start)) continue;
-            out.push({ kind: 'rent', date: r.start, end: r.end, price: r.price, ...(r.mileage ? { km: r.mileage } : {}), note: r.note || '' });
+            out.push({ kind: 'rent', date: r.start, end: r.end, price: r.price, ...(r.mileage ? { km: r.mileage } : {}),
+                       ...(r.model ? { model: r.model } : {}), note: r.note || '' });
         }
     }
     const drive = (payload.items || []).find(i => i.type === 'checkin' && i.name === '开车');
