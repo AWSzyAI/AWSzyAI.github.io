@@ -80,6 +80,8 @@
 
     <aside id="device-aside" class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4 sticky-sidebar no-scrollbar z-20">
 
+      <div id="diary-side-panel" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hidden"></div>
+
       <div id="ledger-panel" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hidden">
         <div class="flex items-center justify-between mb-3">
           <div>
@@ -733,7 +735,7 @@
       </div>
 
       <div id="cards-container" class="grid gap-3 transition-all duration-300"></div>
-      <section id="diary-panel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-5"></section>
+      <section id="diary-panel" class="hidden space-y-3"></section>
     </main>
   </div>
 
@@ -2151,17 +2153,18 @@
     });
 
     // ===================== 租车 & 用车日记 =====================
-    // 租车：直接编辑租车项目（isCarRental）每条记录的 note 和 mileage。
+    // 布局和其他标签页一致：左栏是日记日历（样式同记账日历），右边是统计卡片 + 一条条日记卡片。
+    // 租车：直接编辑租车项目（isCarRental）每条记录的 note / mileage / model。
     // 用车：每天一条，存在打卡项目「开车」（km 型）当天的记录里：value = 当天公里数，note = 日记。
     // carLog：本机脚本从 TeslaMate 生成的每日行程摘要，只读参考（mcp/device/README.md）。
     let diaryFilter = 'all';
     let diaryQuery = '';
-    let diaryMonthCursor = null;        // 左侧日历显示的月份（当月 1 日）；null = 最近一条记录所在月
-    const diaryExtraDays = new Set();   // 「补写某一天」临时加进列表、还没写内容的日期
+    let diaryMonthCursor = null;        // 左栏日历显示的月份（当月 1 日）；null = 最近一条记录所在月
+    const diaryExtraDays = new Set();   // 「补写这一天」临时加进列表、还没写内容的日期
     const diarySaveTimers = {};
     const DIARY_THIN_CHARS = 10;        // 去掉 #标签 后少于这么多字，算「待补写」
     const CAR_MODEL_SUGGESTIONS = ['特斯拉 Model 3', '特斯拉 Model Y', '本田飞度', '小米 SU7', '小米 YU7', '小鹏 P7+', '蔚来 ET5T', '五菱缤果', '现代'];
-    // 从租车备注里猜车型，只作为输入框的提示，不会自动写进数据
+    // 从租车备注里猜车型，只作为提示和「填入」按钮，不会自动写进数据
     const CAR_MODEL_GUESS = [
       [/model ?y|modely/i, '特斯拉 Model Y'], [/model ?3|磨砂紫/i, '特斯拉 Model 3'], [/特斯拉|tesla/i, '特斯拉'],
       [/飞度/, '本田飞度'], [/su7/i, '小米 SU7'], [/yu7/i, '小米 YU7'], [/小鹏|p7/i, '小鹏 P7+'],
@@ -2181,6 +2184,12 @@
       return item || null;
     }
 
+    function driveEntry(date) {
+      const raw = getDrivingItem()?.records?.[date];
+      const data = raw === undefined ? { value: null, note: '' } : getCheckinRecordData(raw);
+      return { kind: 'drive', key: `drive|${date}`, date, km: data.value, note: data.note, log: carLog?.days?.[date] || null };
+    }
+
     function diaryEntries() {
       const list = [];
       items.filter(isCarRental).forEach((item) => {
@@ -2188,17 +2197,12 @@
           list.push({ kind: 'rent', key: `rent|${item.id}|${idx}`, date: rec.start, item, rec, note: rec.note || '', model: rec.model || '' });
         });
       });
-      const drive = getDrivingItem();
       const days = new Set([
         ...Object.keys(carLog?.days || {}),
-        ...Object.keys(drive?.records || {}),
+        ...Object.keys(getDrivingItem()?.records || {}),
         ...diaryExtraDays
       ]);
-      days.forEach((date) => {
-        const raw = drive?.records?.[date];
-        const data = raw === undefined ? { value: null, note: '' } : getCheckinRecordData(raw);
-        list.push({ kind: 'drive', key: `drive|${date}`, date, km: data.value, note: data.note, log: carLog?.days?.[date] || null });
-      });
+      days.forEach((date) => list.push(driveEntry(date)));
       return list.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
     }
 
@@ -2206,67 +2210,77 @@
       return String(note || '').replace(/#\S+/g, '').trim().length < DIARY_THIN_CHARS;
     }
 
-    function diaryDayLabel(dateStr) {
-      const d = new Date(`${dateStr}T00:00:00`);
-      return `${d.getMonth() + 1}/${d.getDate()} 周${'日一二三四五六'[d.getDay()]}`;
+    // 每天在日记里有什么（租车按 [start, end) 展开到每一天）
+    function diaryDayMap(all) {
+      const map = {};
+      const add = (date, e) => { (map[date] = map[date] || []).push(e); };
+      all.forEach((e) => {
+        if (e.kind === 'drive') { add(e.date, e); return; }
+        const end = e.rec.end || e.rec.start;
+        let d = new Date(`${e.rec.start}T00:00:00`);
+        do { add(formatDate(d), e); d = addDays(d, 1); } while (formatDate(d) < end);
+      });
+      return map;
     }
 
-    function modelInput(e) {
-      const guess = e.model ? '' : guessCarModel(e.note);
-      return `<label class="inline-flex items-center gap-1 text-xs text-gray-500">车型
-          <input data-key="${e.key}" data-field="model" list="car-model-list" value="${escapeHtml(e.model)}" placeholder="${guess ? `可能是 ${escapeHtml(guess)}` : '没写'}"
-            class="w-36 border ${e.model ? 'border-gray-200' : 'border-amber-300 bg-amber-50/60'} rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-200"></label>
-        ${guess ? `<button data-fill-model="${e.key}" data-model="${escapeHtml(guess)}" class="text-[11px] text-blue-600 hover:underline">填入「${escapeHtml(guess)}」</button>` : ''}`;
-    }
+    const WEEK_CN = '日一二三四五六';
+    const dayOf = (dateStr) => new Date(`${dateStr}T00:00:00`);
 
-    function renderDiaryEntry(e) {
-      const textarea = `<textarea data-key="${e.key}" data-field="note" rows="2"
-          class="diary-text w-full text-sm leading-relaxed text-gray-800 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 ${isThinNote(e.note) ? 'bg-amber-50/60' : 'bg-white'}"
-          placeholder="${e.kind === 'rent' ? '这次租车去了哪、和谁、做了什么' : '今天开车去了哪、和谁、做了什么'}">${escapeHtml(e.note)}</textarea>`;
-      const status = `<span data-status="${e.key}" class="text-[11px] text-gray-400"></span>`;
-      const kmInput = (val, placeholder) => `<label class="inline-flex items-center gap-1 text-xs text-gray-500">
-          <input data-key="${e.key}" data-field="km" type="number" min="0" step="0.1" value="${val ?? ''}" placeholder="${placeholder}"
-            class="w-20 text-right font-mono border border-gray-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-200"> km</label>`;
-      if (e.kind === 'rent') {
-        const days = Math.max(1, Math.round((new Date(e.rec.end || e.rec.start) - new Date(e.rec.start)) / 864e5));
-        return `<div class="flex gap-4 py-3 border-b border-gray-100 last:border-0">
-          <div class="w-24 flex-shrink-0 pt-1">
-            <div class="flex items-center gap-1.5 text-sm font-semibold text-gray-800"><span class="w-2 h-2 rounded-full ${CAR_RENTAL_COLOR.bg}"></span>${diaryDayLabel(e.rec.start)}</div>
-            <div class="text-[11px] text-gray-400 mt-0.5">租车 · ${days} 天</div>
-          </div>
-          <div class="flex-1 min-w-0 space-y-1.5">
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-              <span>${escapeHtml(e.item.name)} · ${e.rec.start.slice(5)} → ${(e.rec.end || '').slice(5)}</span>
-              <span class="font-mono">¥${formatMoney(e.rec.price)}</span>
-              ${modelInput(e)}
-              ${kmInput(e.rec.mileage, '公里')}
-              ${status}
-            </div>
-            ${textarea}
-          </div>
-        </div>`;
+    function diaryFieldChip(e, field) {
+      const base = 'inline-flex items-center gap-1 h-7 px-2 rounded-lg border text-xs text-gray-500 transition focus-within:bg-white focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100';
+      if (field === 'model') {
+        const guess = e.model ? '' : guessCarModel(e.note);
+        return `<label class="${base} ${e.model ? 'border-gray-200 bg-gray-50' : 'border-amber-200 bg-amber-50/70'}">车型
+            <input data-key="${e.key}" data-field="model" list="car-model-list" value="${escapeHtml(e.model)}" placeholder="${guess ? `可能是 ${escapeHtml(guess)}` : '未填'}"
+              class="w-32 bg-transparent outline-none text-gray-800 placeholder:text-gray-400"></label>
+          ${guess ? `<button data-fill-model="${e.key}" data-model="${escapeHtml(guess)}" class="h-7 px-2 rounded-lg text-xs text-blue-600 hover:bg-blue-50">填入「${escapeHtml(guess)}」</button>` : ''}`;
       }
-      const log = e.log;
-      const meta = log
-        ? [`${log.km} km`, `${log.min} 分钟`, `${log.n} 段`, log.charge ? `充电 ${log.charge.n} 次 ¥${formatMoney(log.charge.cost)}` : '']
-            .filter(Boolean).join(' · ')
-        : '没有 TeslaMate 记录';
-      const route = log?.route?.length ? escapeHtml(log.route.join(' → ')) : '';
-      return `<div class="flex gap-4 py-3 border-b border-gray-100 last:border-0">
-          <div class="w-24 flex-shrink-0 pt-1">
-            <div class="flex items-center gap-1.5 text-sm font-semibold text-gray-800"><span class="w-2 h-2 rounded-full ${CAR_LOAN_COLOR.bg}"></span>${diaryDayLabel(e.date)}</div>
-            <div class="text-[11px] text-gray-400 mt-0.5">自己的车</div>
-          </div>
-          <div class="flex-1 min-w-0 space-y-1.5">
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-              <span>${meta}</span>
-              ${kmInput(e.km ?? '', log ? String(log.km) : '公里')}
-              ${status}
-            </div>
-            ${route ? `<div class="text-xs text-gray-400 leading-relaxed">${route}</div>` : ''}
-            ${textarea}
-          </div>
+      const raw = e.kind === 'rent' ? e.rec.mileage : e.km;
+      const val = raw ? raw : '';   // 0 当作没填，显示成空
+      const ph = e.kind === 'drive' && e.log ? String(e.log.km) : '—';
+      return `<label class="${base} border-gray-200 bg-gray-50">里程
+          <input data-key="${e.key}" data-field="km" type="text" inputmode="decimal" value="${val ?? ''}" placeholder="${ph}"
+            class="w-14 text-right font-mono bg-transparent outline-none text-gray-800 placeholder:text-gray-400"> km</label>`;
+    }
+
+    function renderDiaryEntry(e, { inDialog = false } = {}) {
+      const d = dayOf(e.date);
+      const thin = isThinNote(e.note);
+      let badge, meta, route = '';
+      if (e.kind === 'rent') {
+        const days = Math.max(1, Math.round((dayOf(e.rec.end || e.rec.start) - dayOf(e.rec.start)) / 864e5));
+        badge = `<span class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-orange-50 text-orange-700">租车</span>`;
+        meta = `${e.rec.start.slice(5).replace('-', '/')} → ${(e.rec.end || e.rec.start).slice(5).replace('-', '/')} · ${days} 天 · <span class="font-mono">¥${formatMoney(e.rec.price)}</span>`;
+      } else {
+        badge = `<span class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">自己的车</span>`;
+        const log = e.log;
+        meta = log
+          ? [`${log.km} km`, `${log.min} 分钟`, `${log.n} 段`, log.charge ? `充电 ¥${formatMoney(log.charge.cost)}` : ''].filter(Boolean).join(' · ')
+          : '没有 TeslaMate 记录';
+        if (log?.route?.length) route = `<div class="mt-1 text-xs text-gray-400 truncate" title="${escapeHtml(log.route.join(' → '))}">${escapeHtml(log.route.join(' → '))}</div>`;
+      }
+      const dateBlock = inDialog ? '' : `<div class="w-12 flex-shrink-0 text-center select-none">
+          <div class="text-[10px] text-gray-400">${d.getMonth() + 1}月</div>
+          <div class="text-xl font-bold text-gray-800 leading-tight font-mono">${d.getDate()}</div>
+          <div class="text-[10px] text-gray-400">周${WEEK_CN[d.getDay()]}</div>
         </div>`;
+      return `<article data-entry="${e.key}" class="${inDialog ? 'py-4' : 'p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow transition'} flex gap-4">
+          ${dateBlock}
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              ${badge}<span>${meta}</span>
+              ${thin ? '<span class="inline-flex items-center gap-1 text-amber-600"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>待补写</span>' : ''}
+              <span data-status="${e.key}" class="ml-auto text-[11px] text-emerald-600 transition-opacity duration-500"></span>
+            </div>
+            ${route}
+            <div class="flex flex-wrap items-center gap-2 mt-2">
+              ${e.kind === 'rent' ? diaryFieldChip(e, 'model') : ''}${diaryFieldChip(e, 'km')}
+            </div>
+            <textarea data-key="${e.key}" data-field="note" rows="1"
+              class="diary-text mt-2 w-full resize-none overflow-hidden text-sm leading-relaxed text-gray-800 rounded-lg px-3 py-2 border border-gray-100 bg-gray-50/70 hover:border-gray-200 focus:bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none placeholder:text-gray-400"
+              placeholder="${e.kind === 'rent' ? '这次租车去了哪、和谁、做了什么' : '今天开车去了哪、和谁、做了什么'}">${escapeHtml(e.note)}</textarea>
+          </div>
+        </article>`;
     }
 
     function renderDiary() {
@@ -2275,6 +2289,8 @@
       const all = diaryEntries();
       const rents = all.filter((e) => e.kind === 'rent');
       const drives = all.filter((e) => e.kind === 'drive');
+      const thinCount = all.filter((e) => isThinNote(e.note)).length;
+      const noModel = rents.filter((e) => !e.model).length;
       const q = diaryQuery.trim().toLowerCase();
       const shown = all.filter((e) => {
         if (diaryFilter === 'rent' && e.kind !== 'rent') return false;
@@ -2282,8 +2298,7 @@
         if (diaryFilter === 'thin' && !isThinNote(e.note)) return false;
         if (diaryFilter === 'nomodel' && !(e.kind === 'rent' && !e.model)) return false;
         if (!q) return true;
-        const hay = [e.date, e.note, e.model || '', e.log?.route?.join(' ') || ''].join(' ').toLowerCase();
-        return hay.includes(q);
+        return [e.date, e.note, e.model || '', e.log?.route?.join(' ') || ''].join(' ').toLowerCase().includes(q);
       });
       const months = [];
       shown.forEach((e) => {
@@ -2291,182 +2306,118 @@
         if (!months.length || months[months.length - 1].m !== m) months.push({ m, list: [] });
         months[months.length - 1].list.push(e);
       });
-      const chip = (val, label, n) => `<button data-diary-filter="${val}"
-          class="px-3 py-1 text-xs rounded-md transition ${diaryFilter === val ? 'bg-white text-gray-800 shadow-sm font-medium' : 'text-gray-500 hover:text-gray-700'}">${label} <span class="text-gray-400">${n}</span></button>`;
+      const tab = (val, label) => `<button data-diary-filter="${val}"
+          class="px-3 py-1 text-xs font-medium rounded-md transition-all ${diaryFilter === val ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}">${label}</button>`;
+      const metric = (label, color, value, unit) => `<div>
+          <div class="text-[10px] ${color} uppercase font-medium">${label}</div>
+          <div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-gray-800 font-mono">${value}</span><span class="text-xs text-gray-400">${unit}</span></div>
+        </div>`;
       const signedIn = Boolean(window.SzyCloud?.isSignedIn());
       const logInfo = carLog?.generatedAt
-        ? `行程摘要来自 TeslaMate，更新于 ${String(carLog.generatedAt).slice(0, 16).replace('T', ' ')}，覆盖 ${Object.keys(carLog.days || {}).length} 天。`
+        ? `行程摘要来自 TeslaMate，更新于 ${String(carLog.generatedAt).slice(0, 16).replace('T', ' ')}。`
         : '还没有 TeslaMate 行程摘要，可以先直接写。';
       panel.innerHTML = `
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4">
-          <div>
-            <h1 class="text-lg font-bold text-gray-800">租车 &amp; 用车日记</h1>
-            <p class="text-xs text-gray-500 mt-1">租车 ${rents.length} 单（${rents.filter((e) => isThinNote(e.note)).length} 单待补写）· 自己的车 ${drives.length} 天（${drives.filter((e) => isThinNote(e.note)).length} 天待补写）。${logInfo}</p>
-            <datalist id="car-model-list">${[...new Set([...CAR_MODEL_SUGGESTIONS, ...rents.map((e) => e.model).filter(Boolean)])].map((m) => `<option value="${escapeHtml(m)}">`).join('')}</datalist>
-            <p class="text-[11px] text-gray-400 mt-0.5">输入后自动保存。租车的「车型」可以从下拉里选，也可以直接打字。租车备注里以 # 开头的词会被当作标签参与统计；用车日记存在打卡项目「开车」里。</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex items-center bg-gray-100 p-1 rounded-lg">
-              ${chip('all', '全部', all.length)}${chip('rent', '租车', rents.length)}${chip('drive', '用车', drives.length)}${chip('thin', '待补写', all.filter((e) => isThinNote(e.note)).length)}${chip('nomodel', '缺车型', rents.filter((e) => !e.model).length)}
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div>
+              <h1 class="text-lg font-bold text-gray-800">租车 &amp; 用车日记</h1>
+              <div class="flex flex-wrap items-baseline gap-8 mt-2">
+                ${metric('租车', 'text-orange-600', rents.length, '单')}
+                ${metric('自己的车', 'text-indigo-600', drives.length, '天')}
+                ${metric('待补写', 'text-amber-600', thinCount, '条')}
+                ${metric('缺车型', 'text-gray-600', noModel, '单')}
+              </div>
             </div>
-            <input id="diary-search" type="search" value="${escapeHtml(diaryQuery)}" placeholder="搜索地点、人、日期"
-              class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 w-40 focus:outline-none focus:ring-2 focus:ring-blue-200">
-            <input id="diary-add-date" type="date" class="text-xs border border-gray-200 rounded-lg px-2 py-1">
-            <button id="diary-add-btn" class="text-xs bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700">补写这一天</button>
+            <div class="flex flex-col items-start md:items-end gap-2">
+              <div class="flex items-center space-x-1 bg-gray-200 p-1 rounded-lg">
+                ${tab('all', '全部')}${tab('rent', '租车')}${tab('drive', '用车')}${tab('thin', '待补写')}${tab('nomodel', '缺车型')}
+              </div>
+              <input id="diary-search" type="search" value="${escapeHtml(diaryQuery)}" placeholder="搜索地点、人、车型、日期"
+                class="w-60 text-xs bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-200">
+            </div>
           </div>
+          <p class="text-[11px] text-gray-400 mt-3">${logInfo}输入后自动保存。租车备注里以 # 开头的词会被当作标签参与统计；用车日记存在打卡项目「开车」里。</p>
+          ${signedIn ? '' : '<div class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">模板模式：现在看到的是示例数据，登录后编辑才会同步到云端。</div>'}
+          <datalist id="car-model-list">${[...new Set([...CAR_MODEL_SUGGESTIONS, ...rents.map((e) => e.model).filter(Boolean)])].map((m) => `<option value="${escapeHtml(m)}">`).join('')}</datalist>
         </div>
-        ${signedIn ? '' : '<div class="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">模板模式：现在看到的是示例数据，登录后编辑才会同步到云端。</div>'}
-        <div class="flex flex-col lg:flex-row gap-6">
-          <aside class="lg:w-64 flex-shrink-0">
-            <div class="lg:sticky lg:top-4">${diaryCalendarHtml(all)}</div>
-          </aside>
-          <div class="flex-1 min-w-0">
         ${months.length ? months.map(({ m, list }) => `
-          <div class="mt-2">
-            <div class="sticky top-0 bg-white/95 backdrop-blur z-10 text-xs font-semibold text-gray-500 py-1.5 border-b border-gray-200">${m.slice(0, 4)} 年 ${Number(m.slice(5))} 月</div>
-            ${list.map(renderDiaryEntry).join('')}
-          </div>`).join('') : '<div class="text-sm text-gray-400 py-10 text-center">没有符合条件的记录</div>'}
+          <div data-month="${m}" class="flex items-baseline justify-between px-1 pt-3">
+            <h2 class="text-sm font-semibold text-gray-700">${m.slice(0, 4)} 年 ${Number(m.slice(5))} 月</h2>
+            <span class="text-[11px] text-gray-400">${list.length} 条${list.some((e) => isThinNote(e.note)) ? ` · ${list.filter((e) => isThinNote(e.note)).length} 条待补写` : ''}</span>
           </div>
-        </div>`;
+          ${list.map((e) => renderDiaryEntry(e)).join('')}`).join('')
+        : '<div class="bg-white rounded-xl border border-gray-200 text-sm text-gray-400 py-12 text-center">没有符合条件的记录</div>'}`;
       panel.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary);
+      requestAnimationFrame(() => panel.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary));   // Tailwind CDN 生成样式后再量一次
+      renderDiarySide(all);
     }
 
-    // 每天在日记里有什么：rent / drive 条目（租车按 [start, end) 展开到每一天）
-    function diaryDayMap(all) {
-      const map = {};
-      const add = (date, e) => { (map[date] = map[date] || []).push(e); };
-      all.forEach((e) => {
-        if (e.kind === 'drive') { add(e.date, e); return; }
-        const end = e.rec.end || e.rec.start;
-        for (let d = new Date(`${e.rec.start}T00:00:00`); formatDate(d) < end || formatDate(d) === e.rec.start; d = addDays(d, 1)) {
-          add(formatDate(d), e);
-          if (formatDate(d) >= end) break;
-        }
-      });
-      return map;
-    }
-
-    function diaryCalendarHtml(all) {
+    // 左栏：日记日历，样式与「记账日历」一致
+    function renderDiarySide(all = diaryEntries()) {
+      const side = document.getElementById('diary-side-panel');
+      if (!side) return;
       const map = diaryDayMap(all);
       if (!diaryMonthCursor) {
         const latest = all.length ? all[0].date : formatDate(new Date());
-        diaryMonthCursor = new Date(`${latest.slice(0, 7)}-01T00:00:00`);
+        diaryMonthCursor = dayOf(`${latest.slice(0, 7)}-01`);
       }
-      const first = diaryMonthCursor;
-      const ym = `${first.getFullYear()}-${String(first.getMonth() + 1).padStart(2, '0')}`;
-      const lead = (first.getDay() + 6) % 7;   // 周一开头
-      const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+      const monthStart = diaryMonthCursor;
+      const startCell = startOfISOWeek(monthStart);
       const todayStr = formatDate(new Date());
-      let cells = '';
-      for (let i = 0; i < lead; i++) cells += '<div></div>';
-      let rentDays = 0, driveDays = 0, thinDays = 0;
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = `${ym}-${String(day).padStart(2, '0')}`;
+      let cells = '', rentDays = 0, driveDays = 0, thinDays = 0;
+      for (let i = 0; i < 42; i++) {
+        const d = addDays(startCell, i);
+        const date = formatDate(d);
+        const inMonth = d.getMonth() === monthStart.getMonth();
         const list = map[date] || [];
         const rent = list.some((e) => e.kind === 'rent');
         const drive = list.some((e) => e.kind === 'drive');
-        const thin = list.length && list.some((e) => isThinNote(e.note));
-        if (rent) rentDays++;
-        if (drive) driveDays++;
-        if (thin) thinDays++;
-        const bg = rent && drive ? 'bg-gradient-to-r from-orange-100 to-indigo-100' : rent ? 'bg-orange-100' : drive ? 'bg-indigo-100' : '';
-        const dot = list.length ? `<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${thin ? 'bg-amber-500' : 'bg-emerald-500'}"></span>` : '';
+        const thin = list.some((e) => isThinNote(e.note));
+        if (inMonth) { if (rent) rentDays++; if (drive) driveDays++; if (list.length && thin) thinDays++; }
+        const fill = rent && drive ? 'bg-gradient-to-br from-orange-50 to-indigo-50 border-indigo-200'
+          : rent ? 'bg-orange-50 border-orange-200' : drive ? 'bg-indigo-50 border-indigo-200'
+          : inMonth ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-200';
+        const dot = list.length ? (thin ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-transparent';
         const tip = list.length
-          ? list.map((e) => `${e.kind === 'rent' ? '租车' : '开车'}${e.kind === 'drive' && e.log ? ` ${e.log.km}km` : ''}${e.note ? '：' + e.note.slice(0, 30) : '（待补写）'}`).join('\n')
-          : '没有记录，点一下补写';
-        cells += `<button data-diary-day="${date}" title="${escapeHtml(`${date}\n${tip}`)}"
-          class="relative h-8 rounded-md text-xs transition ${bg} ${list.length ? 'text-gray-800 font-medium hover:ring-2 hover:ring-blue-300' : 'text-gray-400 hover:bg-gray-100'} ${date === todayStr ? 'ring-1 ring-blue-400' : ''}">${day}${dot}</button>`;
+          ? list.map((e) => `${e.kind === 'rent' ? '租车' : '开车'}${e.kind === 'drive' && e.log ? ` ${e.log.km}km` : ''}${e.note ? '：' + e.note.slice(0, 40) : '（待补写）'}`).join('\n')
+          : '没有记录';
+        cells += `<button data-diary-day="${date}" title="${escapeHtml(`${date}\n${tip}\n单击跳到那天，双击直接编辑`)}"
+          class="w-full h-12 rounded-lg border text-sm flex flex-col items-center justify-center gap-0.5 transition hover:border-blue-300 ${fill} ${inMonth ? 'text-gray-800' : 'text-gray-400'} ${date === todayStr ? 'ring-2 ring-blue-500 ring-offset-1 ring-offset-white' : ''}">
+            <span class="font-medium">${d.getDate()}</span>
+            <span class="w-1.5 h-1.5 rounded-full ${dot}"></span>
+          </button>`;
       }
-      return `<div class="border border-gray-200 rounded-xl p-3">
-          <div class="flex items-center justify-between mb-2">
-            <button data-diary-month="-1" class="w-7 h-7 rounded-md text-gray-500 hover:bg-gray-100" title="上个月">‹</button>
-            <span class="text-sm font-semibold text-gray-800">${first.getFullYear()} 年 ${first.getMonth() + 1} 月</span>
-            <button data-diary-month="1" class="w-7 h-7 rounded-md text-gray-500 hover:bg-gray-100" title="下个月">›</button>
+      side.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="text-xs text-gray-400 uppercase tracking-wide">日记日历</div>
+            <div class="text-lg font-bold text-gray-800">${monthStart.getFullYear()}年${monthStart.getMonth() + 1}月</div>
           </div>
-          <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 text-center mb-1">${'一二三四五六日'.split('').map((w) => `<span>${w}</span>`).join('')}</div>
-          <div class="grid grid-cols-7 gap-1 text-center">${cells}</div>
-          <div class="mt-3 pt-2 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
-            <div class="flex flex-wrap gap-x-3 gap-y-1">
-              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-orange-100 ring-1 ring-orange-200"></span>租车 ${rentDays} 天</span>
-              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-100 ring-1 ring-indigo-200"></span>开车 ${driveDays} 天</span>
-            </div>
-            <div class="flex flex-wrap gap-x-3 gap-y-1">
-              <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>已写</span>
-              <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>待补写 ${thinDays} 天</span>
-            </div>
-            <div class="text-gray-400">点日期跳到那天；没有记录的日子点一下就能补写。</div>
+          <div class="flex items-center gap-2">
+            <button data-diary-month="-1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 text-sm" aria-label="上个月">←</button>
+            <button data-diary-month="1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 text-sm" aria-label="下个月">→</button>
           </div>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-[11px] text-gray-400 mb-2">${'一二三四五六日'.split('').map((w) => `<div class="text-center">${w}</div>`).join('')}</div>
+        <div class="grid grid-cols-7 gap-1">${cells}</div>
+        <div class="mt-3 text-xs text-gray-500 space-y-1">
+          <div>单击日期跳到那天，双击直接编辑。本月租车 ${rentDays} 天、开车 ${driveDays} 天，${thinDays} 天待补写。</div>
+          <div class="flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-orange-50 border border-orange-200"></span>租车</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-indigo-50 border border-indigo-200"></span>自己的车</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>已写</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span>待补写</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+          <input id="diary-add-date" type="date" class="flex-1 text-xs border border-gray-300 rounded-lg px-2 py-1.5">
+          <button id="diary-add-btn" class="text-xs bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700">补写这一天</button>
         </div>`;
-    }
-
-    // 跳到某天的日记：租车覆盖这天就定位到那一单，否则定位（或新建）这天的用车日记
-    function focusDiaryDate(date) {
-      const entries = diaryEntries();
-      const map = diaryDayMap(entries);
-      const hit = (map[date] || []).find((e) => e.kind === 'drive') || (map[date] || [])[0];
-      if (!hit) diaryExtraDays.add(date);
-      const key = hit ? hit.key : `drive|${date}`;
-      diaryFilter = 'all';
-      diaryQuery = '';
-      diaryMonthCursor = new Date(`${date.slice(0, 7)}-01T00:00:00`);
-      if (currentTab !== 'diary') switchTab('diary');
-      else renderDiary();
-      const box = document.querySelector(`#diary-panel textarea[data-key="${CSS.escape(key)}"]`);
-      if (!box) return;
-      box.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      box.focus({ preventScroll: true });
-      box.classList.add('ring-2', 'ring-blue-400');
-      setTimeout(() => box.classList.remove('ring-2', 'ring-blue-400'), 1600);
-    }
-
-    // 车贷的每期记录由贷款参数生成：关掉详情，在左侧表单里编辑总额、期数、还款日
-    function editLoanFromDetail() {
-      const loan = items.find(isCarLoan);
-      if (!loan) return;
-      if (!document.getElementById('detail-modal')?.classList.contains('hidden')) closeDetailModal();
-      if (currentTab === 'diary') switchTab('rental');
-      startEdit(loan.id);
-      document.getElementById('form-panel')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-    }
-
-    // 车相关热力图双击：弹一个小菜单，「编辑这天的日记」或原来的编辑
-    function openDayActions(ev, date, otherLabel, otherFn) {
-      document.getElementById('day-actions-pop')?.remove();
-      const pop = document.createElement('div');
-      pop.id = 'day-actions-pop';
-      pop.className = 'fixed z-[10000] bg-white border border-gray-200 rounded-xl shadow-lg p-1.5 flex flex-col min-w-[160px] text-sm';
-      pop.innerHTML = `<div class="px-2.5 pt-1 pb-1.5 text-[11px] text-gray-400">${date}</div>
-        <button data-act="diary" class="text-left px-2.5 py-1.5 rounded-lg hover:bg-blue-50 text-gray-800">编辑这天的日记</button>
-        ${otherLabel ? `<button data-act="other" class="text-left px-2.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-600">${escapeHtml(otherLabel)}</button>` : ''}`;
-      document.body.appendChild(pop);
-      const x = Math.min(ev.clientX + 8, window.innerWidth - pop.offsetWidth - 8);
-      const y = Math.min(ev.clientY + 8, window.innerHeight - pop.offsetHeight - 8);
-      pop.style.left = `${Math.max(8, x)}px`;
-      pop.style.top = `${Math.max(8, y)}px`;
-      const close = () => {
-        pop.remove();
-        document.removeEventListener('mousedown', outside, true);
-        document.removeEventListener('keydown', esc, true);
-      };
-      const outside = (e) => { if (!pop.contains(e.target)) close(); };
-      const esc = (e) => { if (e.key === 'Escape') close(); };
-      setTimeout(() => {
-        document.addEventListener('mousedown', outside, true);
-        document.addEventListener('keydown', esc, true);
-      });
-      pop.addEventListener('click', (e) => {
-        const act = e.target.closest('[data-act]')?.dataset.act;
-        if (!act) return;
-        close();
-        if (act === 'other') { otherFn(); return; }
-        if (!document.getElementById('detail-modal')?.classList.contains('hidden')) closeDetailModal();
-        focusDiaryDate(date);
-      });
     }
 
     function autoSizeDiary(el) {
       el.style.height = 'auto';
-      el.style.height = `${Math.max(56, el.scrollHeight + 2)}px`;
+      el.style.height = `${Math.max(40, el.scrollHeight + 2)}px`;
     }
 
     function commitDiary(key, field, value) {
@@ -2506,74 +2457,186 @@
       return true;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const panel = document.getElementById('diary-panel');
-      if (!panel) return;
-      panel.addEventListener('input', (ev) => {
+    // 编辑：列表和弹窗共用。输入 600 ms 后保存，「已保存」显示一会儿后淡出
+    function bindDiaryEditing(root) {
+      root.addEventListener('input', (ev) => {
         const el = ev.target;
-        if (el.id === 'diary-search') {
-          diaryQuery = el.value;
-          clearTimeout(diarySaveTimers.__search);
-          diarySaveTimers.__search = setTimeout(() => {
-            renderDiary();
-            const box = document.getElementById('diary-search');
-            box.focus();
-            box.setSelectionRange(box.value.length, box.value.length);
-          }, 250);
-          return;
-        }
         const key = el.dataset.key;
         if (!key) return;
         if (el.tagName === 'TEXTAREA') autoSizeDiary(el);
-        const status = panel.querySelector(`[data-status="${CSS.escape(key)}"]`);
-        if (status) status.textContent = '编辑中…';
-        clearTimeout(diarySaveTimers[key + el.dataset.field]);
-        diarySaveTimers[key + el.dataset.field] = setTimeout(() => {
+        const status = root.querySelector(`[data-status="${CSS.escape(key)}"]`);
+        const timer = key + el.dataset.field;
+        clearTimeout(diarySaveTimers[timer]);
+        diarySaveTimers[timer] = setTimeout(() => {
           const ok = commitDiary(key, el.dataset.field, el.value);
-          if (status) status.textContent = !ok ? '保存失败：记录已变化，请刷新' : window.SzyCloud?.isSignedIn() ? '已保存' : '模板模式，未同步';
-          if (el.tagName === 'TEXTAREA') el.classList.toggle('bg-amber-50/60', isThinNote(el.value));
+          if (el.dataset.field === 'model') {
+            el.closest('label')?.classList.toggle('bg-amber-50/70', !el.value.trim());
+            el.closest('label')?.classList.toggle('border-amber-200', !el.value.trim());
+          }
+          if (!status) return;
+          status.textContent = !ok ? '保存失败：记录已变化，请刷新' : window.SzyCloud?.isSignedIn() ? '已保存 ✓' : '模板模式，未同步';
+          status.style.opacity = '1';
+          clearTimeout(diarySaveTimers[`${timer}:fade`]);
+          if (ok) diarySaveTimers[`${timer}:fade`] = setTimeout(() => { status.style.opacity = '0'; }, 1500);
         }, 600);
+      });
+      root.addEventListener('click', (ev) => {
+        const fill = ev.target.closest('[data-fill-model]');
+        if (!fill) return;
+        const input = root.querySelector(`input[data-field="model"][data-key="${CSS.escape(fill.dataset.fillModel)}"]`);
+        if (!input) return;
+        input.value = fill.dataset.model;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        fill.remove();
+      });
+    }
+
+    // 在列表里定位某天：租车覆盖这天就定位那一单，否则定位（或新建）这天的用车日记
+    function focusDiaryDate(date) {
+      const map = diaryDayMap(diaryEntries());
+      const hit = (map[date] || []).find((e) => e.kind === 'drive') || (map[date] || [])[0];
+      if (!hit) diaryExtraDays.add(date);
+      const key = hit ? hit.key : `drive|${date}`;
+      diaryFilter = 'all';
+      diaryQuery = '';
+      diaryMonthCursor = dayOf(`${date.slice(0, 7)}-01`);
+      if (currentTab !== 'diary') switchTab('diary');
+      else renderDiary();
+      const card = document.querySelector(`#diary-panel [data-entry="${CSS.escape(key)}"]`);
+      if (!card) return;
+      card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      card.classList.add('ring-2', 'ring-blue-300');
+      setTimeout(() => card.classList.remove('ring-2', 'ring-blue-300'), 1600);
+    }
+
+    // 双击（日历或车相关热力图）：弹窗直接编辑当天的日记，不跳转页面。
+    // extra = { label, run }：原来的编辑入口（这一期租车 / 车贷 / 当天打卡），放在弹窗底部
+    function openDiaryDialog(date, extra = null) {
+      document.getElementById('diary-dialog')?.remove();
+      const map = diaryDayMap(diaryEntries());
+      let list = [...(map[date] || [])];
+      if (!list.length) list = [driveEntry(date)];
+      const d = dayOf(date);
+      const dlg = document.createElement('div');
+      dlg.id = 'diary-dialog';
+      dlg.className = 'fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/30 p-4';
+      dlg.innerHTML = `<div class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[85vh] flex flex-col">
+          <div class="flex items-start justify-between px-5 pt-4 pb-3 border-b border-gray-100">
+            <div>
+              <div class="text-xs text-gray-400 uppercase tracking-wide">日记</div>
+              <div class="text-lg font-bold text-gray-800">${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 · 周${WEEK_CN[d.getDay()]}</div>
+            </div>
+            <button data-act="close" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="关闭">✕</button>
+          </div>
+          <div class="px-5 overflow-y-auto divide-y divide-gray-100" data-dialog-body>${list.map((e) => renderDiaryEntry(e, { inDialog: true })).join('')}</div>
+          <div class="flex items-center gap-4 px-5 py-3 border-t border-gray-100 text-xs">
+            ${extra ? `<button data-act="extra" class="text-gray-500 hover:text-gray-800 hover:underline underline-offset-2">${escapeHtml(extra.label)}</button>` : ''}
+            ${currentTab === 'diary' ? '' : '<button data-act="open" class="text-gray-500 hover:text-gray-800 hover:underline underline-offset-2">在日记页查看</button>'}
+            <span class="ml-auto text-gray-400">输入后自动保存</span>
+            <button data-act="close" class="bg-gray-800 text-white px-4 py-1.5 rounded-lg hover:bg-gray-700">完成</button>
+          </div>
+          <datalist id="car-model-list-dlg">${CAR_MODEL_SUGGESTIONS.map((m) => `<option value="${escapeHtml(m)}">`).join('')}</datalist>
+        </div>`;
+      dlg.querySelectorAll('input[list="car-model-list"]').forEach((el) => el.setAttribute('list', 'car-model-list-dlg'));
+      document.body.appendChild(dlg);
+      const body = dlg.querySelector('[data-dialog-body]');
+      body.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary);
+      requestAnimationFrame(() => body.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary));
+      bindDiaryEditing(body);
+      const close = () => {
+        dlg.remove();   // 还没到期的自动保存照常执行（定时器不依赖弹窗）
+        document.removeEventListener('keydown', onKey, true);
+        refreshAfterDiaryEdit();
+      };
+      const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+      document.addEventListener('keydown', onKey, true);
+      dlg.addEventListener('mousedown', (e) => { if (e.target === dlg) close(); });
+      dlg.addEventListener('click', (e) => {
+        const act = e.target.closest('[data-act]')?.dataset.act;
+        if (act === 'close') close();
+        else if (act === 'extra') { close(); extra.run(); }
+        else if (act === 'open') {
+          close();
+          if (!document.getElementById('detail-modal')?.classList.contains('hidden')) closeDetailModal();
+          focusDiaryDate(date);
+        }
+      });
+      setTimeout(() => body.querySelector('textarea')?.focus(), 50);
+    }
+
+    // 弹窗关掉后：日记页重绘；如果开着车相关的详情热力图，也重绘一下（备注会出现在悬停提示里）
+    function refreshAfterDiaryEdit() {
+      setTimeout(() => {
+        if (currentTab === 'diary') renderDiary();
+        const item = items.find((i) => i.id === window._detailItemId);
+        if (item && !document.getElementById('detail-modal')?.classList.contains('hidden')) {
+          renderHeatmap(item, window._detailHeatmapYear || null);
+        }
+      }, 650);
+    }
+
+    // 车贷的每期记录由贷款参数生成：关掉详情，在左侧表单里编辑总额、期数、还款日
+    function editLoanFromDetail() {
+      const loan = items.find(isCarLoan);
+      if (!loan) return;
+      if (!document.getElementById('detail-modal')?.classList.contains('hidden')) closeDetailModal();
+      if (currentTab === 'diary') switchTab('rental');
+      startEdit(loan.id);
+      document.getElementById('form-panel')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const panel = document.getElementById('diary-panel');
+      const side = document.getElementById('diary-side-panel');
+      if (!panel || !side) return;
+      bindDiaryEditing(panel);
+      panel.addEventListener('input', (ev) => {
+        if (ev.target.id !== 'diary-search') return;
+        diaryQuery = ev.target.value;
+        clearTimeout(diarySaveTimers.__search);
+        diarySaveTimers.__search = setTimeout(() => {
+          renderDiary();
+          const box = document.getElementById('diary-search');
+          box.focus();
+          box.setSelectionRange(box.value.length, box.value.length);
+        }, 250);
       });
       panel.addEventListener('click', (ev) => {
         const f = ev.target.closest('[data-diary-filter]');
-        if (f) {
-          diaryFilter = f.dataset.diaryFilter;
-          renderDiary();
-          return;
-        }
+        if (f) { diaryFilter = f.dataset.diaryFilter; renderDiary(); }
+      });
+      side.addEventListener('click', (ev) => {
         const mv = ev.target.closest('[data-diary-month]');
         if (mv) {
           diaryMonthCursor = new Date(diaryMonthCursor.getFullYear(), diaryMonthCursor.getMonth() + Number(mv.dataset.diaryMonth), 1);
-          renderDiary();
+          renderDiarySide();
           return;
         }
-        const fill = ev.target.closest('[data-fill-model]');
-        if (fill) {
-          const input = panel.querySelector(`input[data-field="model"][data-key="${CSS.escape(fill.dataset.fillModel)}"]`);
-          if (input) {
-            input.value = fill.dataset.model;
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.classList.remove('border-amber-300', 'bg-amber-50/60');
-            fill.remove();
-          }
-          return;
-        }
-        const dayBtn = ev.target.closest('[data-diary-day]');
-        if (dayBtn) {
-          focusDiaryDate(dayBtn.dataset.diaryDay);
-          return;
-        }
+        const day = ev.target.closest('[data-diary-day]');
+        if (day) { focusDiaryDate(day.dataset.diaryDay); return; }
         if (ev.target.id === 'diary-add-btn') {
           const date = document.getElementById('diary-add-date').value;
-          if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
-          diaryExtraDays.add(date);
-          diaryFilter = 'all';
-          diaryQuery = '';
-          renderDiary();
-          const box = panel.querySelector(`textarea[data-key="drive|${date}"]`);
-          if (box) { box.scrollIntoView({ block: 'center' }); box.focus(); }
+          if (/^\d{4}-\d{2}-\d{2}$/.test(date)) openDiaryDialog(date);
         }
       });
+      side.addEventListener('dblclick', (ev) => {
+        const day = ev.target.closest('[data-diary-day]');
+        if (day) openDiaryDialog(day.dataset.diaryDay);
+      });
+      // 左栏日历跟着列表滚动：显示屏幕上方那一组的月份
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (currentTab !== 'diary' || ticking || document.getElementById('diary-dialog')) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          let month = null;
+          panel.querySelectorAll('[data-month]').forEach((h) => { if (h.getBoundingClientRect().top <= 160) month = h.dataset.month; });
+          if (!month) return;
+          const cur = `${diaryMonthCursor.getFullYear()}-${String(diaryMonthCursor.getMonth() + 1).padStart(2, '0')}`;
+          if (month !== cur) { diaryMonthCursor = dayOf(`${month}-01`); renderDiarySide(); }
+        });
+      }, { passive: true });
     });
 
     // ===================== Tab & 表单类型 =====================
@@ -2591,13 +2654,14 @@
           'tab-btn px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm';
       }
 
-      // 日记页占满整个宽度，其他面板都收起来
+      // 日记页：左栏换成日记日历，右边换成日记统计卡片和日记卡片
       const isDiary = tab === 'diary';
-      document.getElementById('device-aside').classList.toggle('hidden', isDiary);
+      document.getElementById('diary-side-panel').classList.toggle('hidden', !isDiary);
       document.getElementById('main-card').classList.toggle('hidden', isDiary);
       document.getElementById('cards-container').style.display = isDiary ? 'none' : '';   // 它带 grid 类，hidden 压不住
       document.getElementById('diary-panel').classList.toggle('hidden', !isDiary);
       if (isDiary) {
+        ['form-panel', 'part-panel', 'ledger-panel'].forEach((id) => document.getElementById(id).classList.add('hidden'));
         renderDiary();
         return;
       }
@@ -6289,7 +6353,7 @@
             });
             cell.addEventListener('dblclick', (ev) => {
               if (d > today) return;
-              openDayActions(ev, dStr, '编辑当天开车记录', () => editCheckinDate(dStr));
+              openDiaryDialog(dStr, { label: '编辑当天开车记录', run: () => editCheckinDate(dStr) });
             });
             col.appendChild(cell);
           });
@@ -6515,15 +6579,15 @@
             } else if (item.type === 'checkin') {
               if (d > today) return;
               // 「开车」的热力图：多一个入口去写当天的用车日记
-              if (isDrivingCheckin(item)) openDayActions(ev, dStr, '编辑当天打卡', () => editCheckinDate(dStr));
+              if (isDrivingCheckin(item)) openDiaryDialog(dStr, { label: '编辑当天打卡', run: () => editCheckinDate(dStr) });
               else editCheckinDate(dStr);
             } else if (item.type === 'sub' || item.type === 'rental') {
               if (!isCarRental(item) && !isCarLoan(item)) { editCycleFromHeatmap(dStr); return; }
               const onOther = compareActive && amt <= 0 && (otherAmt > 0 || compareCover[dStr]);
               const target = onOther ? (mileageCompare ? 'drive' : isCarLoan(item) ? 'rental' : 'loan') : isCarLoan(item) ? 'loan' : 'rental';
-              if (target === 'loan') openDayActions(ev, dStr, '编辑车贷', () => editLoanFromDetail());
-              else if (target === 'rental') openDayActions(ev, dStr, '编辑这一单租车', () => editCycleFromHeatmap(dStr, onOther ? getCarRentalItems().find((r) => findRecordIndexForDate(r, dStr) >= 0)?.id : undefined));
-              else openDayActions(ev, dStr, null, null);   // 自己开车的那天：里程和备注都在日记里改
+              if (target === 'loan') openDiaryDialog(dStr, { label: '编辑车贷参数', run: () => editLoanFromDetail() });
+              else if (target === 'rental') openDiaryDialog(dStr, { label: '编辑这一单的周期和金额', run: () => editCycleFromHeatmap(dStr, onOther ? getCarRentalItems().find((r) => findRecordIndexForDate(r, dStr) >= 0)?.id : undefined) });
+              else openDiaryDialog(dStr);   // 自己开车的那天：里程和日记都在弹窗里改
             }
           });
           col.appendChild(cell);
