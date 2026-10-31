@@ -2160,6 +2160,8 @@
     let diaryFilter = 'all';
     let diaryQuery = '';
     let diaryMonthCursor = null;        // 左栏日历显示的月份（当月 1 日）；null = 最近一条记录所在月
+    let diaryHeatYear = null;           // 日记页热力图的年份；null = 最近一条记录所在年
+    let diaryClickTimer = null;         // 单击稍等再执行，好让双击能先拦下来
     const diaryExtraDays = new Set();   // 「补写这一天」临时加进列表、还没写内容的日期
     const diarySaveTimers = {};
     const DIARY_THIN_CHARS = 10;        // 去掉 #标签 后少于这么多字，算「待补写」
@@ -2340,6 +2342,7 @@
           ${signedIn ? '' : '<div class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">模板模式：现在看到的是示例数据，登录后编辑才会同步到云端。</div>'}
           <datalist id="car-model-list">${[...new Set([...CAR_MODEL_SUGGESTIONS, ...rents.map((e) => e.model).filter(Boolean)])].map((m) => `<option value="${escapeHtml(m)}">`).join('')}</datalist>
         </div>
+        ${diaryHeatmapHtml(all)}
         ${months.length ? months.map(({ m, list }) => `
           <div data-month="${m}" class="flex items-baseline justify-between px-1 pt-3">
             <h2 class="text-sm font-semibold text-gray-700">${m.slice(0, 4)} 年 ${Number(m.slice(5))} 月</h2>
@@ -2350,6 +2353,78 @@
       panel.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary);
       requestAnimationFrame(() => panel.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary));   // Tailwind CDN 生成样式后再量一次
       renderDiarySide(all);
+    }
+
+    // 日记页的年度热力图（和租车详情里「里程 · 对比：用车」那张一样）：双击某天直接写日记
+    function diaryHeatmapHtml(all) {
+      const map = diaryDayMap(all);
+      if (!diaryHeatYear) diaryHeatYear = Number((all[0]?.date || formatDate(new Date())).slice(0, 4));
+      const year = diaryHeatYear;
+      const start = startOfISOWeek(new Date(year, 0, 1)), end = new Date(year, 11, 31);
+      const todayStr = formatDate(new Date());
+      const dayKm = (list) => {
+        let rent = 0, drive = 0, rentCover = false, driveCover = false;
+        list.forEach((e) => {
+          if (e.kind === 'rent') {
+            rentCover = true;
+            const days = Math.max(1, Math.round((dayOf(e.rec.end || e.rec.start) - dayOf(e.rec.start)) / 864e5));
+            if (e.rec.mileage) rent += e.rec.mileage / days;
+          } else {
+            driveCover = true;
+            drive += Number(e.km) || Number(e.log?.km) || 0;
+          }
+        });
+        return { rent, drive, rentCover, driveCover };
+      };
+      let max = 1, rentSum = 0, driveSum = 0, used = 0, thinDays = 0;
+      for (let d = new Date(year, 0, 1); d <= end; d = addDays(d, 1)) {
+        const k = dayKm(map[formatDate(d)] || []);
+        max = Math.max(max, k.rent, k.drive);
+      }
+      const weeks = [];
+      for (let d = new Date(start); d <= end; d = addDays(d, 1)) {
+        const wi = Math.floor((d - start) / 864e5 / 7);
+        (weeks[wi] = weeks[wi] || []).push(new Date(d));
+      }
+      const months = weeks.map((w) => { const f = w.find((d) => d.getDate() === 1 && d.getFullYear() === year); return f ? `${f.getMonth() + 1}月` : ''; });
+      const cols = weeks.map((w) => `<div class="flex flex-col gap-px flex-1">${w.map((d) => {
+        const date = formatDate(d);
+        if (d.getFullYear() !== year) return '<div class="w-full aspect-square"></div>';
+        const list = map[date] || [];
+        const k = dayKm(list);
+        const thin = list.length && list.some((e) => isThinNote(e.note));
+        if (list.length) used++;
+        if (thin) thinDays++;
+        rentSum += k.rent; driveSum += k.drive;
+        const rentCls = k.rent > 0 ? heatLevel(k.rent, max, CAR_RENTAL_HEAT) : ZERO_DATA_CELL_CLASS;
+        const driveCls = k.drive > 0 ? heatLevel(k.drive, max, CAR_LOAN_HEAT) : ZERO_DATA_CELL_CLASS;
+        const inner = k.rentCover && k.driveCover
+          ? `<div class="absolute inset-0 grid grid-cols-2"><div class="${rentCls}"></div><div class="${driveCls}"></div></div>`
+          : '';
+        const base = k.rentCover && k.driveCover ? '' : k.rentCover ? rentCls : k.driveCover ? driveCls : 'bg-gray-100';
+        const parts = [];
+        if (k.rentCover) parts.push(`租车 ${k.rent ? `${formatCheckinNumber(Math.round(k.rent * 10) / 10)}km` : '（没记里程）'}`);
+        if (k.driveCover) parts.push(`用车 ${k.drive ? `${formatCheckinNumber(Math.round(k.drive * 10) / 10)}km` : '（没记里程）'}`);
+        const info = `${date} 周${WEEK_CN[d.getDay()]}：${parts.length ? parts.join(' · ') : '无记录'}${thin ? ' · 日记待补写' : list.length ? ' · 已写日记' : ''}`;
+        return `<div data-heat-day="${date}" data-heat-info="${escapeHtml(info)}" title="${escapeHtml(info + '\n双击写日记')}"
+            class="relative w-full aspect-square overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-300 ${base} ${date === todayStr ? 'outline outline-[1.5px] outline-blue-500 outline-offset-[1px]' : ''}">
+            ${inner}${thin ? '<span class="absolute top-0 right-0 w-1.5 h-1.5 rounded-bl bg-amber-400"></span>' : ''}
+          </div>`;
+      }).join('')}</div>`).join('');
+      return `<div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+          <div class="flex flex-wrap items-center gap-3 mb-3">
+            <h2 class="text-sm font-semibold text-gray-700">年使用时间热力图</h2>
+            <div class="flex items-center gap-1">
+              <button data-heat-year="-1" class="w-7 h-7 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm" aria-label="上一年">‹</button>
+              <span class="text-sm text-gray-800 px-1">${year} 年</span>
+              <button data-heat-year="1" class="w-7 h-7 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm" aria-label="下一年">›</button>
+            </div>
+            <span class="text-xs text-gray-500">${year} 已记录 ${used} 天 · 橙=租车 ${formatCheckinNumber(Math.round(rentSum * 10) / 10)}km / 紫=用车 ${formatCheckinNumber(Math.round(driveSum * 10) / 10)}km · <span class="text-amber-600">黄点=日记待补写 ${thinDays} 天</span></span>
+          </div>
+          <div class="flex gap-px mb-1">${months.map((m) => `<div class="flex-1 text-[9px] text-gray-400 whitespace-nowrap overflow-visible">${m}</div>`).join('')}</div>
+          <div class="flex gap-px w-full">${cols}</div>
+          <div id="diary-heat-info" class="mt-2 text-[11px] text-gray-600">悬停查看当天，双击直接写日记</div>
+        </div>`;
     }
 
     // 左栏：日记日历，样式与「记账日历」一致
@@ -2603,7 +2678,23 @@
       });
       panel.addEventListener('click', (ev) => {
         const f = ev.target.closest('[data-diary-filter]');
-        if (f) { diaryFilter = f.dataset.diaryFilter; renderDiary(); }
+        if (f) { diaryFilter = f.dataset.diaryFilter; renderDiary(); return; }
+        const y = ev.target.closest('[data-heat-year]');
+        if (y) { diaryHeatYear += Number(y.dataset.heatYear); renderDiary(); return; }
+        const cell = ev.target.closest('[data-heat-day]');
+        if (cell) {   // 单击只在下方显示概况，不跳走，免得打断双击
+          const info = document.getElementById('diary-heat-info');
+          if (info) info.textContent = cell.dataset.heatInfo;
+        }
+      });
+      panel.addEventListener('dblclick', (ev) => {
+        const cell = ev.target.closest('[data-heat-day]');
+        if (cell) openDiaryDialog(cell.dataset.heatDay);
+      });
+      panel.addEventListener('mouseover', (ev) => {
+        const cell = ev.target.closest('[data-heat-day]');
+        const info = document.getElementById('diary-heat-info');
+        if (cell && info) info.textContent = cell.dataset.heatInfo;
       });
       side.addEventListener('click', (ev) => {
         const mv = ev.target.closest('[data-diary-month]');
@@ -2613,7 +2704,12 @@
           return;
         }
         const day = ev.target.closest('[data-diary-day]');
-        if (day) { focusDiaryDate(day.dataset.diaryDay); return; }
+        if (day) {   // 单击稍等再跳转；期间有双击就改为打开弹窗
+          clearTimeout(diaryClickTimer);
+          const date = day.dataset.diaryDay;
+          diaryClickTimer = setTimeout(() => focusDiaryDate(date), 260);
+          return;
+        }
         if (ev.target.id === 'diary-add-btn') {
           const date = document.getElementById('diary-add-date').value;
           if (/^\d{4}-\d{2}-\d{2}$/.test(date)) openDiaryDialog(date);
@@ -2621,7 +2717,9 @@
       });
       side.addEventListener('dblclick', (ev) => {
         const day = ev.target.closest('[data-diary-day]');
-        if (day) openDiaryDialog(day.dataset.diaryDay);
+        if (!day) return;
+        clearTimeout(diaryClickTimer);
+        openDiaryDialog(day.dataset.diaryDay);
       });
       // 左栏日历跟着列表滚动：显示屏幕上方那一组的月份
       let ticking = false;
