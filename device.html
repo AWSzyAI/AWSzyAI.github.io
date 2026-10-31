@@ -631,6 +631,7 @@
                 <span class="text-lg font-bold text-red-500"><span id="fin-sum-month-expense">0.00</span></span>
                 <span class="text-base text-emerald-600"><span id="fin-sum-month-income">0.00</span></span>
               </div>
+              <div id="fin-sum-month-bank" class="hidden text-[11px] text-gray-500"></div>
             </div>
             <div class="bg-white border border-gray-200/70 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
               <div class="flex items-center justify-between mb-2 text-sm text-gray-600">
@@ -945,10 +946,12 @@
       ledger: {},
       mileage: null,
       carLog: null,
+      bankBalance: null,
       template: true
     };
     let deviceMileage = null;
     let carLog = null;   // TeslaMate 每日行程摘要（租车 & 用车日记用）
+    let bankBalance = null;   // 建行卡余额 {account, date, amount}，由「支出」项目同步流水时写入，和本期结余对账用
 
     let currentTab = 'active';
     let editingId = null;
@@ -1806,7 +1809,8 @@
         items: items.map((item) => ({ ...item })),
         ledger: JSON.parse(JSON.stringify(ledgerData || {})),
         mileage: deviceMileage ? JSON.parse(JSON.stringify(deviceMileage)) : null,
-        carLog: carLog ? JSON.parse(JSON.stringify(carLog)) : null
+        carLog: carLog ? JSON.parse(JSON.stringify(carLog)) : null,
+        bankBalance: bankBalance ? { ...bankBalance } : null
       };
     }
 
@@ -1822,6 +1826,7 @@
         ? JSON.parse(JSON.stringify(payload.mileage))
         : null;
       carLog = payload && payload.carLog ? JSON.parse(JSON.stringify(payload.carLog)) : null;
+      bankBalance = payload && payload.bankBalance ? { ...payload.bankBalance } : null;
       FINANCE_DEMO_ENABLED = !(rawItems && rawItems.length) || payload?.template === true;
       editingId = null;
       tempSubRecords = [];
@@ -2377,6 +2382,7 @@
           <datalist id="car-model-list">${[...new Set([...CAR_MODEL_SUGGESTIONS, ...rents.map((e) => e.model).filter(Boolean)])].map((m) => `<option value="${escapeHtml(m)}">`).join('')}</datalist>
         </div>
         ${diaryHeatmapHtml(all)}
+        ${diaryUsageHtml(all)}
         ${months.length ? months.map(({ m, list }) => `
           <div data-month="${m}" class="flex items-baseline justify-between px-1 pt-3">
             <h2 class="text-sm font-semibold text-gray-700">${m.slice(0, 4)} 年 ${Number(m.slice(5))} 月</h2>
@@ -2458,6 +2464,41 @@
           <div class="flex gap-px mb-1">${months.map((m) => `<div class="flex-1 text-[9px] text-gray-400 whitespace-nowrap overflow-visible">${m}</div>`).join('')}</div>
           <div class="flex gap-px w-full">${cols}</div>
           <div id="diary-heat-info" class="mt-2 text-[11px] text-gray-600">悬停查看当天，双击直接写日记</div>
+        </div>`;
+    }
+
+    // 日记页的「总使用时间分布」：从第一条记录到今天，租车和自己的车各一行，共用时间轴
+    function diaryUsageHtml(all) {
+      const map = diaryDayMap(all);
+      const dates = Object.keys(map).sort();
+      if (!dates.length) return '';
+      const start = dayOf(dates[0]), today = startOfDay(new Date());
+      const total = Math.round((today - start) / 864e5) + 1;
+      const rows = [['rent', '租车', 'bg-orange-400'], ['drive', '自己的车', 'bg-indigo-500']].map(([kind, label, color]) => {
+        let segs = '', run = null, days = 0;
+        const flush = (endIdx) => {
+          if (run == null) return;
+          segs += `<span class="absolute top-0 bottom-0 ${color}" style="left:${run / total * 100}%;width:${Math.max(0.15, (endIdx - run) / total * 100)}%"></span>`;
+          run = null;
+        };
+        for (let i = 0; i < total; i++) {
+          const has = (map[formatDate(addDays(start, i))] || []).some((e) => e.kind === kind);
+          if (has) { days++; if (run == null) run = i; } else flush(i);
+        }
+        flush(total);
+        return { label, days, html: `<div class="flex items-center gap-3">
+            <span class="w-16 text-[11px] text-gray-500 text-right flex-shrink-0">${label}</span>
+            <div class="relative flex-1 h-4 rounded bg-gray-100 overflow-hidden">${segs}</div>
+            <span class="w-14 text-[11px] text-gray-500 flex-shrink-0">${days} 天</span>
+          </div>` };
+      });
+      const used = Object.keys(map).filter((d) => d <= formatDate(today)).length;
+      let km = 0;
+      all.forEach((e) => { km += e.kind === 'rent' ? Number(e.rec.mileage) || 0 : Number(e.km) || Number(e.log?.km) || 0; });
+      return `<div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+          <h2 class="text-sm font-semibold text-gray-700">总使用时间分布（${used}/${total}=${(used / total * 100).toFixed(2)}% · 总里程 ${formatCheckinNumber(Math.round(km * 10) / 10)} km）</h2>
+          <div class="text-[11px] text-gray-400 mt-1 mb-3">${dates[0]} 至 ${formatDate(today)} · 有车可开的日子（租车或自己的车）</div>
+          <div class="space-y-2">${rows.map((r) => r.html).join('')}</div>
         </div>`;
     }
 
@@ -5132,6 +5173,29 @@
       apply('week', all.week);
       apply('month', all.month);
       apply('year', all.year);
+      renderMonthBankLine(all.month);
+    }
+
+    // 本月卡片下面：建行卡的实际余额，和本期结余的差额基本就是上期结转（用户 2026-10-31 要求能对上银行）
+    function renderMonthBankLine(month) {
+      const el = document.getElementById('fin-sum-month-bank');
+      if (!el) return;
+      const b = bankBalance;
+      const bounds = getMonthBounds(new Date(selectedLedgerDate));
+      const d = b && /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? startOfDay(b.date) : null;
+      if (!b || !d || !month || d < bounds.start || d >= bounds.endExclusive) {
+        el.classList.add('hidden');
+        return;
+      }
+      const bal = (month.income || 0) - (month.expense || 0);
+      const diff = Number(b.amount) - bal;
+      const exact = monthMode === 'payday' && costView === 'cash';
+      el.innerHTML = `${escapeHtml(b.account || '银行卡')}余额 <b class="text-gray-800 font-semibold">¥${formatMoney(b.amount)}</b>（截至 ${b.date.slice(5).replace('-', '/')}）`
+        + ` = 本期结余 ${diff >= 0 ? '+' : '−'} ¥${formatMoney(Math.abs(diff))}${exact ? '（上期结转）' : '（上期结转，以及口径差异）'}`;
+      el.title = exact
+        ? '补助周期 + 按实付日最接近银行流水：本期结余加上上一期剩下的钱，就是卡里的余额'
+        : '按天摊销或自然月口径下，摊销和周期划分会让本期结余和银行流水有差异；切到「补助周期 + 按实付日」最接近银行';
+      el.classList.remove('hidden');
     }
 
     function getEarliestLedgerDate() {
@@ -7660,7 +7724,8 @@
         items: items.map((i) => ({ ...i })),
         ledger: ledgerData,
         mileage: deviceMileage,
-        carLog
+        carLog,
+        bankBalance
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: 'application/json'
@@ -7695,6 +7760,7 @@
             : null;
           // 旧备份没有 carLog：保留当前的行程摘要（它由脚本从 TeslaMate 重新生成）
           if (parsed && parsed.carLog) carLog = JSON.parse(JSON.stringify(parsed.carLog));
+          if (parsed && parsed.bankBalance) bankBalance = { ...parsed.bankBalance };
           FINANCE_DEMO_ENABLED = false;
           saveLedgerToStorage();
           renderLedgerCalendar();
