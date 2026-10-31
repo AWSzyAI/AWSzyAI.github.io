@@ -1,0 +1,24 @@
+{
+  "name": "szy-device-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "只读 MCP：读取 awszyai.github.io/device 的云端数据（资产、订阅、租赁、车贷、每日账目、打卡）",
+  "type": "module",
+  "bin": {
+    "szy-device-mcp": "src/server.mjs"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "login": "node src/login.mjs",
+    "logout": "node src/login.mjs --logout",
+    "test": "node test/smoke.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@supabase/supabase-js": "^2.118.0",
+    "zod": "^4.6.7"
+  }
+}

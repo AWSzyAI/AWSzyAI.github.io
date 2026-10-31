@@ -26,6 +26,7 @@
 - `resume.html`：当前中英文简历；`assets/current-cv.png` 为网页渲染快照。
 - `card.html`：个人双语名片，墨绿 / 米白配色；`assets/business-card.css`、`assets/business-card.js` 独立管理排版与 PNG 导出。`assets/card-qr.svg` 编码个人主页 `https://awszyai.github.io/`，使用本机 CoreImage 生成并保留完整静区。
 - `device.html`：设备、订阅、租赁、打卡、里程和收支记录，并接入云同步。
+- `mcp/device/`：device 数据的只读 MCP 服务器（见第 5 节「Device 只读 MCP」）。
 - `PhD.html`：长期情景建模，云端文档类型为 `phd-cashflow`。
 - `blog.html`：写作入口说明页；`blog/` 保留文章阅读、评论与预留入口，旧编辑器/后台已删除。
 - `blog/security.js`：博客 Markdown 白名单过滤与 HTML 转义工具。
@@ -210,6 +211,18 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 - 返回前把明细挂到「订阅」这一项上：`expenseList[i].details = [{name, amount}]`（按金额降序）。
 - 卡片渲染时把 `card.details` 存进 `financeDetailCache[`${kind}|${name}`]`；`openFinanceDetail()` 先查这个缓存，有明细就走 `openBreakdownList()`（一个动态创建、不占静态 HTML 的弹窗），否则维持原来的走势图。
 - 明细弹窗列出每一项的名称、占比（用 `formatPct`）和金额，底部给合计。
+
+### Device 只读 MCP（2026-10-31）
+
+`mcp/device/` 是一个 stdio MCP 服务器（Node，`@modelcontextprotocol/sdk` + `@supabase/supabase-js`），把 device 数据开放给 Claude Code。用法见 `mcp/device/README.md`。
+
+- **只读**。工具：`device_status`、`list_items`、`get_item`、`rentals`、`car_loan`、`ledger`、`spending_summary`、`checkins`。写入仍然按私有「支出」项目的流程在网页里做（先备份、只追加）。
+- 数据来源：云端优先（读 `user_documents` 中 `document_type = device` 的文档），失败时退回 `DEVICE_MCP_FILE` / `DEVICE_MCP_BACKUP_DIR` 指向的「Export All」备份，`device_status` 会说明来源。
+- Supabase URL 和 publishable key 从仓库根目录的 `cloud-config.js` 读取，不另存一份。
+- 登录：`npm run login` 用 PKCE 走 GitHub OAuth，回调 `http://localhost:53682/callback`，需要在 Supabase Redirect URLs 里加这个地址。会话存在 `~/.config/szy-device-mcp/auth.json`（0600），不在仓库里。
+- 口径与网页一致：记录使用期 `[start, end)`；`spending_summary` 把订阅 / 租赁 / 车贷按天摊销，只计「个人 · 人民币」订阅，收入按到账日计入；不包含网页把本月车贷待还整期计入的特殊处理。
+- `rentals` 会跳过起止日期和金额完全相同的重复条目，并在结果里列出。
+- `node_modules/` 已在 `mcp/device/.gitignore` 中。冒烟测试 `npm test` 只打印成功与否和结果长度，不输出真实数据。
 
 ## 6. Tax 页面模型
 
