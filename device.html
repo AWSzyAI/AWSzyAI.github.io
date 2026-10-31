@@ -2153,6 +2153,7 @@
     // carLog：本机脚本从 TeslaMate 生成的每日行程摘要，只读参考（mcp/device/README.md）。
     let diaryFilter = 'all';
     let diaryQuery = '';
+    let diaryMonthCursor = null;        // 左侧日历显示的月份（当月 1 日）；null = 最近一条记录所在月
     const diaryExtraDays = new Set();   // 「补写某一天」临时加进列表、还没写内容的日期
     const diarySaveTimers = {};
     const DIARY_THIN_CHARS = 10;        // 去掉 #标签 后少于这么多字，算「待补写」
@@ -2290,12 +2291,152 @@
           </div>
         </div>
         ${signedIn ? '' : '<div class="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">模板模式：现在看到的是示例数据，登录后编辑才会同步到云端。</div>'}
+        <div class="flex flex-col lg:flex-row gap-6">
+          <aside class="lg:w-64 flex-shrink-0">
+            <div class="lg:sticky lg:top-4">${diaryCalendarHtml(all)}</div>
+          </aside>
+          <div class="flex-1 min-w-0">
         ${months.length ? months.map(({ m, list }) => `
           <div class="mt-2">
             <div class="sticky top-0 bg-white/95 backdrop-blur z-10 text-xs font-semibold text-gray-500 py-1.5 border-b border-gray-200">${m.slice(0, 4)} 年 ${Number(m.slice(5))} 月</div>
             ${list.map(renderDiaryEntry).join('')}
-          </div>`).join('') : '<div class="text-sm text-gray-400 py-10 text-center">没有符合条件的记录</div>'}`;
+          </div>`).join('') : '<div class="text-sm text-gray-400 py-10 text-center">没有符合条件的记录</div>'}
+          </div>
+        </div>`;
       panel.querySelectorAll('textarea.diary-text').forEach(autoSizeDiary);
+    }
+
+    // 每天在日记里有什么：rent / drive 条目（租车按 [start, end) 展开到每一天）
+    function diaryDayMap(all) {
+      const map = {};
+      const add = (date, e) => { (map[date] = map[date] || []).push(e); };
+      all.forEach((e) => {
+        if (e.kind === 'drive') { add(e.date, e); return; }
+        const end = e.rec.end || e.rec.start;
+        for (let d = new Date(`${e.rec.start}T00:00:00`); formatDate(d) < end || formatDate(d) === e.rec.start; d = addDays(d, 1)) {
+          add(formatDate(d), e);
+          if (formatDate(d) >= end) break;
+        }
+      });
+      return map;
+    }
+
+    function diaryCalendarHtml(all) {
+      const map = diaryDayMap(all);
+      if (!diaryMonthCursor) {
+        const latest = all.length ? all[0].date : formatDate(new Date());
+        diaryMonthCursor = new Date(`${latest.slice(0, 7)}-01T00:00:00`);
+      }
+      const first = diaryMonthCursor;
+      const ym = `${first.getFullYear()}-${String(first.getMonth() + 1).padStart(2, '0')}`;
+      const lead = (first.getDay() + 6) % 7;   // 周一开头
+      const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+      const todayStr = formatDate(new Date());
+      let cells = '';
+      for (let i = 0; i < lead; i++) cells += '<div></div>';
+      let rentDays = 0, driveDays = 0, thinDays = 0;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = `${ym}-${String(day).padStart(2, '0')}`;
+        const list = map[date] || [];
+        const rent = list.some((e) => e.kind === 'rent');
+        const drive = list.some((e) => e.kind === 'drive');
+        const thin = list.length && list.some((e) => isThinNote(e.note));
+        if (rent) rentDays++;
+        if (drive) driveDays++;
+        if (thin) thinDays++;
+        const bg = rent && drive ? 'bg-gradient-to-r from-orange-100 to-indigo-100' : rent ? 'bg-orange-100' : drive ? 'bg-indigo-100' : '';
+        const dot = list.length ? `<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${thin ? 'bg-amber-500' : 'bg-emerald-500'}"></span>` : '';
+        const tip = list.length
+          ? list.map((e) => `${e.kind === 'rent' ? '租车' : '开车'}${e.kind === 'drive' && e.log ? ` ${e.log.km}km` : ''}${e.note ? '：' + e.note.slice(0, 30) : '（待补写）'}`).join('\n')
+          : '没有记录，点一下补写';
+        cells += `<button data-diary-day="${date}" title="${escapeHtml(`${date}\n${tip}`)}"
+          class="relative h-8 rounded-md text-xs transition ${bg} ${list.length ? 'text-gray-800 font-medium hover:ring-2 hover:ring-blue-300' : 'text-gray-400 hover:bg-gray-100'} ${date === todayStr ? 'ring-1 ring-blue-400' : ''}">${day}${dot}</button>`;
+      }
+      return `<div class="border border-gray-200 rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <button data-diary-month="-1" class="w-7 h-7 rounded-md text-gray-500 hover:bg-gray-100" title="上个月">‹</button>
+            <span class="text-sm font-semibold text-gray-800">${first.getFullYear()} 年 ${first.getMonth() + 1} 月</span>
+            <button data-diary-month="1" class="w-7 h-7 rounded-md text-gray-500 hover:bg-gray-100" title="下个月">›</button>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 text-center mb-1">${'一二三四五六日'.split('').map((w) => `<span>${w}</span>`).join('')}</div>
+          <div class="grid grid-cols-7 gap-1 text-center">${cells}</div>
+          <div class="mt-3 pt-2 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
+            <div class="flex flex-wrap gap-x-3 gap-y-1">
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-orange-100 ring-1 ring-orange-200"></span>租车 ${rentDays} 天</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-100 ring-1 ring-indigo-200"></span>开车 ${driveDays} 天</span>
+            </div>
+            <div class="flex flex-wrap gap-x-3 gap-y-1">
+              <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>已写</span>
+              <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>待补写 ${thinDays} 天</span>
+            </div>
+            <div class="text-gray-400">点日期跳到那天；没有记录的日子点一下就能补写。</div>
+          </div>
+        </div>`;
+    }
+
+    // 跳到某天的日记：租车覆盖这天就定位到那一单，否则定位（或新建）这天的用车日记
+    function focusDiaryDate(date) {
+      const entries = diaryEntries();
+      const map = diaryDayMap(entries);
+      const hit = (map[date] || []).find((e) => e.kind === 'drive') || (map[date] || [])[0];
+      if (!hit) diaryExtraDays.add(date);
+      const key = hit ? hit.key : `drive|${date}`;
+      diaryFilter = 'all';
+      diaryQuery = '';
+      diaryMonthCursor = new Date(`${date.slice(0, 7)}-01T00:00:00`);
+      if (currentTab !== 'diary') switchTab('diary');
+      else renderDiary();
+      const box = document.querySelector(`#diary-panel textarea[data-key="${CSS.escape(key)}"]`);
+      if (!box) return;
+      box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      box.focus({ preventScroll: true });
+      box.classList.add('ring-2', 'ring-blue-400');
+      setTimeout(() => box.classList.remove('ring-2', 'ring-blue-400'), 1600);
+    }
+
+    // 车贷的每期记录由贷款参数生成：关掉详情，在左侧表单里编辑总额、期数、还款日
+    function editLoanFromDetail() {
+      const loan = items.find(isCarLoan);
+      if (!loan) return;
+      if (!document.getElementById('detail-modal')?.classList.contains('hidden')) closeDetailModal();
+      if (currentTab === 'diary') switchTab('rental');
+      startEdit(loan.id);
+      document.getElementById('form-panel')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+
+    // 车相关热力图双击：弹一个小菜单，「编辑这天的日记」或原来的编辑
+    function openDayActions(ev, date, otherLabel, otherFn) {
+      document.getElementById('day-actions-pop')?.remove();
+      const pop = document.createElement('div');
+      pop.id = 'day-actions-pop';
+      pop.className = 'fixed z-[10000] bg-white border border-gray-200 rounded-xl shadow-lg p-1.5 flex flex-col min-w-[160px] text-sm';
+      pop.innerHTML = `<div class="px-2.5 pt-1 pb-1.5 text-[11px] text-gray-400">${date}</div>
+        <button data-act="diary" class="text-left px-2.5 py-1.5 rounded-lg hover:bg-blue-50 text-gray-800">编辑这天的日记</button>
+        ${otherLabel ? `<button data-act="other" class="text-left px-2.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-600">${escapeHtml(otherLabel)}</button>` : ''}`;
+      document.body.appendChild(pop);
+      const x = Math.min(ev.clientX + 8, window.innerWidth - pop.offsetWidth - 8);
+      const y = Math.min(ev.clientY + 8, window.innerHeight - pop.offsetHeight - 8);
+      pop.style.left = `${Math.max(8, x)}px`;
+      pop.style.top = `${Math.max(8, y)}px`;
+      const close = () => {
+        pop.remove();
+        document.removeEventListener('mousedown', outside, true);
+        document.removeEventListener('keydown', esc, true);
+      };
+      const outside = (e) => { if (!pop.contains(e.target)) close(); };
+      const esc = (e) => { if (e.key === 'Escape') close(); };
+      setTimeout(() => {
+        document.addEventListener('mousedown', outside, true);
+        document.addEventListener('keydown', esc, true);
+      });
+      pop.addEventListener('click', (e) => {
+        const act = e.target.closest('[data-act]')?.dataset.act;
+        if (!act) return;
+        close();
+        if (act === 'other') { otherFn(); return; }
+        if (!document.getElementById('detail-modal')?.classList.contains('hidden')) closeDetailModal();
+        focusDiaryDate(date);
+      });
     }
 
     function autoSizeDiary(el) {
@@ -2370,6 +2511,17 @@
         if (f) {
           diaryFilter = f.dataset.diaryFilter;
           renderDiary();
+          return;
+        }
+        const mv = ev.target.closest('[data-diary-month]');
+        if (mv) {
+          diaryMonthCursor = new Date(diaryMonthCursor.getFullYear(), diaryMonthCursor.getMonth() + Number(mv.dataset.diaryMonth), 1);
+          renderDiary();
+          return;
+        }
+        const dayBtn = ev.target.closest('[data-diary-day]');
+        if (dayBtn) {
+          focusDiaryDate(dayBtn.dataset.diaryDay);
           return;
         }
         if (ev.target.id === 'diary-add-btn') {
@@ -5764,22 +5916,22 @@
     function buildRecordDayMap(item, start, yearEnd, today, metric = 'price') {
       const amountMap = {};
       const noteMap = {};
+      const cover = {};   // 有记录覆盖的日子（即使这条记录没有当前指标的数据，比如没记里程）
       const detailSelectedMetric = metric;
       (item.records || []).forEach((rec) => {
           const rs = startOfDay(rec.start);
           const re = rec.end ? startOfDay(rec.end) : today;
           const actualEnd = rec.end ? startOfDay(rec.end) : today;
           const duration = Math.max(1, (actualEnd - rs) / DAY_MS);
-          let totalVal;
+          let totalVal = null;
           if (detailSelectedMetric === 'price') {
             totalVal = Number(rec.price) || 0;
           } else {
             const rawM = rec.mileage;
             const hasMileage = rawM !== '' && rawM !== undefined && rawM !== null && !isNaN(Number(rawM));
-            if (!hasMileage) return; // 跳过无里程的记录
-            totalVal = Number(rawM);
+            if (hasMileage) totalVal = Number(rawM);   // 无里程的记录只标记覆盖，不计数值
           }
-          const daily = totalVal / duration;
+          const daily = totalVal == null ? null : totalVal / duration;
           const note = (rec.note || '').trim();
           let cursor = new Date(Math.max(rs.getTime(), start.getTime()));
           // 结束日不含当天（与其他统计一致），否则相邻两期在交界日会重复计算
@@ -5787,7 +5939,8 @@
           const effectiveEnd = new Date(Math.min(lastDay.getTime(), today.getTime(), yearEnd.getTime()));
           while (cursor <= effectiveEnd) {
             const key = formatDate(cursor);
-            amountMap[key] = (amountMap[key] || 0) + daily;
+            cover[key] = true;
+            if (daily != null) amountMap[key] = (amountMap[key] || 0) + daily;
             if (note) {
               if (!noteMap[key]) noteMap[key] = [];
               if (!noteMap[key].includes(note)) noteMap[key].push(note);
@@ -5795,7 +5948,7 @@
             cursor = addDays(cursor, 1);
           }
         });
-      return { amountMap, noteMap };
+      return { amountMap, noteMap, cover };
     }
 
     // ===================== 车贷 ⇄ 租车 对比叠加 =====================
@@ -6095,9 +6248,9 @@
             cell.addEventListener('mouseleave', () => {
               info.textContent = '悬停查看当日开车 / 租车使用';
             });
-            cell.addEventListener('dblclick', () => {
+            cell.addEventListener('dblclick', (ev) => {
               if (d > today) return;
-              editCheckinDate(dStr);
+              openDayActions(ev, dStr, '编辑当天开车记录', () => editCheckinDate(dStr));
             });
             col.appendChild(cell);
           });
@@ -6117,6 +6270,7 @@
 
       const amountMap = {};
       const noteMap = {};
+      const coverMap = {};   // 有记录但没有数据的日子画深一点的灰（ZERO_DATA_CELL_CLASS），和完全没记录区分开
       if (item.type === 'finance') {
         (item.financeSeries || []).forEach((row) => {
           const d = startOfDay(row.date);
@@ -6150,23 +6304,42 @@
         const built = buildRecordDayMap(item, start, yearEnd, today, detailSelectedMetric);
         Object.assign(amountMap, built.amountMap);
         Object.assign(noteMap, built.noteMap);
+        Object.assign(coverMap, built.cover);
+      }
+      if (item.type === 'checkin') {
+        Object.keys(item.records || {}).forEach((k) => { coverMap[k] = true; });
       }
 
-      // 车贷 / 租车详情：可叠加对方的每日金额，用各自的颜色区分
+      // 车贷 / 租车详情：金额可叠加对方（车贷 ⇄ 租车）；租车的里程可叠加自己开车的里程（打卡「开车」）
       window._detailHeatmapYear = year;
-      const compareItems = item.type === 'rental' ? getCompareItems(item) : [];
+      const mileageCompare = isCarRental(item) && detailSelectedMetric === 'mileage';
+      const compareItems = item.type !== 'rental' ? [] : mileageCompare ? items.filter(isDrivingCheckin) : getCompareItems(item);
       const compareBtn = document.getElementById('detail-compare-btn');
-      const canCompare = compareItems.length > 0 && detailSelectedMetric === 'price';
+      const canCompare = compareItems.length > 0 && (detailSelectedMetric === 'price' || mileageCompare);
       const compareActive = canCompare && detailCompareOn;
       const selfPalette = isCarLoan(item) ? CAR_LOAN_HEAT : CAR_RENTAL_HEAT;
       const otherPalette = isCarLoan(item) ? CAR_RENTAL_HEAT : CAR_LOAN_HEAT;
-      const otherLabel = isCarLoan(item) ? '租车' : '车贷';
+      const otherLabel = mileageCompare ? '用车' : isCarLoan(item) ? '租车' : '车贷';
       const selfLabel = isCarLoan(item) ? '车贷' : '租车';
+      const fmtCompare = (v) => (mileageCompare ? `${formatCheckinNumber(Math.round(v * 10) / 10)}km` : `¥${formatMoney(v)}`);
       const compareMap = {};
+      const compareCover = {};
       if (compareActive) {
+        const lastDay = formatDate(new Date(Math.min(yearEnd.getTime(), today.getTime())));
+        const firstDay = formatDate(start);
         compareItems.forEach((other) => {
+          if (mileageCompare) {
+            Object.entries(other.records || {}).forEach(([k, raw]) => {
+              if (k < firstDay || k > lastDay) return;
+              compareCover[k] = true;
+              const v = Number(getCheckinRecordValue(raw)) || 0;
+              if (v > 0) compareMap[k] = (compareMap[k] || 0) + v;
+            });
+            return;
+          }
           const built = buildRecordDayMap(other, start, yearEnd, today, 'price');
           Object.entries(built.amountMap).forEach(([k, v]) => { compareMap[k] = (compareMap[k] || 0) + v; });
+          Object.assign(compareCover, built.cover);
         });
       }
       if (compareBtn) {
@@ -6233,13 +6406,16 @@
           else if (ratio > 0.5) levelClass = heatmapPalette[2];
           else if (ratio > 0.25) levelClass = heatmapPalette[1];
           else if (amt > 0) levelClass = heatmapPalette[0];
+          else if (coverMap[dStr]) levelClass = ZERO_DATA_CELL_CLASS;
 
           const cell = document.createElement('div');
           const isToday = dStr === todayStr;
           const todayRing = isToday ? ' outline outline-[1.5px] outline-blue-500 outline-offset-[1px]' : '';
           const otherAmt = compareActive ? (compareMap[dStr] || 0) : 0;
           if (compareActive) {
-            levelClass = amt > 0 ? heatLevel(amt, maxAmount, selfPalette) : otherAmt > 0 ? heatLevel(otherAmt, maxAmount, otherPalette) : 'bg-gray-100';
+            levelClass = amt > 0 ? heatLevel(amt, maxAmount, selfPalette)
+              : otherAmt > 0 ? heatLevel(otherAmt, maxAmount, otherPalette)
+              : coverMap[dStr] || compareCover[dStr] ? ZERO_DATA_CELL_CLASS : 'bg-gray-100';
           }
           cell.className = 'w-full aspect-square ' + levelClass + todayRing + ' cursor-pointer flex-shrink-0';
           if (compareActive && amt > 0 && otherAmt > 0) {
@@ -6251,7 +6427,8 @@
               cell.appendChild(half);
             });
           }
-          const compareSuffix = compareActive && otherAmt > 0 ? ` · ${otherLabel} ¥${otherAmt.toFixed(2)}` : '';
+          const compareSuffix = compareActive && otherAmt > 0 ? ` · ${otherLabel} ${fmtCompare(otherAmt)}` : '';
+          const noDataSuffix = amt <= 0 && coverMap[dStr] ? `（有记录，没有${metricLabel}数据）` : '';
           let cellTitle = dStr;
           if (item.type === 'checkin') {
             const checkinType = getCheckinType(item);
@@ -6268,7 +6445,7 @@
             cellTitle = `${dStr}\n${valTitle}${notes ? `\n备注: ${notes}` : ''}`;
           } else {
             const valTitle = unit === 'km' ? `${amt.toFixed(2)}${unit}` : `${unit}${amt.toFixed(2)}`;
-            cellTitle = `${dStr}\n${compareActive ? `${selfLabel} ` : ''}${valTitle}${compareSuffix}${notes ? `\n备注: ${notes}` : ''}`;
+            cellTitle = `${dStr}\n${compareActive ? `${selfLabel} ` : ''}${valTitle}${noDataSuffix}${compareSuffix}${notes ? `\n备注: ${notes}` : ''}`;
           }
           cell.title = cellTitle;
           cell.addEventListener('mouseenter', () => {
@@ -6289,18 +6466,25 @@
             } else {
               const noteSuffix = notes ? ` · ${notes}` : '';
               const valStr = unit === 'km' ? `${amt.toFixed(2)}${unit}` : `${unit}${amt.toFixed(2)}`;
-              info.textContent = ` ${dStr}：${compareActive ? `${selfLabel} ` : ''}${valStr}${compareSuffix}${noteSuffix}`;
+              info.textContent = ` ${dStr}：${compareActive ? `${selfLabel} ` : ''}${valStr}${noDataSuffix}${compareSuffix}${noteSuffix}`;
             }
           });
-          cell.addEventListener('dblclick', () => {
+          cell.addEventListener('dblclick', (ev) => {
             if (item.type === 'finance') {
               selectedLedgerDate = dStr;
               openLedgerModal(dStr);
             } else if (item.type === 'checkin') {
               if (d > today) return;
-              editCheckinDate(dStr);
+              // 「开车」的热力图：多一个入口去写当天的用车日记
+              if (isDrivingCheckin(item)) openDayActions(ev, dStr, '编辑当天打卡', () => editCheckinDate(dStr));
+              else editCheckinDate(dStr);
             } else if (item.type === 'sub' || item.type === 'rental') {
-              editCycleFromHeatmap(dStr);
+              if (!isCarRental(item) && !isCarLoan(item)) { editCycleFromHeatmap(dStr); return; }
+              const onOther = compareActive && amt <= 0 && (otherAmt > 0 || compareCover[dStr]);
+              const target = onOther ? (mileageCompare ? 'drive' : isCarLoan(item) ? 'rental' : 'loan') : isCarLoan(item) ? 'loan' : 'rental';
+              if (target === 'loan') openDayActions(ev, dStr, '编辑车贷', () => editLoanFromDetail());
+              else if (target === 'rental') openDayActions(ev, dStr, '编辑这一单租车', () => editCycleFromHeatmap(dStr, onOther ? getCarRentalItems().find((r) => findRecordIndexForDate(r, dStr) >= 0)?.id : undefined));
+              else openDayActions(ev, dStr, null, null);   // 自己开车的那天：里程和备注都在日记里改
             }
           });
           col.appendChild(cell);
@@ -6321,7 +6505,9 @@
           const sum = (m) => Object.values(m).reduce((a, b) => a + b, 0);
           const selfColor = isCarLoan(item) ? '紫' : '橙';
           const otherColor = isCarLoan(item) ? '橙' : '紫';
-          summary.textContent += ` · ${selfColor}=${selfLabel} ¥${formatMoney(sum(amountMap))} / ${otherColor}=${otherLabel} ¥${formatMoney(sum(compareMap))}（已发生部分）`;
+          summary.textContent += mileageCompare
+            ? ` · ${selfColor}=${selfLabel} ${fmtCompare(sum(amountMap))} / ${otherColor}=${otherLabel} ${fmtCompare(sum(compareMap))}`
+            : ` · ${selfColor}=${selfLabel} ¥${formatMoney(sum(amountMap))} / ${otherColor}=${otherLabel} ¥${formatMoney(sum(compareMap))}（已发生部分）`;
         }
       }
     }
@@ -6632,12 +6818,11 @@
       });
     }
 
-    function editCycleFromHeatmap(dateStr) {
-      const itemId = window._detailItemId;
+    function editCycleFromHeatmap(dateStr, itemId = window._detailItemId) {
       const item = items.find((i) => i.id === itemId);
       if (!item || (item.type !== 'sub' && item.type !== 'rental')) return;
       if (isCarLoan(item)) {
-        alert('车贷的每期记录由贷款参数自动生成，请点 ✏️ 修改总额、期数或还款日');
+        editLoanFromDetail();   // 车贷每期记录由贷款参数生成，直接打开贷款参数编辑
         return;
       }
       const idx = findRecordIndexForDate(item, dateStr);

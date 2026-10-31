@@ -234,6 +234,13 @@ Device 的全量导入会替换 `items`、`ledger` 和 `mileage`，登录状态�
 - `carLog`：payload 新增的顶层字段 `{generatedAt, source, days: {日期: {km, min, n, route[], charge?}}}`，由本机脚本从 TeslaMate 生成后用 `mcp/device` 的 `npm run push-carlog` 写入，页面只读。`getDevicePayload` / `applyDevicePayload` / Export All 都带上它；Import All 时文件里没有 `carLog` 就保留当前的，以免旧备份把它清空。**旧版本页面保存时会丢掉 `carLog`**，所以要先部署新页面再推送。
 - 列表按月倒序，筛选：全部 / 租车 / 用车 / 待补写（去掉 #标签 后不到 10 个字）；可搜索地点、人、日期；「补写这一天」可以给没有 TeslaMate 记录的日子（如提车后第一趟）加日记。输入后 600 ms 自动保存（`scheduleDeviceSave`）。
 - MCP 新增只读工具 `car_diary`。
+- 左侧日历缩略图（`diaryCalendarHtml`）：按月显示，橙底=租车、紫底=开车、两者都有为渐变；底部小点绿=已写、黄=待补写。点日期由 `focusDiaryDate` 定位到那天（租车覆盖这天就定位那一单，否则定位/新建当天的用车日记），没记录的日子点一下就能补写。
+- 车相关热力图（「开车」打卡、租车、车贷、开车/租车合并图）双击弹出小菜单 `openDayActions`：「编辑这天的日记」加上原来的编辑。车贷不再弹「请点 ✏️」的提示，而是 `editLoanFromDetail` 关掉详情、在左侧表单打开贷款参数；对比模式下双击对方的格子，编辑的是对方（车贷 / 那一单租车 / 当天的用车日记）。
+
+### 热力图：里程对比用车、缺数据显示深灰（2026-10-31）
+
+- 租车详情切到「里程」时，对比按钮变成「对比：用车」，把打卡「开车」每天的公里数用 indigo 叠加，共用色阶，摘要显示双方公里数合计。金额指标仍是车贷 ⇄ 租车。
+- 用户要求：缺失数据不能不显示颜色。`buildRecordDayMap` 额外返回 `cover`（有记录覆盖的日子，不管这条记录有没有当前指标的数据），`renderHeatmap` 里有记录但没数据的日子画 `ZERO_DATA_CELL_CLASS`（深一点的灰），完全没记录才是 `bg-gray-100`；悬停提示写「有记录，没有里程数据」。打卡项目里值为 0 的日子同理。没里程的租车记录现在也会带出备注。
 
 ## 6. Tax 页面模型
 
