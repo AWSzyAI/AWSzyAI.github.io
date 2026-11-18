@@ -59,6 +59,13 @@
 
 维护主页时应保留清晰的阅读层级，动效围绕神经科学与工程身份展开。合作方向采用目录式分隔线，工程实践采用两列项目，个人工具放在页尾次要位置。
 
+### 2026-11-18 脑机交互原型：实物照片 + 原动画
+
+用户给了一张 iPhone 照片（`~/Downloads/IMG_7172.HEIC`，4032×3024）：DeepBCI（Enhanced OpenBCI）采集板装在红色 3D 打印头架上，画面里没有人和私人信息。用户要求「不要只放这张图，原来的动画也不错，结合一下」。
+
+- 照片裁成 16:10、缩到 1600×1000，存为 `assets/projects/bci/deepbci-board.webp`（188 KB，不带 EXIF）。HEIC 原图不进仓库。
+- 卡片配图区 `.project-visual.project-bci` 上下两层：上面是照片（2:1 显示，`object-position:50% 40%`），下面保留原来的 SIGNAL → DECODE → ACTION 内联 SVG 动画（`.bci-flow`，最宽 600px 居中）。关掉了 `::after` 暗角。桌面整块高约 594px，和 Fleet 卡接近。
+
 ### 2026-11-18 联系区加社群邀请
 
 用户要求在联系/加入处说明：有 Neuroscience、BCI 与 AI 相关社群，邮件联系加入。联系区左栏加了一行 `.contact-community`（「Neuroscience · BCI · AI」标签 + 「欢迎发邮件申请加入」），邮件链接自带主题「申请加入社群：Neuroscience / BCI / AI」；右栏标签行加「加入社群」；llms.txt 同步一句。联系区链接加了 `white-space:nowrap`，手机上「简历 / Bio」等不再断行。
