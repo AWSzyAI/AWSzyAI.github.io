@@ -59,6 +59,15 @@
 
 维护主页时应保留清晰的阅读层级，动效围绕神经科学与工程身份展开。合作方向采用目录式分隔线，工程实践采用两列项目，个人工具放在页尾次要位置。
 
+### 2026-11-18 产品区改为 Witness Engine、删去行为感知系统
+
+用户要求（同日稍晚）：
+
+- 「Witness System」卡改为 **Witness Engine**：正文以用户开发的 Engine 为主角（处理录像、SAM2 在深度视频里分割追踪、重建运动、三维回放；数字孪生重建与回放已完成内部演示），只用一句话带过「与 Witness Rig 组成 Witness System」。主链接「Blux 产品页」指向 bluxlabs.com/products/witness-engine/，次链接指向 witness-system。原「行为感知系统」的要点并入技术标签 `Depth video · SAM2 · Keypoints · 3D`。关键点检测当时还只是「为后续提供输入」，正文不要写成已完成。
+- 删掉「行为感知系统」卡：它就是 Witness Engine 做的事，不重复列。
+- 顺序：Witness Engine、Knot 结绳记事、Blux Fleet、脑机交互原型（脑机放最后）。左右交替由 `assets/motion.css` 的 `.project:nth-child(even)` 自动处理，调整顺序不用改 CSS。
+- 简历 `resume.html` 里的工程经历（行为追踪等）是经历描述，不是产品列表，未改。
+
 ### 2026-11-18 产品区新增三项
 
 用户要求把自己做的三个系统放进「产品」：
