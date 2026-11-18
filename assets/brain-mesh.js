@@ -2,7 +2,23 @@
    See brain/README.md. Animated signals are an original visual layer. */
 (() => {
 'use strict';
-const source=new URL('brain/human-brain.json',document.currentScript.src);
+const source=new URL('brain/human-brain-lite.json',document.currentScript.src);
+// human-brain-lite.json：顶点 ×10 取整后按 xyz 差分，三角面索引差分；法线和线框边在这里重建（与原 human-brain.json 的法线点积中位数 0.9999）。
+const decodeBrainPart=part=>{
+ const n=part.v.length,vertices=new Float32Array(n),acc=[0,0,0];
+ for(let i=0;i<n;i++){acc[i%3]+=part.v[i];vertices[i]=acc[i%3]/10;}
+ const faces=new Uint16Array(part.f.length);let last=0;for(let i=0;i<faces.length;i++){last+=part.f[i];faces[i]=last;}
+ const normals=new Float32Array(n),seen=new Set(),edges=[];
+ for(let i=0;i<faces.length;i+=3){
+  const a=faces[i]*3,b=faces[i+1]*3,c=faces[i+2]*3;
+  const ux=vertices[b]-vertices[a],uy=vertices[b+1]-vertices[a+1],uz=vertices[b+2]-vertices[a+2],vx=vertices[c]-vertices[a],vy=vertices[c+1]-vertices[a+1],vz=vertices[c+2]-vertices[a+2];
+  const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+  for(const k of [a,b,c]){normals[k]+=nx;normals[k+1]+=ny;normals[k+2]+=nz;}
+  for(const [x,y] of [[faces[i],faces[i+1]],[faces[i+1],faces[i+2]],[faces[i+2],faces[i]]]){const key=x<y?x*65536+y:y*65536+x;if(!seen.has(key)){seen.add(key);edges.push(x,y);}}
+ }
+ for(let i=0;i<n;i+=3){const l=Math.hypot(normals[i],normals[i+1],normals[i+2])||1;normals[i]/=l;normals[i+1]/=l;normals[i+2]/=l;}
+ return {name:part.name,vertices,normals,faces,edges:new Uint16Array(edges)};
+};
 class BrainMesh {
  constructor(onReady) {
   this.canvas=document.createElement('canvas');
@@ -46,7 +62,7 @@ class BrainMesh {
    const p=gl.createProgram();gl.attachShader(p,vert);gl.attachShader(p,frag);gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));gl.deleteShader(vert);gl.deleteShader(frag);this.program=p;
    this.uniforms={};for(const k of ['rotation','scale','offset','time','stimulus','pass','dpr','color','alpha'])this.uniforms[k]=gl.getUniformLocation(p,k);
    this.attributes={position:gl.getAttribLocation(p,'position'),normal:gl.getAttribLocation(p,'normal')};
-   const response=await fetch(source);if(!response.ok)throw Error('Brain geometry unavailable');const data=await response.json();
+   const response=await fetch(source);if(!response.ok)throw Error('Brain geometry unavailable');const data=(await response.json()).parts.map(decodeBrainPart);
    const buffer=(target,array)=>{const b=gl.createBuffer();gl.bindBuffer(target,b);gl.bufferData(target,array,gl.STATIC_DRAW);return b;};
    this.parts=data.map(part=>({name:part.name,
     position:buffer(gl.ARRAY_BUFFER,new Float32Array(part.vertices)),normal:buffer(gl.ARRAY_BUFFER,new Float32Array(part.normals)),

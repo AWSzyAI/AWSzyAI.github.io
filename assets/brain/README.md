@@ -14,6 +14,8 @@ Rebuild: save these as `pial.tar.bz2` and `deep.tar.bz2`, then run `python3 scri
 
 Coordinates retain RAS orientation in millimeters. Meshes include both cortical hemispheres, both cerebellar cortices, brainstem, hippocampi and amygdalae. Region leader lines identify approximate anatomical landmarks; they are not quantitative parcellations. The activity animation is procedural, not recorded experimental activity. Mesh edges describe surface topology, not measured neuronal connections.
 
+`human-brain-lite.json` is the file the homepage actually loads (2026-11-18): the same geometry with vertices stored as delta-encoded integers in 0.1 mm and delta-encoded face indices; `assets/brain-mesh.js` rebuilds normals and wire edges in the browser. It is about 430 KB gzipped instead of 1.1 MB. Regenerate it from `human-brain.json` if the source mesh changes.
+
 Generate the static fallback with `python3 scripts/build-brain-fallback.py`. The hypothalamus is marked only as an approximate region, not a segmented mesh.
 
 `card-mri.png` is a transparent still rendered from `human-brain.json` by the homepage `BrainMesh` renderer (exterior surface view, fixed camera). It is used on the business card, with attribution included in the exported card image, and is distributed under CC BY-SA 3.0. No new anatomical geometry was generated.

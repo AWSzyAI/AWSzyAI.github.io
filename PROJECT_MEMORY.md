@@ -59,6 +59,18 @@
 
 维护主页时应保留清晰的阅读层级，动效围绕神经科学与工程身份展开。合作方向采用目录式分隔线，工程实践采用两列项目，个人工具放在页尾次要位置。
 
+### 2026-11-18 首页提速、删技术架构与论文节、头衔改为 Researcher & Architect
+
+- **加载**：首页从约 31 MB 降到约 2.7 MB（未压缩），gzip 后约 1 MB。
+  - 霞鹜文楷不再整包加载 18.6 MB 的 `font/LXGWWenKai-Regular.ttf`（源文件保留，用于再生成）。`font/wenkai.css` 按 unicode-range 声明 `font/wenkai/*.woff2` 切片：`home`（首页用字，约 140 KB）、`pages`（其他页面用字）、`r001`…（其余字按码位分段）。后声明的 face 优先，所以 home/pages 能盖住 r* 的重叠范围。index、resume、publications、blog、blog/post、Archive 都引用 `font/wenkai.css`；`assets/site.css` 里不再写 @font-face。**改了首页或其他页面的中文文案后要重新切片**，否则新字会落到 r* 分段里多下载一片（显示不会出错）。切片脚本是一次性的，思路：fontTools subset，flavor=woff2，home 收 index.html 和首页 JS 的全部字符。
+  - `szy.ico` 原来是 3.5 MB 的 1080px BMP，已换成 16–64px 的多尺寸 ICO（20 KB）；新增 `apple-touch-icon.png`（180px）。
+  - 脑模型改为加载 `assets/brain/human-brain-lite.json`（顶点 0.1 mm 整数差分 + 面索引差分，gzip 后约 430 KB），法线和线框边由 `brain-mesh.js` 在浏览器重建，与原法线点积中位数 0.9999。原 `human-brain.json` 保留作来源，首页不再加载。
+  - 还没动的：`apple-watch-series-11-bezels.png`（582 KB）、`surface.svg` 回退图（515 KB）。
+- **删掉「技术架构」一节**（用户：在 agent 时代技术栈不重要）及其导航链接。
+- **论文移出首页**：用户认为这几篇是本科训练，现阶段不展示。新建 `publications.html`（沿用简历版式），入口放在「关于」的简历/名片链接旁、页尾联系链接和简历页眉；已加进 sitemap 和 llms.txt。以后有正式成果再回首页。
+- **头衔**：Blux 的「全栈工程师」全站改为 **Researcher & Architect**（主页、简历、名片、ld+json jobTitle、llms.txt）。
+- 现在导航：使命 / 产品 / 战略方向 / 一起构建。用户强调自己同时是 Blux 初创团队的初始成员，网站不是为了说明「博士生」身份。导航命名待用户决定。
+
 ### 2026-11-18 产品区改为 Witness Engine、删去行为感知系统
 
 用户要求（同日稍晚）：

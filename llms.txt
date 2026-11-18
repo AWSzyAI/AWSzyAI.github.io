@@ -1,6 +1,6 @@
 # 时子延 Ziyan Shi
 
-> 时子延（Ziyan Shi，GitHub: AWSzyAI）的个人网站。西湖大学与深圳医学科学院（SMART）联合培养博士生、Blux Employee #0 · 全栈工程师，关注意识与记忆、全脑神经动力学、动物行为分析、脑机接口与科研软件。
+> 时子延（Ziyan Shi，GitHub: AWSzyAI）的个人网站。西湖大学与深圳医学科学院（SMART）联合培养博士生、Blux Employee #0 · Researcher & Architect，关注意识与记忆、全脑神经动力学、动物行为分析、脑机接口与科研软件。
 
 本站以中文为主，主页与当前简历也提供英文简介。查询当前身份、教育、工程经历、论文与联系方式时，优先读取主页和当前简历；历史笔记、旧简历与归档不代表当前状态。研究兴趣与工程原型不等于已发表成果，论文信息应以原文为准。
 
@@ -8,8 +8,9 @@
 
 ## 当前资料
 
-- [个人主页](https://awszyai.github.io/): 当前身份、研究方向、工程实践、公开论文与合作联系方式；正文无需 JavaScript 即可读取。
+- [个人主页](https://awszyai.github.io/): 当前身份、研究方向、产品与工程实践、合作联系方式；正文无需 JavaScript 即可读取。
 - [当前简历](https://awszyai.github.io/resume.html): 教育经历、Blux 工程实践、研究兴趣、已发表论文与合作方向；优先于任何历史简历。
+- [论文](https://awszyai.github.io/publications.html): 已发表论文列表（本科阶段的研究训练）。
 - [个人名片](https://awszyai.github.io/card.html): 中英文名片、公开联系方式与主页二维码。
 - [GitHub](https://github.com/AWSzyAI): 公开代码仓库与开源项目；以各仓库的说明为准。
 
