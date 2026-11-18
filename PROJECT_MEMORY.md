@@ -63,9 +63,9 @@
 
 用户要求把自己做的三个系统放进「产品」：
 
-- **Witness System**（第一项）：Blux 的行为实验软硬件系统，用户负责 Witness Engine。文字以 bluxlabs.com/products/witness-system 为主，配图取自 Blux 官网仓库（`assets/projects/witness/overview.webp`），meta 前带 Blux logo，链接到 Blux 的 witness-system 与 witness-engine 页面。注意 Blux 官网仓库的 LICENSE 声明素材为 Blux 专有，使用需公司授权。
+- **Witness System**（第一项）：Blux 的行为实验软硬件系统，用户负责 Witness Engine。文字以 bluxlabs.com/products/witness-system 为主，配图取自 Blux 官网的 `arena.webp`（用户指定，`assets/projects/witness/arena.webp`），meta 前带 Blux logo，链接到 Blux 的 witness-system 与 witness-engine 页面。Blux 官网素材为公司专有，用户确认有授权使用。
 - **Knot 结绳记事**：FoloToy AI Passport 卡片 + iOS App 同步进 Obsidian。配图是 App 图标和手画外壳的卡片视图截图（`assets/projects/knot/`）；不能用 FoloToy 官方产品图（不允许公开发布）。链接：安装与刷机页 https://awszyai.github.io/ai-passport-knot/ 和 GitHub 图标。
-- **Blux Fleet**：自托管多设备 Agent 工作台，内联 SVG 示意图，带 GitHub 图标链接到 `AWSzyAI/fleet`。
+- **Blux Fleet**：自托管多设备 Agent 工作台，内联 SVG 示意图。仓库 `AWSzyAI/fleet` 是私有的，按用户决定不放 GitHub 链接。
 
 GitHub 图标是内联 octicon（`.repo-link`），样式加在 `assets/motion.css` 末尾；图片卡用 `.project-photo`。
 
