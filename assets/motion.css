@@ -264,3 +264,9 @@ body.home{overflow-x:clip}
 .shot-tabs a[aria-current="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(24,33,28,.1)}
 .shot-tabs a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 @media(max-width:720px){.project-visual.project-shots{padding:12px 12px 10px;gap:10px}.shot-frame{border-radius:5px}.shot-tabs a{padding:11px 14px}}
+/* 2026-11-18 contact: community invitation */
+.contact .contact-community{margin-top:22px;font-size:14px;line-height:1.8;color:#dbe7de}
+.contact-community a{color:var(--paper);text-decoration:underline;text-underline-offset:4px;text-decoration-color:#9fbaa9}
+.community-tag{display:inline-block;margin-right:10px;padding:2px 10px;border:1px solid rgb(245 244 238 / .35);border-radius:999px;font-size:11px;letter-spacing:.06em;color:var(--paper);vertical-align:1px}
+@media(max-width:720px){.community-tag{display:table;margin:0 0 8px}}
+.contact-links a{white-space:nowrap}
