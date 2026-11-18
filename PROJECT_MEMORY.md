@@ -59,6 +59,16 @@
 
 维护主页时应保留清晰的阅读层级，动效围绕神经科学与工程身份展开。合作方向采用目录式分隔线，工程实践采用两列项目，个人工具放在页尾次要位置。
 
+### 2026-11-18 产品区新增三项
+
+用户要求把自己做的三个系统放进「产品」：
+
+- **Witness System**（第一项）：Blux 的行为实验软硬件系统，用户负责 Witness Engine。文字以 bluxlabs.com/products/witness-system 为主，配图取自 Blux 官网仓库（`assets/projects/witness/overview.webp`），meta 前带 Blux logo，链接到 Blux 的 witness-system 与 witness-engine 页面。注意 Blux 官网仓库的 LICENSE 声明素材为 Blux 专有，使用需公司授权。
+- **Knot 结绳记事**：FoloToy AI Passport 卡片 + iOS App 同步进 Obsidian。配图是 App 图标和手画外壳的卡片视图截图（`assets/projects/knot/`）；不能用 FoloToy 官方产品图（不允许公开发布）。链接：安装与刷机页 https://awszyai.github.io/ai-passport-knot/ 和 GitHub 图标。
+- **Blux Fleet**：自托管多设备 Agent 工作台，内联 SVG 示意图，带 GitHub 图标链接到 `AWSzyAI/fleet`。
+
+GitHub 图标是内联 octicon（`.repo-link`），样式加在 `assets/motion.css` 末尾；图片卡用 `.project-photo`。
+
 ### 2026-09-13 视觉增强
 
 - 保留原有配色、字体与正文内容。参考 Blux 的视觉中心和空间层次，使用原创 Canvas 脑网络建模、连续意识状态、脑—行为对齐三种可切换研究示意。按用户反馈重写研究目的，取消“涌现心智”等口号和“生成式视觉 · 非实验数据”表述；界面不保留装饰性说明或免责声明标签。

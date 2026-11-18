@@ -238,3 +238,17 @@ body.home{overflow-x:clip}
 .neural-stage[data-mode="behavior"] .field-viewport{top:30px;left:0;width:100%;height:calc(100% - 128px)}
 @media(max-width:720px){.neural-stage[data-mode="behavior"] .field-viewport{top:18px;height:calc(100% - 178px)}}
 .neural-stage[data-mode="behavior"] .field-caption{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+
+/* 2026-11-18 product cards with photos, brand mark and repo icon */
+.project-photo{justify-content:center}
+.project-photo>img{max-height:100%;max-width:100%;object-fit:contain;display:block}
+.project-knot{gap:28px}
+.project-knot .knot-icon{width:96px;height:96px;border-radius:22px;box-shadow:0 8px 24px rgba(10,49,97,.16)}
+.project-knot .knot-card{height:92%;width:auto}
+.project-brand{display:inline-flex;align-items:center;gap:6px}
+.project-brand img{width:14px;height:auto}
+.project-links{display:inline-flex;align-items:center;gap:14px}
+.repo-link{display:inline-flex;color:var(--ink);opacity:.75}
+.repo-link:hover,.repo-link:focus-visible{opacity:1}
+.repo-link:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+@media(max-width:720px){.project-knot .knot-icon{width:72px;height:72px}}
