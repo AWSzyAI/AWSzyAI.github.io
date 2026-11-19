@@ -278,3 +278,13 @@ body.home{overflow-x:clip}
 .bci-flow{padding:4px 10px 2px;border-top:1px solid var(--line)}
 .bci-flow svg{display:block;max-width:600px;margin:0 auto}
 @media(max-width:720px){.bci-flow{padding:2px 4px 0}}
+
+/* Course and internship entries use the light content surface. */
+.home #courses .strategy-row{border-color:var(--line)}
+.home #courses .strategy-number{font-size:14px;color:var(--green)}
+.home #courses .strategy-row p{font-size:16px;color:var(--muted)}
+.home #courses .text-link{font-size:14px}
+.home #internships .timeline>div{grid-template-columns:minmax(220px,1fr) 2fr}
+.home #internships .timeline dt,.home #internships .timeline dd span{font-size:14px}
+.home #internships .timeline dd{font-size:16px}
+@media(max-width:720px){.home #courses .strategy-row{grid-template-columns:42px 1fr}.home #internships .timeline>div{grid-template-columns:1fr;gap:10px}}
