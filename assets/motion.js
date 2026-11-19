@@ -158,6 +158,10 @@
         stage.dataset.mode = mode;
         stage.closest('.hero').dataset.scene = mode;
         updateScroll();
+        const manifesto=document.querySelector('.hero-manifesto'),deck=document.querySelector('.hero-deck');
+        const copy=mode==='waves'?['记录当下。','预见下一段状态。','连接 Apple Watch 与 EEG，','探索意识状态的记录、预测与干预。']:['建模心智。','探索意识与记忆。','以神经网络编码心智过程，','通过模型与实验检验假设。'];
+        manifesto.replaceChildren(document.createTextNode(copy[0]),document.createElement('br'),document.createTextNode(copy[1]));
+        deck.replaceChildren(document.createTextNode(copy[2]),document.createElement('br'),document.createTextNode(copy[3]));
         modes.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
         const [title, detail, number] = captions[mode];
         description.replaceChildren(document.createTextNode(title));

@@ -8,16 +8,11 @@
 
 ## 当前资料
 
-- [个人主页](https://awszyai.github.io/): 当前身份、项目与作品、课程项目、实习经历、研究兴趣与合作联系方式；正文无需 JavaScript 即可读取。
+- [个人主页](https://awszyai.github.io/): 当前身份、研究方向、产品与工程实践、合作联系方式；正文无需 JavaScript 即可读取。
 - [当前简历](https://awszyai.github.io/resume.html): 教育经历、Blux 工程实践、研究兴趣、已发表论文与合作方向；优先于任何历史简历。
 - [论文](https://awszyai.github.io/publications.html): 已发表论文列表（本科阶段的研究训练）。
 - [个人名片](https://awszyai.github.io/card.html): 中英文名片、公开联系方式与主页二维码。
 - [GitHub](https://github.com/AWSzyAI): 公开代码仓库与开源项目；以各仓库的说明为准。
-
-## 课程与实习
-
-- 课程学习与项目：一生一芯（ysyx）、南京大学 PA、jyy 操作系统（OS）、生成式软件工程（GSE）。课程官方资料不代表站主个人交付成果。
-- 宝马（南京）信息技术有限公司实习：2025-10-15 至 2026-04-14。
 
 ## 已发表论文
 
